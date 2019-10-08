@@ -1,0 +1,154 @@
+package model
+
+import (
+	"encoding/json"
+	"errors"
+	"horus-core/log"
+	"strings"
+	"time"
+)
+
+// SnmpRequest represents a snmp poll request.
+type SnmpRequest struct {
+	// UID is the request unique id
+	UID string `json:"uid"`
+
+	// AgentID is the agent id
+	AgentID int `json:"agent_id"`
+
+	// ScalarMeasures is a list of scalar measures to poll
+	ScalarMeasures []ScalarMeasure `json:",omitempty"`
+
+	// IndexedMeasures is a list of tabular measures to poll
+	IndexedMeasures []IndexedMeasure `json:",omitempty"`
+
+	// ReportURL is the url where the polling result report is sent
+	ReportURL string `json:"report_url"`
+
+	// Device is the network device to poll.
+	Device Device `json:"device"`
+}
+
+// OngoingPolls is the result to the OngoingURI api request.
+type OngoingPolls struct {
+	// Requests is the current polling requests IDs.
+	Requests []string `json:"ongoing"`
+
+	// Load is the current load of the agent.
+	Load float64 `json:"load"`
+}
+
+// PingHost is a host to ping.
+type PingHost struct {
+	// Name is the target hostname
+	Name string `db:"hostname" json:"hostname"`
+
+	// IpAddr is the target ip address
+	IpAddr string `db:"ip_address" json:"ip_address"`
+
+	// Category is the equipment category (for profile identification)
+	Category string `db:"category" json:"category"`
+
+	// Vendor is the equipment vendor (for profile identification)
+	Vendor string `db:"vendor" json:"vendor"`
+
+	// Model is the equipment model (for profile identification)
+	Model string `db:"model" json:"model"`
+
+	// ToProm is a flag telling wether to send results to prometheus
+	ToProm bool `db:"to_prometheus" json:"to_prometheus"`
+
+	// ToKafka is a flag telling wether to send results to kafka
+	ToKafka bool `db:"to_kafka" json:"to_kafka"`
+
+	// ToInflux is a flag telling wether to send results to influxDB
+	ToInflux bool `db:"to_influx" json:"to_influx"`
+}
+
+// PingRequest is a ping job sent to an agent.
+type PingRequest struct {
+	// UID is the request unique ID
+	UID string `json:"uid"`
+
+	// Hosts is the list of hosts to ping
+	Hosts []PingHost `json:"hosts"`
+
+	// Stamp is the ping metric timestamp
+	Stamp time.Time `json:"-"`
+}
+
+const (
+	// SnmpJobURI is the agent uri for snmp poll requests
+	SnmpJobURI = "/r/poll"
+
+	// CheckURI is the agent keep-alive uri
+	CheckURI = "/r/check"
+
+	// PingURI is the agent uri for ping jobs
+	PingJobURI = "/r/ping"
+
+	// OngoingURI is the agent current ongoing request list uri endpoint
+	OngoingURI = "/r/ongoing"
+
+	// ReportURI is the controller report callback uri
+	ReportURI = "/r/report"
+)
+
+// UnmarshalJSON validates the json input and unmarshals it to and SnmpRequest.
+func (r *SnmpRequest) UnmarshalJSON(data []byte) error {
+	type R SnmpRequest
+	var req R
+
+	if err := json.Unmarshal(data, &req); err != nil {
+		return err
+	}
+	if req.UID == "" {
+		return errors.New("invalid request: request_id cannot be empty")
+	}
+	if req.ReportURL != "" && !strings.HasPrefix(req.ReportURL, "http://") && !strings.HasPrefix(req.ReportURL, "https://") {
+		req.ReportURL = "http://" + req.ReportURL
+	}
+	if req.Device.ID == 0 {
+		return errors.New("invalid request: missing device")
+	}
+	*r = SnmpRequest(req)
+	return nil
+}
+
+// FilterMeasures removes from request all measures which are not to be polled at this time
+// because their polling interval is bigger than the global one.
+func (r *SnmpRequest) FilterMeasures() {
+	var filtScalar []ScalarMeasure
+	for _, m := range r.ScalarMeasures {
+		log.Debug3f("measure %s: pollFreq=%d, last polled at=%v", m.Name, m.PollingFrequency, m.LastPolledAt.Time)
+		minPollTime := time.Now().Add(-time.Duration(m.PollingFrequency) * time.Second)
+		if m.PollingFrequency == 0 || !m.LastPolledAt.Valid || m.LastPolledAt.Time.Before(minPollTime) {
+			log.Debug3f("measure %s kept", m.Name)
+			filtScalar = append(filtScalar, m)
+		} else {
+			log.Debug2f("measure %s skipped", m.Name)
+		}
+	}
+	r.ScalarMeasures = filtScalar
+	var filtIndexed []IndexedMeasure
+	for _, m := range r.IndexedMeasures {
+		log.Debug3f("measure %s: pollFreq=%d, last polled at=%v", m.Name, m.PollingFrequency, m.LastPolledAt.Time)
+		minPollTime := time.Now().Add(-time.Duration(m.PollingFrequency) * time.Second)
+		if m.PollingFrequency == 0 || !m.LastPolledAt.Valid || m.LastPolledAt.Time.Before(minPollTime) {
+			log.Debug3f("measure %s kept", m.Name)
+			filtIndexed = append(filtIndexed, m)
+		} else {
+			log.Debug2f("measure %s skipped", m.Name)
+		}
+	}
+	r.IndexedMeasures = filtIndexed
+}
+
+// Targets returns the list of host targets for this ping request.
+func (r PingRequest) Targets() []string {
+	res := make([]string, len(r.Hosts))
+	for i, h := range r.Hosts {
+		res[i] = h.IpAddr
+	}
+	return res
+}

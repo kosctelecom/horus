@@ -1,0 +1,90 @@
+package model
+
+import (
+	"encoding/json"
+	"fmt"
+	"regexp"
+	"strings"
+)
+
+// Metric represents a single snmp OID to poll.
+type Metric struct {
+	// ID is the metric db ID.
+	ID int `db:"id"`
+
+	// Name is the metric name.
+	Name string `db:"name"`
+
+	// Oid is the metric OID.
+	Oid OID `db:"oid"`
+
+	// Description is the metric description.
+	Description string `db:"description"`
+
+	// Active indicates if this metric is actually polled (all inactive metrics are ignored).
+	Active bool `db:"active"`
+
+	// ExportAsLabel tells if this metric is exported as a prometheus label (instead of value).
+	ExportAsLabel bool `db:"export_as_label"`
+
+	// RunningIfaceOnly tells to retrieve this metric only for running ifaces (for indexed metrics).
+	RunningIfaceOnly bool `db:"running_if_only"`
+
+	// IndexPattern is the regex with subexpression used to extract index from tabular Oids.
+	IndexPattern string `json:",omitempty" db:"index_pattern"`
+
+	// IndexRegex is the compiled IndexPattern regexp.
+	IndexRegex *regexp.Regexp `json:"-" db:"-"`
+}
+
+// UnmarshalJSON unserializes a Metric. Checks specifically if the index pattern
+// is valid and contains at least one sub-expression.
+func (metric *Metric) UnmarshalJSON(data []byte) error {
+	type M Metric
+	var metr M
+
+	if err := json.Unmarshal(data, &metr); err != nil {
+		return err
+	}
+	if metr.IndexPattern != "" {
+		escaped := strings.Replace(metr.IndexPattern, `.`, `\.`, -1)
+		metr.IndexPattern = strings.Replace(escaped, `\\.`, `\.`, -1)
+		var err error
+		if metr.IndexRegex, err = regexp.Compile(metr.IndexPattern); err != nil {
+			return fmt.Errorf("invalid index pattern: %v", err)
+		}
+		if metr.IndexRegex.NumSubexp() != 1 {
+			return fmt.Errorf("index_pattern must `%s` contain exactly one parenthesized subexpression", metr.IndexPattern)
+		}
+	}
+	*metric = Metric(metr)
+	return nil
+}
+
+// Names returns the names of the metric list in an array.
+func Names(metrics []Metric) []string {
+	res := make([]string, len(metrics))
+	for i, m := range metrics {
+		res[i] = m.Name
+	}
+	return res
+}
+
+// GroupByOid returns a list of an array of metrics grouped by OID.
+func GroupByOid(metrics []Metric) [][]Metric {
+	var res [][]Metric
+
+	grouped := make(map[OID][]Metric)
+	for _, m := range metrics {
+		// group by oid
+		grouped[m.Oid] = append(grouped[m.Oid], m)
+	}
+	for _, m := range metrics {
+		// keep same oid order in output
+		if _, ok := grouped[m.Oid]; ok {
+			res = append(res, grouped[m.Oid])
+			delete(grouped, m.Oid)
+		}
+	}
+	return res
+}

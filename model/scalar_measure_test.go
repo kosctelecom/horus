@@ -1,0 +1,52 @@
+package model
+
+import (
+	"encoding/json"
+	"reflect"
+	"testing"
+)
+
+func TestScalarMeasure(t *testing.T) {
+	tests := []struct {
+		in    string
+		out   ScalarMeasure
+		valid bool
+	}{
+		{
+			`{
+			"Name": "sysUsage",
+			"PollingFrequency": 300,
+			"Metrics": [
+				{"Name":"sysName", "Oid":".1.3.6.1.2.1.1.5.0", "Active":true}
+			]
+		}`,
+			ScalarMeasure{
+				Name:             "sysUsage",
+				PollingFrequency: 300,
+				Metrics: []Metric{
+					Metric{
+						Name:   "sysName",
+						Oid:    ".1.3.6.1.2.1.1.5.0",
+						Active: true,
+					},
+				},
+			},
+			true,
+		},
+	}
+
+	for i, tt := range tests {
+		var sm ScalarMeasure
+		err := json.Unmarshal([]byte(tt.in), &sm)
+		valid := err == nil
+		if !valid && testing.Verbose() {
+			t.Logf("ScalarMeasure#%d: unmarshal: %v", i, err)
+		}
+		if valid != tt.valid {
+			t.Errorf("ScalarMeasure#%d: expected validity: %v, got %v", i, tt.valid, valid)
+		}
+		if valid && !reflect.DeepEqual(sm, tt.out) {
+			t.Errorf("ScalarMeasure#%d: expected:\n%+v\ngot:\n%+v\n", i, tt.out, sm)
+		}
+	}
+}
