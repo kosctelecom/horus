@@ -45,7 +45,7 @@ type PromCollector struct {
 	scrapeCount    int
 	scrapeDuration time.Duration
 	promSamples    chan *PromSample
-	mu             sync.Mutex
+	sync.Mutex
 }
 
 var (
@@ -145,12 +145,12 @@ func (c *PromCollector) processSamples() {
 		select {
 		case s := <-c.promSamples:
 			id := computeKey(*s)
-			c.mu.Lock()
+			c.Lock()
 			c.Samples[id] = s
-			c.mu.Unlock()
+			c.Unlock()
 		case <-sweepTick:
 			minStamp := time.Now().Add(-c.MaxResultAge)
-			c.mu.Lock()
+			c.Lock()
 			var outdatedCount int
 			for id, res := range c.Samples {
 				if res.Stamp.Before(minStamp) {
@@ -162,7 +162,7 @@ func (c *PromCollector) processSamples() {
 				// recreate map to solve go mem leak issue (https://github.com/golang/go/issues/20135)
 				c.Samples = make(map[uint64]*PromSample)
 			}
-			c.mu.Unlock()
+			c.Unlock()
 			log.Debugf("%d prom samples after cleanup, %d outdated samples deleted", len(c.Samples), outdatedCount)
 		}
 	}
@@ -177,12 +177,12 @@ func (c *PromCollector) Describe(ch chan<- *prometheus.Desc) {
 func (c *PromCollector) Collect(ch chan<- prometheus.Metric) {
 	samples := make([]*PromSample, 0, len(c.Samples))
 	start := time.Now()
-	c.mu.Lock()
+	c.Lock()
 	for _, s := range c.Samples {
 		// make current samples copy first
 		samples = append(samples, s)
 	}
-	c.mu.Unlock()
+	c.Unlock()
 
 	for _, sample := range samples {
 		id := sample.Labels["host"]
