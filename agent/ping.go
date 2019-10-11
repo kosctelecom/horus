@@ -51,8 +51,8 @@ type PingMeasure struct {
 	Stamp time.Time
 }
 
-// FpingExec is the default fping binary location
-const FpingExec = "/usr/bin/fping"
+// DefaultFpingExec is the default fping binary location
+const DefaultFpingExec = "/usr/bin/fping"
 
 var (
 	// MaxPingProcs is the simultaneous fping process limit for this agent
@@ -63,6 +63,9 @@ var (
 
 	// pingQ is the ping jobs queue
 	pingQ pingQueue
+
+	// FpingExec is the fping binary path
+	FpingExec string
 )
 
 // AddPingRequest adds a new ping request to the queue.
