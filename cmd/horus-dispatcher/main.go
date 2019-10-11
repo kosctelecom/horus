@@ -41,7 +41,7 @@ var (
 	dbSnmpQueryFreq = getopt.IntLong("db-snmp-freq", 'q', 30, "db query frequency for available polling jobs", "seconds")
 	dbPingQueryFreq = getopt.IntLong("db-ping-freq", 'g', 10, "db query frequency for available ping jobs (0 to disable ping)", "seconds")
 	pingBatchCount  = getopt.IntLong("ping-batch-count", 0, 100, "number of hosts per fping process")
-	maxReqKeepTime  = getopt.IntLong("requests-retention-period", 'r', 3, "how long to keep entries in requests table (0 to disable)", "days")
+	dbPollErrRP     = getopt.IntLong("poll-error-retention-period", 'r', 3, "how long to keep poll errors in reports table (0 is forever)", "days")
 	logDir          = getopt.StringLong("log", 0, "", "directory for log files. If empty, all log goes to stderr", "dir")
 	maxLoadDelta    = dispatcher.MaxLoadDelta
 )
@@ -151,13 +151,13 @@ func main() {
 		}()
 	}
 
-	if *maxReqKeepTime > 0 {
-		log.Debug("starting requests flusher goroutine")
+	if *dbPollErrRP > 0 {
+		log.Debug("starting reports flusher goroutine")
 		go func() {
 			flushTick := time.NewTicker(6 * time.Hour)
 			defer flushTick.Stop()
 			for range flushTick.C {
-				dispatcher.FlushRequests(*maxReqKeepTime)
+				dispatcher.FlushReports(*dbPollErrRP)
 			}
 		}()
 	}
