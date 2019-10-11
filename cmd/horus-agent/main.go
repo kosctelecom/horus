@@ -60,6 +60,7 @@ var (
 	// fping conf
 	pingPacketCount = getopt.IntLong("fping-packet-count", 0, 15, "number of ping requests sent to each host")
 	maxPingProcs    = getopt.IntLong("fping-max-procs", 0, 5, "max number of simultaneous fping processes")
+	fpingExec       = getopt.StringLong("fping-path", 0, agent.DefaultFpingExec, "specify the location of the fping program")
 )
 
 func main() {
@@ -94,6 +95,7 @@ func main() {
 	}
 
 	if *maxPingProcs > 0 {
+		agent.FpingExec = *fpingExec
 		if _, err := os.Stat(agent.FpingExec); os.IsNotExist(err) {
 			glog.Exitf("fping binary not found at %s", agent.FpingExec)
 		}
