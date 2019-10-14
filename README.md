@@ -46,7 +46,7 @@ The Horus project compilation results in 3 binaries located in the cmd/bin direc
 The detailled usage of each program is available in the [doc/](./doc/) folder.
 
 
-## Database schema
+## Database creation
 
 We need first to create a postgres user and database. Under a psql admin console run:
 
@@ -63,6 +63,11 @@ $ sudo -u postgres psql -d horus < horus.sql
 ```
 
 See [doc/database.md](./doc/database.md) for detailled description of each table.
+
+
+## Prometheus config
+
+TODO
 
 
 ## Contributing
