@@ -29,8 +29,8 @@ with the polling duration and error if any. Ping results (min, max, avg, loss) a
 
 The result posted to Kafka is a big json document containing the aggregated poll results for each device. You can use **horus-query(1)** to get the same data on stdout.
 
-The Prometheus metrics are named using the `<measure name>_<metric name>` pattern, for example: sysInfo\_sysUpTime. The `instance` label of all metrics is explicitely set
-to the device's db id.
+The Prometheus metrics are named using the `<measure name>_<metric name>` pattern, for example: sysInfo\_sysUpTime and they have the following default labels: id, host,
+vendor, model and category of the polled device.
 
 Options
 =======
