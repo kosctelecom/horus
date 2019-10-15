@@ -48,7 +48,7 @@ The detailled usage of each program is available in the [doc/](./doc/) folder.
 
 ## Database creation
 
-We need first to create a postgres user and database. Under a psql admin console run:
+We need first to create a postgres user and database. On the psql admin console, run:
 
 ```
 postgres=# CREATE ROLE horus WITH LOGIN ENCRYPTED PASSWORD 'secret';
@@ -67,8 +67,46 @@ See [doc/database.md](./doc/database.md) for detailled description of each table
 
 ## Prometheus config
 
-TODO
+There are 3 scrape endpoints available to Prometheus:
 
+- `/metrics` for agent's internal metrics ( ongoing polls count, memory usage...)
+- `/snmpmetrics` for snmp metrics
+- `/pingmetrics` for ping metrics
+
+Here is an example scrape config from `prometheus.yml`:
+
+```
+scrape_configs:
+  # agent metrics (mem usage, ongoing count, etc.)
+  - job_name: 'agent'
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    metrics_path: /metrics
+    static_configs:
+    - targets: ['localhost:8001']
+
+  # snmp metrics
+  - job_name: 'snmp'
+    scrape_interval: 5m
+    scrape_timeout: 2m
+    metrics_path: /snmpmetrics
+    static_configs:
+    - targets: ['localhost:8001']
+    metric_relabel_configs:
+    - source_labels: [id]
+      target_label: instance
+
+  # ping metrics
+  - job_name: 'ping'
+    scrape_interval: 1m
+    scrape_timeout: 15s
+    metrics_path: /pingmetrics
+    static_configs:
+    - targets: ['localhost:8001']
+    metric_relabel_configs:
+    - source_labels: [id]
+      target_label: instance
+```
 
 ## Contributing
 
@@ -77,4 +115,4 @@ Bugs reports and Pull Requests are welcome!
 
 ## License
 
-TODO
+Apache License 2.0, see [LICENSE](./LICENSE).
