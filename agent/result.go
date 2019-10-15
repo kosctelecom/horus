@@ -13,7 +13,7 @@ import (
 	"github.com/vma/gosnmp"
 )
 
-// Result represents a single snmp poll result
+// Result represents a single snmp result
 type Result struct {
 	// Oid is the metric OID as returned by the device.
 	Oid string `json:"oid"`
@@ -104,6 +104,7 @@ type PollResult struct {
 // MakePollResult builds a PollResult from an SnmpRequest.
 func MakePollResult(req SnmpRequest) PollResult {
 	tags := make(map[string]string)
+	tags["id"] = strconv.Itoa(req.Device.ID)
 	tags["host"] = req.Device.Hostname
 	tags["vendor"] = req.Device.Vendor
 	tags["model"] = req.Device.Model
