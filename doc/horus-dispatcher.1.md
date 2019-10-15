@@ -16,13 +16,17 @@ DESCRIPTION
 ===========
 
 The dispatcher queries periodically the `devices` table for devices whose `last_polled_at` value is past its `polling_frequency` and whose `is_polling` flag is not set. Then
-it retrieves the snmp metrics for each resulting device and builds a json that is sent sequentially over http to all available agents until it is accepted by an agent. If no
-agent accepts the job, it is discarded. Otherwise, the device's `is_polling` flag is set and `last_polled_at` is set to current time.
+it retrieves the snmp metrics for each resulting device and builds a json that is sent sequentially over http to all available agents until accepted (the agent replies with a code 202).
+If no agent accepts the job, it is discarded (it will be resent on the next round). Otherwise, the device's `is_polling` flag is set and `last_polled_at` is set to current time.
 
 Upon completion of the polling requests, the agent sends a report to the dispatcher. If there was a polling error, it is saved to the reports table for subsequent inspection.
 
+Ping requests are dispatched in the same way except there is no report and the metrics are saved to Prometheus only.
+
+The in-memory agent list is kept up to date from db and each agent is checked regurarly to get its status and load. Dead agents are discarded until they are back again.
+
 Options
--------
+=======
 
 -c, --dsn
 
