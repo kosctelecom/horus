@@ -45,7 +45,7 @@ CREATE TABLE devices (
     to_influx boolean DEFAULT false,
     to_kafka boolean DEFAULT true,
     to_prometheus boolean DEFAULT true,
-    tags character varying DEFAULT '',
+    tags json DEFAULT '{}'::json,
     snmpv3_security_level character varying DEFAULT '',
     snmpv3_auth_user character varying DEFAULT '',
     snmpv3_auth_passwd character varying DEFAULT '',
