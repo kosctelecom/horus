@@ -17,7 +17,7 @@ Horus' main distinguishing features, compared to other snmp collectors are:
 
 ## Architecture overview
 
-[](./doc/horus-architecture.svg)
+![](./doc/horus-architecture.svg)
 
 
 ## Install
