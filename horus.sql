@@ -7,10 +7,10 @@ CREATE TYPE snmp_version_t AS ENUM (
 CREATE TABLE agents (
     id serial PRIMARY KEY,
     ip_address inet NOT NULL,
-    port integer DEFAULT 8000,
-    active boolean DEFAULT false,
-    is_alive boolean DEFAULT false,
-    load real DEFAULT 0,
+    port integer NOT NULL DEFAULT 8000,
+    active boolean NOT NULL DEFAULT false,
+    is_alive boolean NOT NULL DEFAULT false,
+    load real NOT NULL DEFAULT 0,
     last_checked_at timestamp with time zone,
     UNIQUE (ip_address, port)
 );
@@ -20,7 +20,7 @@ CREATE TABLE profiles (
     category character varying NOT NULL,
     vendor character varying NOT NULL,
     model character varying NOT NULL,
-    honor_running_only boolean DEFAULT false,
+    honor_running_only boolean NOT NULL DEFAULT false,
     UNIQUE(category, vendor, model)
 );
 
@@ -29,42 +29,42 @@ COMMENT ON COLUMN profiles.honor_running_only IS 'do we honor the metric''s runn
 CREATE TABLE devices (
     id serial PRIMARY KEY,
     profile_id integer NOT NULL REFERENCES profiles(id),
-    active boolean DEFAULT true,
+    active boolean NOT NULL DEFAULT true,
     hostname character varying NOT NULL,
     ip_address character varying NOT NULL UNIQUE,
-    snmp_port integer DEFAULT 161,
-    snmp_version character varying DEFAULT '2c',
+    snmp_port integer NOT NULL DEFAULT 161,
+    snmp_version character varying NOT NULL DEFAULT '2c',
     snmp_community character varying NOT NULL,
-    polling_frequency integer DEFAULT 300,
-    is_polling boolean DEFAULT false NOT NULL,
+    polling_frequency integer NOT NULL DEFAULT 300,
+    is_polling boolean NOT NULL DEFAULT false,
     last_polled_at timestamp with time zone,
-    snmp_timeout integer DEFAULT 10,
-    snmp_retries integer DEFAULT 1,
-    snmp_disable_bulk boolean DEFAULT false NOT NULL,
-    snmp_connection_count integer DEFAULT 1,
-    to_influx boolean DEFAULT false,
-    to_kafka boolean DEFAULT true,
-    to_prometheus boolean DEFAULT true,
-    tags json DEFAULT '{}'::json,
-    snmpv3_security_level character varying DEFAULT '',
-    snmpv3_auth_user character varying DEFAULT '',
-    snmpv3_auth_passwd character varying DEFAULT '',
-    snmpv3_auth_proto character varying DEFAULT '',
-    snmpv3_privacy_passwd character varying DEFAULT '',
-    snmpv3_privacy_proto character varying DEFAULT '',
-    ping_frequency integer DEFAULT 0,
+    snmp_timeout integer NOT NULL DEFAULT 10,
+    snmp_retries integer NOT NULL DEFAULT 1,
+    snmp_disable_bulk boolean NOT NULL DEFAULT false,
+    snmp_connection_count integer NOT NULL DEFAULT 1,
+    to_influx boolean NOT NULL DEFAULT false,
+    to_kafka boolean NOT NULL DEFAULT true,
+    to_prometheus boolean NOT NULL DEFAULT true,
+    tags json NOT NULL DEFAULT '{}'::json,
+    snmpv3_security_level character varying NOT NULL DEFAULT '',
+    snmpv3_auth_user character varying NOT NULL DEFAULT '',
+    snmpv3_auth_passwd character varying NOT NULL DEFAULT '',
+    snmpv3_auth_proto character varying NOT NULL DEFAULT '',
+    snmpv3_privacy_passwd character varying NOT NULL DEFAULT '',
+    snmpv3_privacy_proto character varying NOT NULL DEFAULT '',
+    ping_frequency integer NOT NULL DEFAULT 0,
     last_pinged_at timestamp with time zone
 );
 
 CREATE TABLE metrics (
     id serial PRIMARY KEY,
-    active boolean DEFAULT true,
+    active boolean NOT NULL DEFAULT true,
     name character varying NOT NULL,
     oid character varying NOT NULL,
-    index_pattern character varying DEFAULT '',
+    index_pattern character varying NOT NULL DEFAULT '',
     description text NOT NULL,
-    export_as_label boolean DEFAULT false,
-    running_if_only boolean DEFAULT false,
+    export_as_label boolean NOT NULL DEFAULT false,
+    running_if_only boolean NOT NULL DEFAULT false,
     UNIQUE (oid, index_pattern)
 );
 
@@ -77,12 +77,12 @@ CREATE TABLE measures (
     id serial PRIMARY KEY,
     name character varying NOT NULL,
     description text NOT NULL,
-    polling_frequency integer DEFAULT 0,
-    is_indexed boolean DEFAULT false,
-    index_metric_id integer NOT NULL REFERENCES metrics(id),
-    filter_metric_id integer NOT NULL REFERENCES metrics(id),
-    filter_pattern character varying DEFAULT '',
-    invert_filter_match boolean DEFAULT false
+    polling_frequency integer NOT NULL DEFAULT 0,
+    is_indexed boolean NOT NULL DEFAULT false,
+    index_metric_id integer REFERENCES metrics(id),
+    filter_metric_id integer REFERENCES metrics(id),
+    filter_pattern character varying NOT NULL DEFAULT '',
+    invert_filter_match boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE measure_metrics (
@@ -116,7 +116,7 @@ CREATE TABLE reports (
     post_status character varying NOT NULL,
     report_received_at timestamp with time zone,
     snmp_duration_ms integer,
-    snmp_error character varying DEFAULT ''
+    snmp_error character varying NOT NULL DEFAULT ''
 );
 
 ALTER TYPE snmp_version_t OWNER TO horus;
