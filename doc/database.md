@@ -82,3 +82,13 @@ This table defines the N:N relation between measures and metrics.
 ## profile\_measures table
 
 This table defines the N:N relation between profiles and measures.
+
+
+Example
+=======
+
+See [metrics-sample.sql](../metrics-sample.sql) for a simple metrics definition. It defines:
+
+- a profile for a generic switch
+- a scalar measure for device info (name, uptime, etc.) and 3 indexed measures for each interface status, inbound and outbound counters
+- the corresponding snmp metrics and relations
