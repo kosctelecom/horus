@@ -14,6 +14,8 @@ Horus' main distinguishing features compared to other snmp collectors are:
 - related snmp metrics can be grouped as measures
 - profiles can be defined to group a list of measures specific to a type of device
 
+Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 10 minutes, with up to 10K metrics per device.
+
 
 ## Architecture overview
 
@@ -39,11 +41,9 @@ $ ./cmd/bin/horus-agent -h
 
 The Horus project compilation results in 3 binaries located in the cmd/bin directory:
 
-- `horus-dispatcher`: the dispatcher that retrieves available jobs from db and send them to agents
-- `horus-agent`: the agent that performs the snmp or ping requests and sends the result to kafka, Prometheus and influxDB
-- `horus-query`: polls a given device id from db and prints the results as a json on stdout
-
-The detailed usage of each binary is available in the [doc/](./doc/) folder.
+- [horus-dispatcher(1)](./doc/horus-dispatcher.1.md): the dispatcher that retrieves available jobs from db and send them to agents
+- [horus-agent(1)](./doc/horus-agent.1.md): the agent that performs the snmp or ping requests and sends the result to kafka, Prometheus and influxDB
+- [horus-query(1)](./doc/horus-query.1.md): test command that polls a device and prints the json result to stdout
 
 
 ## Database creation
