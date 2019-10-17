@@ -2,7 +2,7 @@
 
 Horus is a distributed tool that collects snmp and ping data from various network equipments and exports them to Kafka, Prometheus or InfluxDB.
 
-Horus' main distinguishing features, compared to other snmp collectors are:
+Horus' main distinguishing features compared to other snmp collectors are:
 
 - a distributed architecture composed of a dispatcher and multiple distributed agents
 - supports pushing results to Kafka, Prometheus and InfluxDB in parallel
@@ -24,7 +24,7 @@ Horus' main distinguishing features, compared to other snmp collectors are:
 
 ### Building from source
 
-To build Horus from source, you will need a working Go environment (version 1.13 or later). You can clone the repository and build it with the Makefile:
+To build Horus from source, you need a working Go environment (version 1.13 or later). You can clone the repository and build it with the Makefile:
 
 ```
 $ git clone https://github.com/kosctelecom/horus-core.git
@@ -40,15 +40,15 @@ $ ./cmd/bin/horus-agent -h
 The Horus project compilation results in 3 binaries located in the cmd/bin directory:
 
 - `horus-dispatcher`: the dispatcher that retrieves available jobs from db and send them to agents
-- `horus-agent` : the agent that performs the snmp or ping requests and sends the result to kafka, Prometheus and influxDB
-- `horus-query` : polls a given device id from db and prints the results as a json on stdout
+- `horus-agent`: the agent that performs the snmp or ping requests and sends the result to kafka, Prometheus and influxDB
+- `horus-query`: polls a given device id from db and prints the results as a json on stdout
 
-The detailled usage of each program is available in the [doc/](./doc/) folder.
+The detailed usage of each binary is available in the [doc/](./doc/) folder.
 
 
 ## Database creation
 
-We need first to create a postgres user and database. On the psql admin console, run:
+We first need to create a postgres user and database. In the psql admin console, run:
 
 ```
 postgres=# CREATE ROLE horus WITH LOGIN ENCRYPTED PASSWORD 'secret';
@@ -62,14 +62,14 @@ Then we can import the table schema:
 $ sudo -u postgres psql -d horus < horus.sql
 ```
 
-See [doc/database.md](./doc/database.md) for detailled description of each table.
+See [doc/database.md](./doc/database.md) for a detailed description of each table.
 
 
 ## Prometheus config
 
 There are 3 scrape endpoints available to Prometheus:
 
-- `/metrics` for agent's internal metrics ( ongoing polls count, memory usage...)
+- `/metrics` for agent's internal metrics (ongoing polls count, memory usage...)
 - `/snmpmetrics` for snmp metrics
 - `/pingmetrics` for ping metrics
 
