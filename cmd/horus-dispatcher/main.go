@@ -64,6 +64,12 @@ func main() {
 	getopt.FlagLong(&maxLoadDelta, "max-load-delta", 0, "max load delta allowed between agents before `unsticking` a device from its agent")
 	getopt.SetParameters("")
 	getopt.Parse()
+
+	if len(os.Args) == 1 {
+		getopt.PrintUsage(os.Stderr)
+		os.Exit(1)
+	}
+
 	glog.WithConf(glog.Conf{Verbosity: *debug, LogDir: *logDir, PrintLocation: *debug > 0})
 
 	if *showVersion {

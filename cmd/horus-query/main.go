@@ -57,6 +57,12 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
 	getopt.SetParameters("")
 	getopt.Parse()
+
+	if len(os.Args) == 1 {
+		getopt.PrintUsage(os.Stderr)
+		os.Exit(1)
+	}
+
 	glog.WithConf(glog.Conf{Verbosity: *debug})
 
 	if *showVersion {

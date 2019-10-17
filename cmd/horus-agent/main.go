@@ -80,6 +80,12 @@ var (
 func main() {
 	getopt.SetParameters("")
 	getopt.Parse()
+
+	if len(os.Args) == 1 {
+		getopt.PrintUsage(os.Stderr)
+		os.Exit(1)
+	}
+
 	glog.WithConf(glog.Conf{Verbosity: *debug, LogDir: *logDir, PrintLocation: *debug > 0})
 
 	if *showVersion {
