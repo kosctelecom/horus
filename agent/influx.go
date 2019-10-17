@@ -2,7 +2,7 @@ package agent
 
 import (
 	"fmt"
-	"horus-core/log"
+	"horus/log"
 	"os"
 	"strings"
 	"time"

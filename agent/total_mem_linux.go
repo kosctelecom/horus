@@ -3,7 +3,7 @@
 package agent
 
 import (
-	"horus-core/log"
+	"horus/log"
 	"syscall"
 )
 

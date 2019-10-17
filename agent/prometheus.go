@@ -3,7 +3,7 @@ package agent
 import (
 	"fmt"
 	"hash/fnv"
-	"horus-core/log"
+	"horus/log"
 	"net/http"
 	"sort"
 	"sync"

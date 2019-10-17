@@ -1,4 +1,4 @@
-module horus-core
+module horus
 
 go 1.13
 

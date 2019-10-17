@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	"horus-core/log"
+	"horus/log"
 	"strings"
 	"time"
 )

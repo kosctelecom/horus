@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"horus-core/log"
+	"horus/log"
 	"regexp"
 )
 

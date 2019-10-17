@@ -1,7 +1,7 @@
 package model
 
 import (
-	"horus-core/log"
+	"horus/log"
 )
 
 // ScalarMeasure is a scalar measure with its list

@@ -2,7 +2,7 @@ package dispatcher
 
 import (
 	"database/sql"
-	"horus-core/log"
+	"horus/log"
 	"net/http"
 	"strconv"
 	"time"

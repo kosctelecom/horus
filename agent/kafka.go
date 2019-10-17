@@ -3,7 +3,7 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
-	"horus-core/log"
+	"horus/log"
 	"os"
 	"strings"
 	"time"

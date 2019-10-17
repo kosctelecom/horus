@@ -27,8 +27,8 @@ Horus' main distinguishing features compared to other snmp collectors are:
 To build Horus from source, you need a working Go environment (version 1.13 or later). You can clone the repository and build it with the Makefile:
 
 ```
-$ git clone https://github.com/kosctelecom/horus-core.git
-$ cd horus-core
+$ git clone https://github.com/kosctelecom/horus.git
+$ cd horus
 $ make all
 $ ./cmd/bin/horus-dispatcher -h
 $ ./cmd/bin/horus-agent -h

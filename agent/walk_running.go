@@ -2,7 +2,7 @@ package agent
 
 import (
 	"context"
-	"horus-core/model"
+	"horus/model"
 )
 
 // maxGetOids is the max number of oids to query in a single snmp GET.

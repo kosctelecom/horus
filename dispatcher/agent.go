@@ -2,8 +2,8 @@ package dispatcher
 
 import (
 	"fmt"
-	"horus-core/log"
-	"horus-core/model"
+	"horus/log"
+	"horus/model"
 	"io/ioutil"
 	"net/http"
 	"sort"

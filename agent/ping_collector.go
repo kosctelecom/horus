@@ -1,6 +1,6 @@
 package agent
 
-import "horus-core/log"
+import "horus/log"
 
 // PingCollector is a prometheus collector
 type PingCollector struct {

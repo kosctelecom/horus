@@ -3,7 +3,7 @@ package dispatcher
 import (
 	"database/sql"
 	"fmt"
-	"horus-core/log"
+	"horus/log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"

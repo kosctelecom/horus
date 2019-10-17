@@ -2,8 +2,8 @@ package dispatcher
 
 import (
 	"context"
-	"horus-core/log"
-	"horus-core/model"
+	"horus/log"
+	"horus/model"
 	"net/http"
 	"strconv"
 	"sync"

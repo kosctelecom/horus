@@ -3,8 +3,8 @@ package agent
 import (
 	"context"
 	"fmt"
-	"horus-core/log"
-	"horus-core/model"
+	"horus/log"
+	"horus/model"
 	"runtime"
 	"sync"
 	"sync/atomic"

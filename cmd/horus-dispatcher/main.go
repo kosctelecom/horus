@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"horus-core/dispatcher"
-	"horus-core/log"
-	"horus-core/model"
+	"horus/dispatcher"
+	"horus/log"
+	"horus/model"
 	"net/http"
 	"os"
 	"os/signal"

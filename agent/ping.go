@@ -3,8 +3,8 @@ package agent
 import (
 	"bytes"
 	"context"
-	"horus-core/log"
-	"horus-core/model"
+	"horus/log"
+	"horus/model"
 	"os/exec"
 	"sort"
 	"strconv"

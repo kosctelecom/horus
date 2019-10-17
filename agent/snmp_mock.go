@@ -3,7 +3,7 @@ package agent
 import (
 	"context"
 	"errors"
-	"horus-core/log"
+	"horus/log"
 	"math/rand"
 	"sync/atomic"
 	"time"

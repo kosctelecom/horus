@@ -3,8 +3,8 @@ package dispatcher
 import (
 	"encoding/json"
 	"fmt"
-	"horus-core/log"
-	"horus-core/model"
+	"horus/log"
+	"horus/model"
 	"io/ioutil"
 	"net/http"
 	"strconv"
