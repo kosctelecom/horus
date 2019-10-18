@@ -26,7 +26,7 @@ Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) 
 
 ### Building from source
 
-To build Horus from source, you need a working Go environment (version 1.13 or later). You can clone the repository and build it with the Makefile:
+To build Horus from source, you need Go compiler (version 1.13 or later). You can clone the repository and build it with the Makefile:
 
 ```
 $ cd $HOME/go/src # or $GOPATH/src
