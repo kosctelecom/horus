@@ -8,13 +8,13 @@ Horus' main distinguishing features compared to other snmp collectors are:
 - supports pushing results to Kafka, Prometheus and InfluxDB in parallel
 - devices, metrics and agents are defined on a postgres db and can be updated in real time
 - the dispatcher is the only one connected the db
-- can make ping (via fping) and snmp queries
+- can make ping statistics a la smokeping (with fping) in addition to snmp polling
 - the agents receive their job requests from the controller over http and post their results directly to Kafka and the TSDB
 - composite OID indexes are supported: index position is defined with a regex
 - related snmp metrics can be grouped as measures
 - profiles can be defined to group a list of measures specific to a type of device
 
-Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 10 minutes, with up to 10K metrics per device.
+Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 5 minutes, with up to 10K metrics per device.
 
 
 ## Architecture overview
@@ -64,6 +64,12 @@ $ sudo -u postgres psql -d horus < horus.sql
 ```
 
 See [doc/database.md](./doc/database.md) for a detailed description of each table.
+
+We can also import some sample metrics:
+
+```
+$ sudo -u postgres psql -d horus < metrics-sample.sql
+```
 
 
 ## Prometheus config
