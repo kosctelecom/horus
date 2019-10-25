@@ -70,9 +70,6 @@ func (dev *Device) UnmarshalJSON(data []byte) error {
 	if d.Hostname == "" {
 		return errors.New("invalid device: hostname cannot be empty")
 	}
-	if d.PollingFrequency == 0 {
-		return errors.New("invalid device: polling_frequency cannot be zero or empty")
-	}
 	if !d.ToProm && !d.ToInflux && !d.ToKafka {
 		return errors.New("invalid device: either to_kafka or to_influx or to_prometheus must be set")
 	}
