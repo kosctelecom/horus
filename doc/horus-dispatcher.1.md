@@ -47,6 +47,7 @@ Options
 -i, --ip
 
 :   Specifies the web server local listen IP for devices API and end job reports from agents. Defaults to the system's first ip address.
+    Must be non-zero as it is used for the report url given to the agents.
 
 -k, --agent-keepalive-freq
 

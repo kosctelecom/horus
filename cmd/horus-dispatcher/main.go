@@ -47,7 +47,7 @@ var (
 
 	debug           = getopt.IntLong("debug", 'd', 0, "debug level")
 	showVersion     = getopt.BoolLong("version", 'v', "Print version and build date")
-	localIP         = getopt.StringLong("ip", 'i', dispatcher.LocalIP, "API & report web server local listen IP", "address")
+	localIP         = getopt.StringLong("ip", 'i', dispatcher.LocalIP, "API & report web server local listen IP, must be non-zero", "address")
 	port            = getopt.IntLong("port", 'p', dispatcher.Port, "API & report web server listen port", "port")
 	dsn             = getopt.StringLong("dsn", 'c', "", "postgres db DSN", "url")
 	unlockFreq      = getopt.IntLong("device-unlock-freq", 'u', 600, "device unlocker frequency", "seconds")

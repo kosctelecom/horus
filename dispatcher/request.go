@@ -166,7 +166,7 @@ func RequestWithLock(id int) (model.SnmpRequest, error) {
 }
 
 // updateLastPolledAt updates device and measure with last request time. For the measures,
-// a new entry is added to measure_poll_times tables iff the measure is non-zero.
+// a new entry is added to measure_poll_times tables if the measure's polling frequency is non-zero.
 func updateLastPolledAt(req model.SnmpRequest) {
 	sqlExec(req.UID, "setDevLastPolledAt", setDevLastPolledAt, req.Device.ID)
 	for _, scalar := range req.ScalarMeasures {
@@ -181,8 +181,7 @@ func updateLastPolledAt(req model.SnmpRequest) {
 	}
 }
 
-// SendRequest sends the given request to the given agent.
-// Returns the http status code, the agent's current load
+// SendRequest sends the given request to the given agent. Returns the http status code, the agent's current load
 // and an error if unsuccessful.
 func SendRequest(ctx context.Context, req model.SnmpRequest, agent Agent) (stCode int, load float64, err error) {
 	log.Debug3f("%s - marshaling request", req.UID)
