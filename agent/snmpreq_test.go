@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/vma/glog"
@@ -27,15 +28,15 @@ const Req = `{
 	"uid": "001",
 	"device": {
 		"id": 1001,
-		"hostname": "XXX",
+		"hostname": "SNMP_IP",
 		"polling_frequency": 300,
 		"category": "DSLAM",
 		"vendor": "HUAWEI",
 		"model": "MA5600T",
 		"to_kafka": true,
-		"ip_address": "XXX",
+		"ip_address": "SNMP_IP",
 		"snmp_version": "2c",
-		"snmp_community":"XXX",
+		"snmp_community":"SNMP_COMMUNITY",
 		"snmp_timeout": 10,
 		"snmp_connection_count": 1
 	},
@@ -67,8 +68,8 @@ const Req = `{
 }`
 
 var (
-	ipAddress = os.Getenv("SNMP_IP")
-	community = os.Getenv("SNMP_COMMUNITY")
+	snmpIPAddr    = os.Getenv("SNMP_IP")
+	snmpCommunity = os.Getenv("SNMP_COMMUNITY")
 )
 
 func init() {
@@ -76,11 +77,12 @@ func init() {
 }
 
 func TestDial(t *testing.T) {
-	if ipAddress == "" || community == "" {
+	if snmpIPAddr == "" || snmpCommunity == "" {
 		t.Skip("SNMP_IP or SNMP_COMMUNITY env vars not defined, skipping")
 	}
-	var req SnmpRequest
-	if err := json.Unmarshal([]byte(Req), &req); err != nil {
+	sreq := strings.ReplaceAll(strings.ReplaceAll(Req, "SNMP_IP", snmpIPAddr), "SNMP_COMMUNITY", snmpCommunity)
+	var req *SnmpRequest
+	if err := json.Unmarshal([]byte(sreq), &req); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
 	if err := req.Dial(context.Background()); err != nil {
@@ -96,16 +98,14 @@ func TestGet(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-	if ipAddress == "" || community == "" {
+	if snmpIPAddr == "" || snmpCommunity == "" {
 		t.Skip("SNMP_IP or SNMP_COMMUNITY env vars not defined, skipping")
 	}
+	sreq := strings.ReplaceAll(strings.ReplaceAll(Req, "SNMP_IP", snmpIPAddr), "SNMP_COMMUNITY", snmpCommunity)
 	var req SnmpRequest
-	if err := json.Unmarshal([]byte(Req), &req); err != nil {
+	if err := json.Unmarshal([]byte(sreq), &req); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	req.Device.IPAddress = ipAddress
-	req.Device.Hostname = ipAddress
-	req.Device.Community = community
 	if err := req.Dial(context.Background()); err != nil {
 		t.Fatalf("Dial: %v", err)
 	}
@@ -124,16 +124,14 @@ func TestWalkMetric(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-	if ipAddress == "" || community == "" {
+	if snmpIPAddr == "" || snmpCommunity == "" {
 		t.Skip("SNMP_IP or SNMP_COMMUNITY env vars not defined, skipping")
 	}
+	sreq := strings.ReplaceAll(strings.ReplaceAll(Req, "SNMP_IP", snmpIPAddr), "SNMP_COMMUNITY", snmpCommunity)
 	var req SnmpRequest
-	if err := json.Unmarshal([]byte(Req), &req); err != nil {
+	if err := json.Unmarshal([]byte(sreq), &req); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	req.Device.IPAddress = ipAddress
-	req.Device.Hostname = ipAddress
-	req.Device.Community = community
 	if err := req.Dial(context.Background()); err != nil {
 		t.Fatalf("Dial: %v", err)
 	}
@@ -153,16 +151,14 @@ func TestWalkIndexedMono(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-	if ipAddress == "" || community == "" {
+	if snmpIPAddr == "" || snmpCommunity == "" {
 		t.Skip("SNMP_IP or SNMP_COMMUNITY env vars not defined, skipping")
 	}
+	sreq := strings.ReplaceAll(strings.ReplaceAll(Req, "SNMP_IP", snmpIPAddr), "SNMP_COMMUNITY", snmpCommunity)
 	var req SnmpRequest
-	if err := json.Unmarshal([]byte(Req), &req); err != nil {
+	if err := json.Unmarshal([]byte(sreq), &req); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	req.Device.IPAddress = ipAddress
-	req.Device.Hostname = ipAddress
-	req.Device.Community = community
 	if err := req.Dial(context.Background()); err != nil {
 		t.Fatalf("Dial: %v", err)
 	}
@@ -180,16 +176,14 @@ func TestWalkIndexedMulti(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-	if ipAddress == "" || community == "" {
+	if snmpIPAddr == "" || snmpCommunity == "" {
 		t.Skip("SNMP_IP or SNMP_COMMUNITY env vars not defined, skipping")
 	}
+	sreq := strings.ReplaceAll(strings.ReplaceAll(Req, "SNMP_IP", snmpIPAddr), "SNMP_COMMUNITY", snmpCommunity)
 	var req SnmpRequest
-	if err := json.Unmarshal([]byte(Req), &req); err != nil {
+	if err := json.Unmarshal([]byte(sreq), &req); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	req.Device.IPAddress = ipAddress
-	req.Device.Hostname = ipAddress
-	req.Device.Community = community
 	req.Device.ConnectionCount = 2
 	if err := req.Dial(context.Background()); err != nil {
 		t.Fatalf("Dial: %v", err)
@@ -208,16 +202,14 @@ func TestWalkRunning(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-	if ipAddress == "" || community == "" {
+	if snmpIPAddr == "" || snmpCommunity == "" {
 		t.Skip("SNMP_IP or SNMP_COMMUNITY env vars not defined, skipping")
 	}
+	sreq := strings.ReplaceAll(strings.ReplaceAll(Req, "SNMP_IP", snmpIPAddr), "SNMP_COMMUNITY", snmpCommunity)
 	var req SnmpRequest
-	if err := json.Unmarshal([]byte(Req), &req); err != nil {
+	if err := json.Unmarshal([]byte(sreq), &req); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	req.Device.IPAddress = ipAddress
-	req.Device.Hostname = ipAddress
-	req.Device.Community = community
 	if err := req.Dial(context.Background()); err != nil {
 		t.Fatalf("Dial: %v", err)
 	}
