@@ -74,7 +74,10 @@ func (dev *Device) UnmarshalJSON(data []byte) error {
 		return errors.New("invalid device: either to_kafka or to_influx or to_prometheus must be set")
 	}
 	var t map[string]interface{}
-	if d.Tags != "" && json.Unmarshal([]byte(d.Tags), &t) != nil {
+	if d.Tags == "" {
+		d.Tags = "{}"
+	}
+	if json.Unmarshal([]byte(d.Tags), &t) != nil {
 		return errors.New("invalid device: tags must be a valid json map")
 	}
 	if err := json.Unmarshal(data, &d.Profile); err != nil {
