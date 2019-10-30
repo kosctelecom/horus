@@ -35,6 +35,7 @@ func TestRequest(t *testing.T) {
 					"id": 1500,
 					"hostname": "dsl1500.kosc.net",
 					"polling_frequency": 300,
+					"ping_frequency": 60,
 					"category": "c",
 					"vendor": "v",
 					"model": "m",
@@ -53,6 +54,8 @@ func TestRequest(t *testing.T) {
 					ID:               1500,
 					Hostname:         "dsl1500.kosc.net",
 					PollingFrequency: 300,
+					PingFrequency:    60,
+					Tags:             "{}",
 					ToKafka:          true,
 					SnmpParams: SnmpParams{
 						IPAddress:       "10.2.0.9",
@@ -88,6 +91,8 @@ func TestRequest(t *testing.T) {
 					"id": 1,
 					"hostname": "10.2.0.9",
 					"polling_frequency": 300,
+					"ping_frequency": 60,
+					"tags": "",
 					"to_kafka": true,
 					"category": "c1",
 					"vendor": "v1",
@@ -106,6 +111,8 @@ func TestRequest(t *testing.T) {
 					ID:               1,
 					Hostname:         "10.2.0.9",
 					PollingFrequency: 300,
+					PingFrequency:    60,
+					Tags:             "{}",
 					ToKafka:          true,
 					SnmpParams: SnmpParams{
 						IPAddress:       "10.2.0.9",
@@ -159,6 +166,8 @@ func TestRequest(t *testing.T) {
 					ID:               1492,
 					Hostname:         "1492.kosc.net",
 					PollingFrequency: 300,
+					PingFrequency:    0,
+					Tags:             "{}",
 					ToKafka:          true,
 					SnmpParams: SnmpParams{
 						IPAddress:       "10.2.0.92",
