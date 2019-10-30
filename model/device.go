@@ -33,6 +33,9 @@ type Device struct {
 	// PollingFrequency is the device's snmp polling frequency.
 	PollingFrequency int `db:"polling_frequency" json:"polling_frequency"`
 
+	// PingFrequency is the device's ping frequency
+	PingFrequency int `db:"ping_frequency" json:"ping_frequency"`
+
 	// Tags is the influx tags (and prometheus labels) added to
 	// each measurement of this device.
 	Tags string `db:"tags" json:"tags,omitempty"`
