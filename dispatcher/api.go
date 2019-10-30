@@ -53,7 +53,7 @@ func HandleDeviceList(w http.ResponseWriter, r *http.Request) {
 	}
 	if id := r.FormValue("id"); id != "" {
 		var dev model.Device
-		err := db.Get(&dev, `SELECT d.id,d.active,d.hostname,d.polling_frequency,d.tags,d.to_influx,d.to_kafka,d.to_prometheus,
+		err := db.Get(&dev, `SELECT d.id,d.active,d.hostname,d.polling_frequency,d.ping_frequency,d.tags,d.to_influx,d.to_kafka,d.to_prometheus,
                                     d.ip_address,d.snmp_port,d.snmp_version,d.snmp_community,d.snmp_timeout,d.snmp_retries,d.snmp_disable_bulk,d.snmp_connection_count,
                                     d.snmpv3_security_level,d.snmpv3_auth_user,d.snmpv3_auth_proto,d.snmpv3_auth_passwd,d.snmpv3_privacy_proto,d.snmpv3_privacy_passwd,
                                     p.category,p.vendor,p.model
@@ -75,7 +75,7 @@ func HandleDeviceList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var devs []model.Device
-	err := db.Select(&devs, `SELECT d.id,d.active,d.hostname,d.polling_frequency,d.tags,d.to_influx,d.to_kafka,d.to_prometheus,
+	err := db.Select(&devs, `SELECT d.id,d.active,d.hostname,d.polling_frequency,d.ping_frequency,d.tags,d.to_influx,d.to_kafka,d.to_prometheus,
                                     d.ip_address,d.snmp_port,d.snmp_version,d.snmp_community,d.snmp_timeout,d.snmp_retries,d.snmp_disable_bulk,d.snmp_connection_count,
                                     d.snmpv3_security_level,d.snmpv3_auth_user,d.snmpv3_auth_proto,d.snmpv3_auth_passwd,d.snmpv3_privacy_proto,d.snmpv3_privacy_passwd,
                                     p.category,p.vendor,p.model
@@ -134,10 +134,10 @@ func HandleDeviceCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = db.NamedExec(`INSERT INTO devices
-                                       (id,profile_id,active,hostname,polling_frequency,tags,to_influx,to_kafka,to_prometheus,
+                                       (id,profile_id,active,hostname,polling_frequency,ping_frequency,tags,to_influx,to_kafka,to_prometheus,
                                        ip_address,snmp_port,snmp_version,snmp_community,snmp_timeout,snmp_retries,snmp_disable_bulk,snmp_connection_count,
                                        snmpv3_security_level,snmpv3_auth_user,snmpv3_auth_proto,snmpv3_auth_passwd,snmpv3_privacy_proto,snmpv3_privacy_passwd)
-                                VALUES (:id,:profile_id,:active,:hostname,:polling_frequency,:tags,:to_influx,:to_kafka,:to_prometheus,
+                                VALUES (:id,:profile_id,:active,:hostname,:polling_frequency,:ping_frequency,:tags,:to_influx,:to_kafka,:to_prometheus,
                                        :ip_address,:snmp_port,:snmp_version,:snmp_community,:snmp_timeout,:snmp_retries,:snmp_disable_bulk,:snmp_connection_count,
                                        :snmpv3_security_level,:snmpv3_auth_user,:snmpv3_auth_proto,:snmpv3_auth_passwd,:snmpv3_privacy_proto,:snmpv3_privacy_passwd)`, dev)
 	if err != nil {
@@ -191,6 +191,7 @@ func HandleDeviceUpdate(w http.ResponseWriter, r *http.Request) {
                                   active = :active,
                                   hostname = :hostname,
                                   polling_frequency = :polling_frequency,
+                                  ping_frequency = :ping_frequency,
                                   tags = :tags,
                                   to_influx = :to_influx,
                                   to_kafka = :to_kafka,
@@ -247,10 +248,10 @@ func HandleDeviceUpsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = db.NamedExec(`INSERT INTO devices
-                                       (id,profile_id,active,hostname,polling_frequency,tags,to_influx,to_kafka,to_prometheus,
+                                       (id,profile_id,active,hostname,polling_frequency,ping_frequency,tags,to_influx,to_kafka,to_prometheus,
                                        ip_address,snmp_port,snmp_version,snmp_community,snmp_timeout,snmp_retries,snmp_disable_bulk,snmp_connection_count,
                                        snmpv3_security_level,snmpv3_auth_user,snmpv3_auth_proto,snmpv3_auth_passwd,snmpv3_privacy_proto,snmpv3_privacy_passwd)
-                                VALUES (:id,:profile_id,:active,:hostname,:polling_frequency,:tags,:to_influx,:to_kafka,:to_prometheus,
+                                VALUES (:id,:profile_id,:active,:hostname,:polling_frequency,:ping_frequency,:tags,:to_influx,:to_kafka,:to_prometheus,
                                        :ip_address,:snmp_port,:snmp_version,:snmp_community,:snmp_timeout,:snmp_retries,:snmp_disable_bulk,:snmp_connection_count,
                                        :snmpv3_security_level,:snmpv3_auth_user,:snmpv3_auth_proto,:snmpv3_auth_passwd,:snmpv3_privacy_proto,:snmpv3_privacy_passwd)
              ON CONFLICT(id) DO UPDATE
@@ -258,6 +259,7 @@ func HandleDeviceUpsert(w http.ResponseWriter, r *http.Request) {
                                        active = :active,
                                        hostname = :hostname,
                                        polling_frequency = :polling_frequency,
+                                       ping_frequency = :ping_frequency,
                                        tags = :tags,
                                        to_influx = :to_influx,
                                        to_kafka = :to_kafka,
