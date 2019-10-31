@@ -229,13 +229,14 @@ func HandleDeviceUpsert(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("new upsert request from %s", r.RemoteAddr)
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Warningf("HandleUpsert: error reading body: %v", err)
+		log.Warningf("upsert: error reading body: %v", err)
 		jsonBadRequest(w, err)
 		return
 	}
 	defer r.Body.Close()
 	var dev model.Device
 	if err = json.Unmarshal(b, &dev); err != nil {
+		log.Errorf("ERR: upsert: invalid request `%s`: %v", b, err)
 		jsonBadRequest(w, err)
 		return
 	}
@@ -243,8 +244,8 @@ func HandleDeviceUpsert(w http.ResponseWriter, r *http.Request) {
                           FROM profiles
                          WHERE category=$1 AND vendor=$2 AND model=$3`, dev.Category, dev.Vendor, dev.Model)
 	if err != nil {
-		log.Warning("HandleUpsert: profiles select:", err)
-		jsonBadRequest(w, fmt.Errorf("invalid profile (%s, %s, %s)", dev.Category, dev.Vendor, dev.Model))
+		log.Errorf("ERR: upsert: invalid profile (%q,%q,%q) for dev#%d: %v", dev.Category, dev.Vendor, dev.Model, dev.ID, err)
+		jsonBadRequest(w, fmt.Errorf("invalid profile (%q,%q,%q)", dev.Category, dev.Vendor, dev.Model))
 		return
 	}
 	_, err = db.NamedExec(`INSERT INTO devices
@@ -279,7 +280,7 @@ func HandleDeviceUpsert(w http.ResponseWriter, r *http.Request) {
                                        snmpv3_privacy_proto = :snmpv3_privacy_proto,
                                        snmpv3_privacy_passwd = :snmpv3_privacy_passwd`, dev)
 	if err != nil {
-		log.Warning("HandleUpsert: devices upsert:", err)
+		log.Errorf("ERR: upsert dev#%d: %v:", dev.ID, err)
 		jsonBadRequest(w, err)
 		return
 	}
