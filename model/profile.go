@@ -17,6 +17,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 )
 
 // Profile represents the device profile. A profile is composed of
@@ -48,6 +49,7 @@ func (prof *Profile) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &p); err != nil {
 		return err
 	}
+	p.Category, p.Vendor, p.Model = strings.TrimSpace(p.Category), strings.TrimSpace(p.Vendor), strings.TrimSpace(p.Model)
 	if p.Category == "" || p.Vendor == "" || p.Model == "" {
 		return errors.New("invalid profile: category, vendor and model are required")
 	}
