@@ -56,6 +56,8 @@ type Agent struct {
 	// On each job post or keepalive, a new value is added and the entries older than LoadAvgWindow are purged.
 	lastLoads map[int64]float64
 
+	lastLoadsMu sync.Mutex
+
 	// loadAvg is the load average taken over LoadAvgWindow.
 	loadAvg float64
 }
@@ -257,6 +259,9 @@ func LoadAgents() error {
 // setLoad saves agents last instataneous load, updates its
 // load average and removes old load samples.
 func (a *Agent) setLoad(load float64) {
+	a.lastLoadsMu.Lock()
+	defer a.lastLoadsMu.Unlock()
+
 	if !a.Alive {
 		a.lastLoads = nil
 		a.loadAvg = 0
