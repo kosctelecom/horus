@@ -71,7 +71,7 @@ type IndexedResults struct {
 
 	// Results is an 2-dimensional array of all results for this indexed measure
 	// with the index as first dimension and the metrics as second dimension:
-	Results [][]Result `json:"indexed_metrics,omitempty"`
+	Results [][]Result `json:"metrics"`
 }
 
 // PollResult is the complete result set of a polling job
@@ -86,10 +86,10 @@ type PollResult struct {
 	IPAddr string `json:"device_ipaddr"`
 
 	// Scalar is the set of scalar measures results
-	Scalar []ScalarResults `json:"scalar_results,omitempty"`
+	Scalar []ScalarResults `json:"scalar_measures,omitempty"`
 
 	// Indexed is the set of indexed measures results
-	Indexed []IndexedResults `json:"indexed_results,omitempty"`
+	Indexed []IndexedResults `json:"indexed_measures,omitempty"`
 
 	// PollStart is the poll starting time
 	PollStart time.Time `json:"poll_start"`
