@@ -84,7 +84,7 @@ func Names(metrics []Metric) []string {
 	return res
 }
 
-// GroupByOid returns a list of an array of metrics grouped by OID.
+// GroupByOid returns a list of an array of metrics grouped by base OID.
 func GroupByOid(metrics []Metric) [][]Metric {
 	var res [][]Metric
 
