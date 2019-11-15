@@ -1,9 +1,3 @@
-CREATE TYPE snmp_version_t AS ENUM (
-    '1',
-    '2c',
-    '3'
-);
-
 CREATE TABLE agents (
     id serial PRIMARY KEY,
     ip_address inet NOT NULL,
@@ -119,7 +113,6 @@ CREATE TABLE reports (
     snmp_error character varying NOT NULL DEFAULT ''
 );
 
-ALTER TYPE snmp_version_t OWNER TO horus;
 ALTER TABLE agents OWNER TO horus;
 ALTER TABLE profiles OWNER TO horus;
 ALTER TABLE devices OWNER TO horus;
