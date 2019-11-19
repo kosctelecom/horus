@@ -132,13 +132,13 @@ func main() {
 	agent.StopCtx = ctx
 
 	if err := agent.Init(); err != nil {
-		glog.Fatalf("agent init: %v", err)
+		glog.Exitf("init agent: %v", err)
 	}
 
 	if *maxResAge > 0 {
 		err := agent.InitCollectors(*maxResAge, *sweepFreq)
 		if err != nil {
-			glog.Fatalf("prom init: %v", err)
+			glog.Exitf("init prom collector: %v", err)
 		}
 	}
 
@@ -146,14 +146,14 @@ func main() {
 		err := agent.NewInfluxClient(*influxHost, *influxUser, *influxPasswd,
 			*influxDB, *influxRP, *influxTimeout, *influxRetries)
 		if err != nil {
-			glog.Fatalf("influx client init: %v", err)
+			glog.Exitf("init influx client: %v", err)
 		}
 	}
 
 	if *kafkaHost != "" {
 		err := agent.NewKafkaClient(*kafkaHost, *kafkaTopic, *kafkaPartition)
 		if err != nil {
-			glog.Fatalf("kafka client init: %v", err)
+			glog.Exitf("init kafka client: %v", err)
 		}
 	}
 
