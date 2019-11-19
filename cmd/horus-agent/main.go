@@ -198,11 +198,15 @@ end:
 
 // handleDebugLevel sets the application debug level dynamically.
 func handleDebugLevel(w http.ResponseWriter, r *http.Request) {
-	lvl := r.FormValue("level")
-	dbgLevel, err := strconv.Atoi(lvl)
+	level := r.FormValue("level")
+	if level == "" {
+		fmt.Fprintf(w, "level=%d", glog.GetLevel())
+		return
+	}
+	dbgLevel, err := strconv.Atoi(level)
 	if err != nil || dbgLevel < 0 || dbgLevel > 3 {
-		log.Errorf("invalid level %s", lvl)
-		http.Error(w, "invalid debug level "+lvl, 400)
+		log.Errorf("invalid level %s", level)
+		http.Error(w, "invalid debug level "+level, 400)
 		return
 	}
 	glog.SetLevel(int32(dbgLevel))
