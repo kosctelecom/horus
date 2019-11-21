@@ -63,12 +63,15 @@ func (metric *Metric) UnmarshalJSON(data []byte) error {
 	if metr.IndexPattern != "" {
 		escaped := strings.Replace(metr.IndexPattern, `.`, `\.`, -1)
 		metr.IndexPattern = strings.Replace(escaped, `\\.`, `\.`, -1)
+		if !strings.HasPrefix(metr.IndexPattern, strings.Replace(string(metr.Oid), `.`, `\.`, -1)) {
+			return fmt.Errorf("index_pattern `%s` must start with oid `%s`", metr.IndexPattern, metr.Oid)
+		}
 		var err error
 		if metr.IndexRegex, err = regexp.Compile(metr.IndexPattern); err != nil {
 			return fmt.Errorf("invalid index pattern: %v", err)
 		}
-		if metr.IndexRegex.NumSubexp() != 1 {
-			return fmt.Errorf("index_pattern must `%s` contain exactly one parenthesized subexpression", metr.IndexPattern)
+		if metr.IndexRegex.NumSubexp() < 1 {
+			return fmt.Errorf("index_pattern `%s` must contain at least one capture group for the index", metr.IndexPattern)
 		}
 	}
 	*metric = Metric(metr)

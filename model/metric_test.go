@@ -23,9 +23,12 @@ func TestUnmarshalMetric(t *testing.T) {
 		indexRegexNil bool
 	}{
 		{`{"Name": "ifName", "Oid":".1.3.6.1.2.1.31.1.1.1.1", "IndexPattern":""}`, true, true},
+		{`{"Name": "oidNotInPattern", "Oid":".1.3.6.1.2.1.2.3", "IndexPattern": ".1.3.6.1.2.1.1.1.(\\d+)"}`, false, false},
 		{`{"Name":"sdslDowntreamAttenuation", "Oid":".1.3.6.1.2.1.10.48.1.5.1.1", "IndexPattern":".1.3.6.1.2.1.10.48.1.5.1.1.(\\d+).1.2.\\d"}`, true, false},
-		{`{"Name":"sdslUpstreamMargin", "Oid":".1.3.6.1.2.1.10.48.1.5.1.2", "IndexPattern":"\\.1\\.3\\.6\\.1.2.1.10.48.1.5.1.2.(\\d+).1.2.\\d"}`, true, false},
+		{`{"Name":"sdslUpstreamMargin", "Oid":".1.3.6.1.2.1.10.48.1.5.1.2", "IndexPattern":"\\.1\\.3.6.1.2.1.10.48.1.5.1.2.(\\d+).1.2.\\d"}`, true, false},
 		{`{"Name":"sdslUpstreamAttenuation", "Oid":".1.3.6.1.2.1.10.48.1.5.1.1", "IndexPattern":".1.3.6.1.2.1.10.48.1.5.1.1.\\d+.2.1.\\d"}`, false, false},
+		{`{"Name":"multiSubexps", "Oid":".1.3.6.1.4.1.6527.3.1.2.4.3.2.1.1", "IndexPattern":".1.3.6.1.4.1.6527.3.1.2.4.3.2.1.1.\\d+.(\\d+).(\\d+)"}`, true, false},
+		{`{"Name":"namedSubexps", "Oid":".1.3.6.1.4.1.6527.3.1.2.4.3.2.1.1", "IndexPattern":".1.3.6.1.4.1.6527.3.1.2.4.3.2.1.1.\\d+.(?P<idx1>\\d+).(?P<idx2>\\d+)"}`, true, false},
 	}
 	for i, tt := range tests {
 		var m Metric
@@ -38,7 +41,9 @@ func TestUnmarshalMetric(t *testing.T) {
 		if valid && tt.indexRegexNil != indexRegexNil {
 			t.Fatalf("metric[%d]: is IndexRegex nil? expected: %v, got: %v (pattern=`%s`)", i, tt.indexRegexNil, indexRegexNil, m.IndexPattern)
 		}
-		t.Logf("metric[%d] (`%s`): IndexRegex=%v", i, tt.in, m.IndexRegex)
+		if testing.Verbose() {
+			t.Logf("metric[%d] (`%s`): IndexRegex=%v", i, tt.in, m.IndexRegex)
+		}
 	}
 }
 
@@ -58,7 +63,9 @@ func TestGroupByOid(t *testing.T) {
 		metrics[i] = m
 	}
 	grouped := GroupByOid(metrics)
-	t.Logf("grouped: %+v", grouped)
+	if testing.Verbose() {
+		t.Logf("grouped: %+v", grouped)
+	}
 	if len(grouped) != 3 {
 		t.Fatalf("GroupByOid: expected 3 entries, got %d", len(grouped))
 	}
