@@ -362,7 +362,7 @@ func (r *SnmpRequest) walkMeasure(ctx context.Context, measure model.IndexedMeas
 	}
 
 	var walkErr error
-	for range byOid {
+	for i, grouped := range byOid {
 		res := <-walkResults
 		if res.err != nil {
 			walkErr = fmt.Errorf("walk oid %s: %v", res.oid, res.err)
@@ -372,6 +372,10 @@ func (r *SnmpRequest) walkMeasure(ctx context.Context, measure model.IndexedMeas
 			tabResults = append(tabResults, res.tab)
 		} else {
 			r.Debugf(2, "walkMetric %s: skipping empty tabular result", res.oid)
+		}
+		if grouped[0].ID == measure.IndexMetricID {
+			// recompute index result position on tabResults
+			measure.IndexPos = i
 		}
 	}
 	indexed := MakeIndexed(r.UID, measure, tabResults)
