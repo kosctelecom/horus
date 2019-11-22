@@ -124,7 +124,7 @@ func (c *KafkaClient) sendData() {
 			c.Close()
 		case res := <-c.results:
 			for i := range res.Indexed {
-				res.Indexed[i].dedupDesc()
+				res.Indexed[i].DedupDesc()
 			}
 			payload, err := json.Marshal(res)
 			if err != nil {

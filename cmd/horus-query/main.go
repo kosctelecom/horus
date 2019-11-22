@@ -149,6 +149,9 @@ func main() {
 	if res.PollErr != "" {
 		log.Printf("Poll error: %v", res.PollErr)
 	}
+	for i := range res.Indexed {
+		res.Indexed[i].DedupDesc()
+	}
 
 	var payload []byte
 	if *compact {

@@ -237,10 +237,10 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 	return indexed
 }
 
-// dedupDesc strips the description field from all entries of an
+// DedupDesc strips the description field from all entries of an
 // indexed result, except the first one.
 // This is essential to reduce the size of the json pushed to kafka.
-func (indexed *IndexedResults) dedupDesc() {
+func (indexed *IndexedResults) DedupDesc() {
 	found := make(map[string]bool)
 	for i, ir := range indexed.Results {
 		for j := range ir {
