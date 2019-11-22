@@ -49,10 +49,13 @@ type Result struct {
 	suffix   string
 }
 
-// TabularResults is a map of snmp Result array with the oid suffix as key
-// For example, if a walk result of `oid` returns oid.i1.s1->res11, oid.i1.s2->res12, oid.i2->res2, oid.i3->res3,...
-// with i1,i2... as the index and s1,s2... as the oid suffix (for composite or mixed indexes).
-// the corresponding TabularResults is: {i1=>[res11, res12], i2=>[res2], i3=>[res3], ...}
+// TabularResults is a map of Result array containing all values for a given indexed oid.
+// The map key is the result index extracted from the result oid: if IndexRegex is not defined,
+// its the suffix of the base oid; otherwise, its the concatenation of all parenthesized
+// subexpressions extracted from the result oid. For example, if a walk result of `oid` returns
+// oid.i1->res1 oid.i1.i12->res11, oid.i1.i13->res12, oid.i2->res2, oid.i3.xxx->res3,...
+// with i1,i2... as the index and i12,i13 the sub-index, the corresponding TabularResults is
+// {i1=>[res1], i1.i12=>[res11], i1.i13=>[res12], i2=>[res2], i3=>[res3], ...}
 type TabularResults map[string][]Result
 
 // ScalarResults is a list of related scalar results grouped together
@@ -64,13 +67,13 @@ type ScalarResults struct {
 	Results []Result `json:"metrics"`
 }
 
-// IndexedResults represents a list of results grouped by their index key.
+// IndexedResults represents a list of results grouped by their index.
 type IndexedResults struct {
-	// Name is the name of this indexed result group
+	// Name is the measure name.
 	Name string `json:"name"`
 
 	// Results is an 2-dimensional array of all results for this indexed measure
-	// with the index as first dimension and the metrics as second dimension:
+	// with the index as first dimension and the oid as second dimension.
 	Results [][]Result `json:"metrics"`
 }
 
