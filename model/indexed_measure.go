@@ -119,6 +119,14 @@ func (x *IndexedMeasure) RemoveInactive() {
 			filtered = append(filtered, metric)
 		}
 	}
+
+	// recompute index position
+	for i, metric := range filtered {
+		if metric.ID == x.IndexMetricID {
+			x.IndexPos = i
+			break
+		}
+	}
 	log.Debug3f("metrics before = %v", Names(x.Metrics))
 	x.Metrics = filtered
 	log.Debug3f("metrics after = %v", Names(filtered))
