@@ -289,8 +289,8 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 						// no match, skip
 						continue
 					}
-					idx = submatches[1]
-					r.Debugf(3, "con#%d: %s - idx extracted from oid %s: %s", conIdx, metric.Name, pdu.Name, idx)
+					idx = strings.Join(submatches[1:], ".") // starts at 1 to skip the entire oid match
+					r.Debugf(3, "con#%d: %s - idx `%s` extracted from oid %s", conIdx, metric.Name, idx, pdu.Name)
 				}
 				res, err := MakeResult(pdu, metric)
 				if err != nil {
