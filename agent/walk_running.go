@@ -104,7 +104,7 @@ func (r *SnmpRequest) walkRunningMetric(ctx context.Context, metric model.Metric
 				r.Errorf("make result %s: %v", metric.Name, err)
 				continue
 			}
-			walkRes[res.index] = append(walkRes[res.index], res)
+			walkRes[res.suffix] = append(walkRes[res.suffix], res)
 		}
 	}
 	r.Debugf(2, "done get running metric %s", metric.Name)

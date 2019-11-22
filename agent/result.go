@@ -46,7 +46,7 @@ type Result struct {
 
 	snmpType gosnmp.Asn1BER
 	rawValue interface{}
-	index    string
+	suffix   string
 }
 
 // TabularResults is a map of snmp Result array with the oid suffix as key
@@ -160,7 +160,7 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 		rawValue:    pdu.Value,
 	}
 	if len(pdu.Name) > len(metric.Oid) {
-		res.index = pdu.Name[len(metric.Oid)+1:]
+		res.suffix = pdu.Name[len(metric.Oid)+1:]
 	}
 	switch pdu.Type {
 	case gosnmp.NoSuchObject:
@@ -189,7 +189,7 @@ func (res Result) String() string {
 	if res.Oid == "" {
 		return ""
 	}
-	return fmt.Sprintf("<name:%s oid:%s index:%s type:%#x val:%v>", res.Name, res.Oid, res.index, res.snmpType, res.Value)
+	return fmt.Sprintf("<name:%s oid:%s suffix:%s snmptype:%#x val:%v>", res.Name, res.Oid, res.suffix, res.snmpType, res.Value)
 }
 
 // String returns a string representation of an IndexedResults.
