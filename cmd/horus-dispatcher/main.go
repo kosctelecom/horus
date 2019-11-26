@@ -56,6 +56,7 @@ var (
 	dbPingQueryFreq = getopt.IntLong("db-ping-freq", 'g', 10, "db query frequency for available ping jobs (0 to disable ping)", "seconds")
 	pingBatchCount  = getopt.IntLong("ping-batch-count", 0, 100, "number of hosts per fping process")
 	dbPollErrRP     = getopt.IntLong("poll-error-retention-period", 'r', 3, "how long to keep poll errors in reports table (0 is forever)", "days")
+	dbFlusherFreq   = getopt.IntLong("report-flush-freq", 0, 3, "db reports table flush frequency (all entries with report_received_at=null and older than this period are also deleted)", "hours")
 	logDir          = getopt.StringLong("log", 0, "", "directory for log files. If empty, all log goes to stderr", "dir")
 	maxLoadDelta    = dispatcher.MaxLoadDelta
 )
@@ -174,10 +175,10 @@ func main() {
 	if *dbPollErrRP > 0 {
 		log.Debug("starting reports flusher goroutine")
 		go func() {
-			flushTick := time.NewTicker(6 * time.Hour)
+			flushTick := time.NewTicker(time.Duration(*dbFlusherFreq) * time.Hour)
 			defer flushTick.Stop()
 			for range flushTick.C {
-				dispatcher.FlushReports(*dbPollErrRP)
+				dispatcher.FlushReports(*dbPollErrRP, *dbFlusherFreq)
 			}
 		}()
 	}
