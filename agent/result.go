@@ -21,6 +21,7 @@ import (
 	"horus/model"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/vma/glog"
@@ -223,17 +224,23 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		log.Errorf("%s - makeIndexed: measure %s index #%d bigger than tabResults", uid, meas.Name, meas.IndexPos)
 		return indexed
 	}
-
 	for index := range tabResults[meas.IndexPos] {
 		var results []Result
-		for i, tabRes := range tabResults {
-			if resList, ok := tabRes[index]; ok {
-				results = append(results, resList...)
-			} else {
-				log.Debug3f("%s - makeIndexed %s: no data at index %s for metric %s", uid, meas.Name, index, meas.Metrics[i].Name)
+		for {
+			for _, tabRes := range tabResults {
+				if metr, ok := tabRes[index]; ok {
+					log.Debug2f(">> %s - found %d metrics for %s", uid, len(metr), metr[0].Name)
+					results = append(results, metr...)
+				}
 			}
+			lastDot := strings.LastIndex(index, ".")
+			if lastDot <= 0 {
+				break
+			}
+			index = index[:lastDot]
+			log.Debug2f(">> %s - new index: %s", uid, index)
 		}
-		if len(results) > 1 {
+		if len(results) >= 1 {
 			indexed.Results = append(indexed.Results, results)
 		}
 	}
