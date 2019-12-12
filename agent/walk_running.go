@@ -92,7 +92,7 @@ func (r *SnmpRequest) walkRunningMetric(ctx context.Context, metric model.Metric
 		pkt, err := r.snmpClis[0].GetWithCtx(ctx, oids)
 		if err != nil {
 			r.Errorf("get running %s: %v", metric.Name, err)
-			if isTimeout(err) {
+			if ErrIsUnreachable(err) {
 				// no need to continue polling...
 				return walkRes, err
 			}

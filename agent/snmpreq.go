@@ -189,8 +189,8 @@ func (r *SnmpRequest) Get(ctx context.Context) (results []ScalarResults, err err
 		var res []Result
 		res, err = r.getMeasure(ctx, scalar)
 		if err != nil {
-			if isTimeout(err) {
-				r.Errorf("Get %s: timed out (%v), stopping scalar queries", scalar.Name, err)
+			if ErrIsUnreachable(err) {
+				r.Errorf("Get %s: device unreachable (%v), stopping poll", scalar.Name, err)
 				return
 			}
 			r.Warningf("Get %s: %v, skipping result", scalar.Name, err)
@@ -216,14 +216,14 @@ func (r *SnmpRequest) getMeasure(ctx context.Context, meas model.ScalarMeasure) 
 		go func(i int, cli *gosnmp.GoSNMP) {
 			for metric := range metrics {
 				oid := string(metric.Oid)
-				r.Debugf(1, "con#%d: getting scalar oid %s", i, oid)
+				r.Debugf(1, "con#%d: getting scalar oid %s (%s)", i, oid, metric.Name)
 				pkt, err := cli.GetWithCtx(ctx, []string{oid})
 				r.Debugf(2, "con#%d oid %s: got snmp reply, pushing...", i, oid)
 				r.Debugf(3, ">> pkt=%+v, err=%v", pkt, err)
 				snmpResults <- snmpgetResult{metric, pkt, err}
 				r.Debugf(2, "con#%d oid %s: pushed", i, oid)
-				if isTimeout(err) {
-					// device is not responding, do not continue
+				if ErrIsUnreachable(err) {
+					// device unrechable, do not continue
 					break
 				}
 			}
@@ -239,8 +239,8 @@ func (r *SnmpRequest) getMeasure(ctx context.Context, meas model.ScalarMeasure) 
 		if snmpres.err != nil {
 			snmpErr = fmt.Errorf("get %s: %v", metric.Name, snmpres.err)
 		}
-		if isTimeout(snmpres.err) {
-			// escape of the blocking chan read
+		if ErrIsUnreachable(snmpres.err) {
+			// escape from the blocking chan read
 			break
 		}
 		if snmpres.pkt == nil {
@@ -416,24 +416,34 @@ func (r *SnmpRequest) Walk(ctx context.Context) ([]IndexedResults, error) {
 func (r *SnmpRequest) Poll(ctx context.Context) *PollResult {
 	res := MakePollResult(*r)
 	res.Scalar, res.pollErr = r.Get(ctx)
-	if isTimeout(res.pollErr) {
+	if ErrIsUnreachable(res.pollErr) {
 		res.PollErr = res.pollErr.Error()
 		res.Duration = int64(time.Since(res.PollStart) / time.Millisecond)
-		r.Warningf("timeout during snmp get, ending poll")
+		r.Warningf("poll: %v", res.pollErr)
+		res.IsPartial = len(res.Scalar) > 0
 		return &res
 	}
 	res.Indexed, res.pollErr = r.Walk(ctx)
 	res.Duration = int64(time.Since(res.PollStart) / time.Millisecond)
 	if res.pollErr != nil {
+		r.Warningf("poll: %v", res.pollErr)
 		res.PollErr = res.pollErr.Error()
-		if len(res.Scalar)+len(res.Indexed) > 0 {
-			res.IsPartial = true
-		}
+		res.IsPartial = len(res.Scalar)+len(res.Indexed) > 0
 	}
 	return &res
 }
 
-// isTimeout tells whether the error is a poll timeout.
-func isTimeout(err error) bool {
+// ErrIsTimeout tells whether the error is an snmp timeout error.
+func ErrIsTimeout(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "timeout")
+}
+
+// ErrIsRefused tells whether the error is an snmp connection refused error.
+func ErrIsRefused(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "connection refused")
+}
+
+// ErrIsUnreachable tells whether the error is an snmp timeout or connection refused.
+func ErrIsUnreachable(err error) bool {
+	return ErrIsTimeout(err) || ErrIsRefused(err)
 }
