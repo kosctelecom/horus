@@ -25,15 +25,25 @@ type SnmpCollector struct {
 
 // Push convert a poll result to prometheus samples and push them to the sample queue.
 func (c *SnmpCollector) Push(pollRes *PollResult) {
-	errCount := PromSample{
-		Name:   "snmp_poll_error_count",
-		Desc:   "snmp poll errors",
+	pollTimeout := PromSample{
+		Name:   "snmp_poll_timeout_count",
+		Desc:   "current snmp poll failed due to timeout",
 		Stamp:  pollRes.stamp,
 		Labels: make(map[string]string),
 		Value:  float64(0),
 	}
-	if pollRes.pollErr != nil {
-		errCount.Value = 1
+	if ErrIsTimeout(pollRes.pollErr) {
+		pollTimeout.Value = 1
+	}
+	pollRefused := PromSample{
+		Name:   "snmp_poll_refused_count",
+		Desc:   "current snmp poll failed due to connection refused",
+		Stamp:  pollRes.stamp,
+		Labels: make(map[string]string),
+		Value:  float64(0),
+	}
+	if ErrIsRefused(pollRes.pollErr) {
+		pollRefused.Value = 1
 	}
 	dur := PromSample{
 		Name:   "snmp_poll_duration_ms",
@@ -50,11 +60,13 @@ func (c *SnmpCollector) Push(pollRes *PollResult) {
 		Value:  float64(pollRes.metricCount),
 	}
 	for k, v := range pollRes.Tags {
-		errCount.Labels[k] = v
+		pollTimeout.Labels[k] = v
+		pollRefused.Labels[k] = v
 		dur.Labels[k] = v
 		mcount.Labels[k] = v
 	}
-	c.promSamples <- &errCount
+	c.promSamples <- &pollTimeout
+	c.promSamples <- &pollRefused
 	c.promSamples <- &dur
 	c.promSamples <- &mcount
 
