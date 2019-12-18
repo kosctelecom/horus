@@ -68,15 +68,6 @@ type PingHost struct {
 
 	// Model is the equipment model (for profile identification)
 	Model string `db:"model" json:"model"`
-
-	// ToProm is a flag telling wether to send results to prometheus
-	ToProm bool `db:"to_prometheus" json:"to_prometheus"`
-
-	// ToKafka is a flag telling wether to send results to kafka
-	ToKafka bool `db:"to_kafka" json:"to_kafka"`
-
-	// ToInflux is a flag telling wether to send results to influxDB
-	ToInflux bool `db:"to_influx" json:"to_influx"`
 }
 
 // PingRequest is a ping job sent to an agent.

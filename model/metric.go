@@ -41,6 +41,15 @@ type Metric struct {
 	// ExportAsLabel tells if this metric is exported as a prometheus label (instead of value).
 	ExportAsLabel bool `db:"export_as_label"`
 
+	// ToKafka is a flag telling if the results should be exported to Kafka.
+	ToKafka bool `db:"to_kafka"`
+
+	// ToProm tells if the results are kept for Prometheus scraping.
+	ToProm bool `db:"to_prometheus"`
+
+	// ToInflux is a flag telling if the results should be exported to InfluxDB.
+	ToInflux bool `db:"to_influx"`
+
 	// RunningIfaceOnly tells to retrieve this metric only for running ifaces (for indexed metrics).
 	RunningIfaceOnly bool `db:"running_if_only"`
 

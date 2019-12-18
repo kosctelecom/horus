@@ -40,16 +40,6 @@ type Device struct {
 	// each measurement of this device.
 	Tags string `db:"tags" json:"tags,omitempty"`
 
-	// ToInflux is a flag telling if the results should be exported to InfluxDB.
-	// This will only work if the agent actually has an influxdb connection.
-	ToInflux bool `db:"to_influx" json:"to_influx"`
-
-	// ToKafka is a flag telling if the results should be exported to Kafka.
-	ToKafka bool `db:"to_kafka" json:"to_kafka"`
-
-	// ToProm tells if the results are kept for Prometheus scraping.
-	ToProm bool `db:"to_prometheus" json:"to_prometheus"`
-
 	// SnmpParams is the device snmp config.
 	SnmpParams
 
@@ -73,9 +63,7 @@ func (dev *Device) UnmarshalJSON(data []byte) error {
 	if d.Hostname == "" {
 		return errors.New("invalid device: hostname cannot be empty")
 	}
-	if !d.ToProm && !d.ToInflux && !d.ToKafka {
-		return errors.New("invalid device: either to_kafka or to_influx or to_prometheus must be set")
-	}
+
 	var t map[string]interface{}
 	if d.Tags == "" {
 		d.Tags = "{}"
