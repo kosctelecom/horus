@@ -48,6 +48,9 @@ type Result struct {
 	snmpType gosnmp.Asn1BER
 	rawValue interface{}
 	suffix   string
+	toInflux bool
+	toKafka  bool
+	toProm   bool
 }
 
 // TabularResults is a map of Result array containing all values for a given indexed oid.
@@ -113,9 +116,6 @@ type PollResult struct {
 	stamp       time.Time
 	reportURL   string
 	metricCount int
-	toKafka     bool
-	toInflux    bool
-	toProm      bool
 	pollErr     error
 }
 
@@ -144,9 +144,34 @@ func MakePollResult(req SnmpRequest) PollResult {
 		PollStart: time.Now(),
 		Tags:      tags,
 		reportURL: req.ReportURL,
-		toProm:    req.Device.ToProm && snmpCollector != nil,
-		toInflux:  req.Device.ToInflux && influxCli != nil,
-		toKafka:   req.Device.ToKafka && kafkaCli != nil,
+	}
+}
+
+// PruneForKafka prunes PollResult to keep only metrics to be exported to kafka.
+func (p *PollResult) PruneForKafka() {
+	for i, s := range p.Scalar {
+		ss := make([]Result, 0, len(s.Results))
+		for _, res := range s.Results {
+			if res.toKafka {
+				ss = append(ss, res)
+			}
+		}
+		if len(ss) == 0 {
+			p.Scalar = append(p.Scalar[:i], p.Scalar[i+1:]...)
+		} else {
+			p.Scalar[i].Results = ss
+		}
+	}
+	for i, indexed := range p.Indexed {
+		for j, indexedRes := range indexed.Results {
+			ir := make([]Result, 0, len(indexedRes))
+			for _, res := range indexedRes {
+				if res.toKafka {
+					ir = append(ir, res)
+				}
+			}
+			p.Indexed[i].Results[j] = ir
+		}
 	}
 }
 
@@ -162,6 +187,9 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 		AsLabel:     metric.ExportAsLabel,
 		snmpType:    pdu.Type,
 		rawValue:    pdu.Value,
+		toInflux:    metric.ToInflux,
+		toKafka:     metric.ToKafka,
+		toProm:      metric.ToProm,
 	}
 	if len(pdu.Name) > len(metric.Oid) {
 		res.suffix = pdu.Name[len(metric.Oid)+1:]
@@ -314,15 +342,9 @@ func handleResults() {
 			}
 		}
 
-		if res.toInflux {
-			go influxCli.Push(res)
-		}
-		if res.toKafka {
-			go kafkaCli.Push(res)
-		}
-		if res.toProm {
-			go snmpCollector.Push(res)
-		}
+		go kafkaCli.Push(res)
+		go snmpCollector.Push(res)
+		go influxCli.Push(res)
 		go res.sendReport()
 	}
 }
