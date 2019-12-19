@@ -51,7 +51,6 @@ func TestDevice(t *testing.T) {
 				PollingFrequency: 300,
 				PingFrequency:    60,
 				Tags:             "{}",
-				ToKafka:          true,
 				SnmpParams: SnmpParams{
 					IPAddress:       "10.2.0.9",
 					Port:            163,

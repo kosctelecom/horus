@@ -56,7 +56,6 @@ func TestRequest(t *testing.T) {
 					PollingFrequency: 300,
 					PingFrequency:    60,
 					Tags:             "{}",
-					ToKafka:          true,
 					SnmpParams: SnmpParams{
 						IPAddress:       "10.2.0.9",
 						Port:            161,
@@ -113,7 +112,6 @@ func TestRequest(t *testing.T) {
 					PollingFrequency: 300,
 					PingFrequency:    60,
 					Tags:             "{}",
-					ToKafka:          true,
 					SnmpParams: SnmpParams{
 						IPAddress:       "10.2.0.9",
 						Port:            161,
@@ -168,7 +166,6 @@ func TestRequest(t *testing.T) {
 					PollingFrequency: 300,
 					PingFrequency:    0,
 					Tags:             "{}",
-					ToKafka:          true,
 					SnmpParams: SnmpParams{
 						IPAddress:       "10.2.0.92",
 						Port:            161,
