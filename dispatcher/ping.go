@@ -37,12 +37,17 @@ var PingBatchCount int
 func PingRequests() ([]model.PingRequest, error) {
 	var hosts []model.PingHost
 	log.Debug("retrieving available ping jobs")
-	err := db.Select(&hosts, `SELECT d.hostname, d.ip_address, d.to_prometheus, d.to_kafka, d.to_influx, p.category, p.vendor, p.model
-                                FROM devices d, profiles p
-                               WHERE d.active = true
-                                 AND d.profile_id = p.id
-                                 AND d.ping_frequency > 0
+	err := db.Select(&hosts, `SELECT d.hostname,
+                                     d.ip_address,
+                                     p.category,
+                                     p.model,
+                                     p.vendor
+                                FROM devices d,
+                                     profiles p
+                               WHERE d.active = TRUE
                                  AND (d.last_pinged_at IS NULL OR EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - d.last_pinged_at) >= d.ping_frequency)
+                                 AND d.ping_frequency > 0
+                                 AND d.profile_id = p.id
                             ORDER BY d.last_pinged_at`)
 	if err == sql.ErrNoRows || len(hosts) == 0 {
 		return nil, nil

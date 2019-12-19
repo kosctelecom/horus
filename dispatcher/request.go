@@ -46,55 +46,98 @@ var (
 // RequestFromDB returns the request with the given device id from db.
 func RequestFromDB(devID int) (model.SnmpRequest, error) {
 	var req model.SnmpRequest
-	err := db.Get(&req.Device, `SELECT d.id,hostname,ip_address,snmp_port,active,polling_frequency,
-                                       snmp_version,snmp_community,snmp_timeout,snmp_retries,snmp_disable_bulk,tags,
-                                       snmp_connection_count,to_kafka,to_influx,to_prometheus,snmpv3_security_level,
-                                       snmpv3_auth_user,snmpv3_auth_passwd,snmpv3_auth_proto,snmpv3_privacy_passwd,
-                                       snmpv3_privacy_proto,p.category,p.vendor,p.model,p.honor_running_only
-                                  FROM devices d, profiles p
+	err := db.Get(&req.Device, `SELECT active,
+                                       d.id,
+                                       hostname,
+                                       ip_address,
+                                       p.category,
+                                       p.vendor,
+                                       p.model,
+                                       p.honor_running_only,
+                                       polling_frequency,
+                                       snmp_community,
+                                       snmp_connection_count,
+                                       snmp_disable_bulk,
+                                       snmp_port,
+                                       snmp_retries,
+                                       snmp_timeout,
+                                       snmp_version,
+                                       snmpv3_auth_passwd,
+                                       snmpv3_auth_proto,
+                                       snmpv3_auth_user,
+                                       snmpv3_privacy_passwd,
+                                       snmpv3_privacy_proto,
+                                       snmpv3_security_level,
+                                       tags
+                                  FROM devices d,
+                                       profiles p
                                  WHERE d.profile_id = p.id
                                    AND d.id = $1`, devID)
 	if err != nil {
 		return req, fmt.Errorf("request: %v", err)
 	}
 
-	err = db.Select(&req.ScalarMeasures, `SELECT m.id,m.name,m.description,m.polling_frequency,
-                                                 (SELECT last_polled_at
-                                                    FROM measure_poll_times t
-                                                   WHERE t.device_id = d.id AND t.measure_id = m.id
-                                                ORDER BY last_polled_at DESC LIMIT 1)
-                                            FROM measures m, devices d, profile_measures pm
-                                           WHERE m.is_indexed = false
+	err = db.Select(&req.ScalarMeasures, `SELECT m.description,
+                                                 m.id,
+                                                 m.name,
+                                                 m.polling_frequency,
+                                            (SELECT last_polled_at
+                                               FROM measure_poll_times t
+                                              WHERE t.device_id = d.id AND t.measure_id = m.id
+                                           ORDER BY last_polled_at DESC
+                                              LIMIT 1)
+                                            FROM devices d,
+                                                 measures m,
+                                                 profile_measures pm
+                                           WHERE d.id = $1
                                              AND d.profile_id = pm.profile_id
                                              AND m.id = pm.measure_id
+                                             AND m.is_indexed = FALSE
                                              AND m.polling_frequency >= 0
-                                             AND d.id = $1
                                         ORDER BY m.id`, devID)
 	if err != nil {
 		return req, fmt.Errorf("select scalar measures: %v", err)
 	}
-	err = db.Select(&req.IndexedMeasures, `SELECT m.id,m.name,m.description,m.polling_frequency,m.index_metric_id,
-                                                  m.filter_metric_id,m.filter_pattern,m.invert_filter_match,
-                                                  (SELECT last_polled_at
-                                                     FROM measure_poll_times t
-                                                    WHERE t.device_id = d.id
-                                                      AND t.measure_id = m.id
-                                                 ORDER BY last_polled_at DESC LIMIT 1)
-                                             FROM measures m, devices d, profile_measures pm
-                                            WHERE m.is_indexed = true
+	err = db.Select(&req.IndexedMeasures, `SELECT m.description,
+                                                  m.filter_metric_id,
+                                                  m.filter_pattern,
+                                                  m.id,
+                                                  m.index_metric_id,
+                                                  m.invert_filter_match,
+                                                  m.name,
+                                                  m.polling_frequency,
+                                             (SELECT last_polled_at
+                                                FROM measure_poll_times t
+                                               WHERE t.device_id = d.id
+                                                 AND t.measure_id = m.id
+                                            ORDER BY last_polled_at DESC
+                                               LIMIT 1)
+                                             FROM devices d,
+                                                  measures m,
+                                                  profile_measures pm
+                                            WHERE d.id = $1
                                               AND d.profile_id = pm.profile_id
                                               AND m.id = pm.measure_id
+                                              AND m.is_indexed = TRUE
                                               AND m.polling_frequency >= 0
-                                              AND d.id = $1
                                          ORDER BY m.id`, devID)
 	if err != nil {
 		return req, fmt.Errorf("select indexed measures: %v", err)
 	}
 	req.FilterMeasures()
 	for i, scalar := range req.ScalarMeasures {
-		err = db.Select(&scalar.Metrics, `SELECT m.id,m.name,m.oid,m.description,m.active,m.export_as_label
-                                            FROM metrics m, measure_metrics mm
-                                           WHERE m.active = true
+		err = db.Select(&scalar.Metrics, `SELECT m.active,
+                                                 m.description,
+                                                 m.export_as_label,
+                                                 m.id,
+                                                 m.name,
+                                                 m.oid,
+                                                 m.to_influx,
+                                                 m.to_kafka,
+                                                 m.to_prometheus
+                                            FROM measure_metrics mm,
+                                                 metrics m
+                                           WHERE m.active = TRUE
                                              AND m.id = mm.metric_id
                                              AND mm.measure_id = $1
                                         ORDER BY m.id`, scalar.ID)
@@ -104,10 +147,20 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 		req.ScalarMeasures[i] = scalar
 	}
 	for i, indexed := range req.IndexedMeasures {
-		err = db.Select(&indexed.Metrics, `SELECT m.id,m.name,m.oid,m.description,m.index_pattern,
-                                                  m.active,m.export_as_label,m.running_if_only
-                                             FROM metrics m, measure_metrics mm
-                                            WHERE m.active = true
+		err = db.Select(&indexed.Metrics, `SELECT m.active,
+                                                  m.description,
+                                                  m.export_as_label,
+                                                  m.id,
+                                                  m.index_pattern,
+                                                  m.name,
+                                                  m.oid,
+                                                  m.running_if_only,
+                                                  m.to_influx,
+                                                  m.to_kafka,
+                                                  m.to_prometheus
+                                             FROM measure_metrics mm,
+                                                  metrics m
+                                            WHERE m.active = TRUE
                                               AND m.id = mm.metric_id
                                               AND mm.measure_id = $1
                                          ORDER BY m.id`, indexed.ID)
