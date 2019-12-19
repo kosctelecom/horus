@@ -46,6 +46,9 @@ type SnmpParams struct {
 	// Community is the device's snmp community.
 	Community string `db:"snmp_community" json:"snmp_community"`
 
+	// AlternateCommunity is an alternate snmp community used for querying some metrics.
+	AlternateCommunity string `db:"snmp_alternate_community" json:"snmp_alternate_community"`
+
 	// Timeout is the snmp query timeout (default 10s).
 	Timeout int `db:"snmp_timeout" json:"snmp_timeout"`
 
@@ -92,6 +95,9 @@ func (s *SnmpParams) UnmarshalJSON(data []byte) error {
 	}
 	if params.Community == "" {
 		return errors.New("invalid snmp params: community cannot be empty")
+	}
+	if params.AlternateCommunity == "" {
+		params.AlternateCommunity = params.Community
 	}
 	if params.Port == 0 {
 		params.Port = 161
