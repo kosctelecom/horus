@@ -215,6 +215,11 @@ func (r *SnmpRequest) getMeasure(ctx context.Context, meas model.ScalarMeasure) 
 	for i, cli := range r.snmpClis {
 		go func(i int, cli *gosnmp.GoSNMP) {
 			for metric := range metrics {
+				if metric.UseAlternateCommunity {
+					cli.Community = r.Device.AlternateCommunity
+				} else {
+					cli.Community = r.Device.Community
+				}
 				oid := string(metric.Oid)
 				r.Debugf(1, "con#%d: getting scalar oid %s (%s)", i, oid, metric.Name)
 				pkt, err := cli.GetWithCtx(ctx, []string{oid})
@@ -304,6 +309,11 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 	}
 	r.Debugf(2, "con#%d: walking indexed metric %s", conIdx, oid)
 	cli := r.snmpClis[conIdx]
+	if grouped[0].UseAlternateCommunity {
+		cli.Community = r.Device.AlternateCommunity
+	} else {
+		cli.Community = r.Device.Community
+	}
 	var err error
 	if r.Device.Version == model.Version1 || r.Device.DisableBulk {
 		err = cli.WalkWithCtx(ctx, string(oid), pduWalker)
