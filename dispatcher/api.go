@@ -53,13 +53,33 @@ func HandleDeviceList(w http.ResponseWriter, r *http.Request) {
 	}
 	if id := r.FormValue("id"); id != "" {
 		var dev model.Device
-		err := db.Get(&dev, `SELECT d.id,d.active,d.hostname,d.polling_frequency,d.ping_frequency,d.tags,d.to_influx,d.to_kafka,d.to_prometheus,
-                                    d.ip_address,d.snmp_port,d.snmp_version,d.snmp_community,d.snmp_timeout,d.snmp_retries,d.snmp_disable_bulk,d.snmp_connection_count,
-                                    d.snmpv3_security_level,d.snmpv3_auth_user,d.snmpv3_auth_proto,d.snmpv3_auth_passwd,d.snmpv3_privacy_proto,d.snmpv3_privacy_passwd,
-                                    p.category,p.vendor,p.model
-                               FROM devices d, profiles p
-                              WHERE d.profile_id = p.id
-                                AND d.id = $1`, id)
+		err := db.Get(&dev, `SELECT d.active,
+                                    d.hostname,
+                                    d.id,
+                                    d.ip_address,
+                                    d.ping_frequency,
+                                    d.polling_frequency,
+                                    d.snmp_community,
+                                    d.snmp_connection_count,
+                                    d.snmp_disable_bulk,
+                                    d.snmp_port,
+                                    d.snmp_retries,
+                                    d.snmp_timeout,
+                                    d.snmp_version,
+                                    d.snmpv3_auth_passwd,
+                                    d.snmpv3_auth_proto,
+                                    d.snmpv3_auth_user,
+                                    d.snmpv3_privacy_passwd,
+                                    d.snmpv3_privacy_proto,
+                                    d.snmpv3_security_level,
+                                    d.tags,
+                                    p.category,
+                                    p.model,
+                                    p.vendor
+                               FROM devices d,
+                                    profiles p
+                              WHERE d.id = $1
+                                AND d.profile_id = p.id`, id)
 		if err == sql.ErrNoRows {
 			jsonError(w, http.StatusNotFound, errors.New("Device not found"))
 			return
@@ -75,15 +95,35 @@ func HandleDeviceList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var devs []model.Device
-	err := db.Select(&devs, `SELECT d.id,d.active,d.hostname,d.polling_frequency,d.ping_frequency,d.tags,d.to_influx,d.to_kafka,d.to_prometheus,
-                                    d.ip_address,d.snmp_port,d.snmp_version,d.snmp_community,d.snmp_timeout,d.snmp_retries,d.snmp_disable_bulk,d.snmp_connection_count,
-                                    d.snmpv3_security_level,d.snmpv3_auth_user,d.snmpv3_auth_proto,d.snmpv3_auth_passwd,d.snmpv3_privacy_proto,d.snmpv3_privacy_passwd,
-                                    p.category,p.vendor,p.model
-                               FROM devices d, profiles p
+	err := db.Select(&devs, `SELECT d.active,
+                                    d.hostname,
+                                    d.id,
+                                    d.ip_address,
+                                    d.ping_frequency,
+                                    d.polling_frequency,
+                                    d.snmp_community,
+                                    d.snmp_connection_count,
+                                    d.snmp_disable_bulk,
+                                    d.snmp_port,
+                                    d.snmp_retries,
+                                    d.snmp_timeout,
+                                    d.snmp_version,
+                                    d.snmpv3_auth_passwd,
+                                    d.snmpv3_auth_proto,
+                                    d.snmpv3_auth_user,
+                                    d.snmpv3_privacy_passwd,
+                                    d.snmpv3_privacy_proto,
+                                    d.snmpv3_security_level,
+                                    d.tags,
+                                    p.category,
+                                    p.model,
+                                    p.vendor
+                               FROM devices d,
+                                    profiles p
                               WHERE d.profile_id = p.id
                            ORDER BY d.id`)
 	if err != nil {
-		log.Warning("HandleDeviceList: select all devices:", err)
+		log.Warning("HandleDeviceList: select all devices: ", err)
 		jsonBadRequest(w, err)
 		return
 	}
@@ -127,19 +167,56 @@ func HandleDeviceCreate(w http.ResponseWriter, r *http.Request) {
 
 	err = db.Get(&dev, `SELECT id AS profile_id
                           FROM profiles
-                         WHERE category=$1 AND vendor=$2 AND model=$3`, dev.Category, dev.Vendor, dev.Model)
+                         WHERE category = $1
+                           AND model = $2
+                           AND vendor = $3`, dev.Category, dev.Model, dev.Vendor)
 	if err != nil {
 		log.Warning("HandleCreate: profiles select:", err)
 		jsonBadRequest(w, fmt.Errorf("profile: invalid profile (%s, %s, %s)", dev.Category, dev.Vendor, dev.Model))
 		return
 	}
-	_, err = db.NamedExec(`INSERT INTO devices
-                                       (id,profile_id,active,hostname,polling_frequency,ping_frequency,tags,to_influx,to_kafka,to_prometheus,
-                                       ip_address,snmp_port,snmp_version,snmp_community,snmp_timeout,snmp_retries,snmp_disable_bulk,snmp_connection_count,
-                                       snmpv3_security_level,snmpv3_auth_user,snmpv3_auth_proto,snmpv3_auth_passwd,snmpv3_privacy_proto,snmpv3_privacy_passwd)
-                                VALUES (:id,:profile_id,:active,:hostname,:polling_frequency,:ping_frequency,:tags,:to_influx,:to_kafka,:to_prometheus,
-                                       :ip_address,:snmp_port,:snmp_version,:snmp_community,:snmp_timeout,:snmp_retries,:snmp_disable_bulk,:snmp_connection_count,
-                                       :snmpv3_security_level,:snmpv3_auth_user,:snmpv3_auth_proto,:snmpv3_auth_passwd,:snmpv3_privacy_proto,:snmpv3_privacy_passwd)`, dev)
+	_, err = db.NamedExec(`INSERT INTO devices (active,
+                                                hostname,
+                                                id,
+                                                ip_address,
+                                                ping_frequency,
+                                                polling_frequency,
+                                                profile_id,
+                                                snmp_connection_count,
+                                                snmp_community,
+                                                snmp_disable_bulk,
+                                                snmp_port,
+                                                snmp_retries,
+                                                snmp_timeout,
+                                                snmp_version,
+                                                snmpv3_auth_passwd,
+                                                snmpv3_auth_proto,
+                                                snmpv3_auth_user,
+                                                snmpv3_privacy_passwd,
+                                                snmpv3_privacy_proto,
+                                                snmpv3_security_level,
+                                                tags)
+                                        VALUES (:active,
+                                                :hostname,
+                                                :id,
+                                                :ip_address,
+                                                :ping_frequency,
+                                                :polling_frequency,
+                                                :profile_id,
+                                                :snmp_connection_count,
+                                                :snmp_community,
+                                                :snmp_disable_bulk,
+                                                :snmp_port,
+                                                :snmp_retries,
+                                                :snmp_timeout,
+                                                :snmp_version,
+                                                :snmpv3_auth_passwd,
+                                                :snmpv3_auth_proto,
+                                                :snmpv3_auth_user,
+                                                :snmpv3_privacy_passwd,
+                                                :snmpv3_privacy_proto,
+                                                :snmpv3_security_level,
+                                                :tags)`, dev)
 	if err != nil {
 		log.Warningf("HandleCreate: device insert: %v", err)
 		jsonBadRequest(w, err)
@@ -171,7 +248,9 @@ func HandleDeviceUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Get(&dev, `SELECT id AS profile_id
                           FROM profiles
-                         WHERE category=$1 AND vendor=$2 AND model=$3`, dev.Category, dev.Vendor, dev.Model)
+                         WHERE category = $1
+                           AND model = $2
+                           AND vendor = $3`, dev.Category, dev.Model, dev.Vendor)
 	if err != nil {
 		log.Warningf("HandleUpdate: profiles select: %v", err)
 		jsonBadRequest(w, fmt.Errorf("profile: invalid category(%s) or vendor(%s) or model(%s)", dev.Category, dev.Vendor, dev.Model))
@@ -187,30 +266,27 @@ func HandleDeviceUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = db.NamedExec(`UPDATE devices
-                              SET profile_id = :profile_id,
-                                  active = :active,
+                              SET active = :active,
                                   hostname = :hostname,
-                                  polling_frequency = :polling_frequency,
-                                  ping_frequency = :ping_frequency,
-                                  tags = :tags,
-                                  to_influx = :to_influx,
-                                  to_kafka = :to_kafka,
-                                  to_prometheus = :to_prometheus,
                                   ip_address = :ip_address,
-                                  snmp_port = :snmp_port,
-                                  snmp_version = :snmp_version,
+                                  ping_frequency = :ping_frequency,
+                                  polling_frequency = :polling_frequency,
+                                  profile_id = :profile_id,
                                   snmp_community = :snmp_community,
-                                  snmp_timeout = :snmp_timeout,
-                                  snmp_retries = :snmp_retries,
-                                  snmp_disable_bulk = :snmp_disable_bulk,
                                   snmp_connection_count = :snmp_connection_count,
-                                  snmpv3_security_level = :snmpv3_security_level,
-                                  snmpv3_auth_user = :snmpv3_auth_user,
-                                  snmpv3_auth_proto = :snmpv3_auth_proto,
+                                  snmp_disable_bulk = :snmp_disable_bulk,
+                                  snmp_port = :snmp_port,
+                                  snmp_retries = :snmp_retries,
+                                  snmp_timeout = :snmp_timeout,
+                                  snmp_version = :snmp_version,
                                   snmpv3_auth_passwd = :snmpv3_auth_passwd,
+                                  snmpv3_auth_proto = :snmpv3_auth_proto,
+                                  snmpv3_auth_user = :snmpv3_auth_user,
+                                  snmpv3_privacy_passwd = :snmpv3_privacy_passwd,
                                   snmpv3_privacy_proto = :snmpv3_privacy_proto,
-                                  snmpv3_privacy_passwd = :snmpv3_privacy_passwd
-                            WHERE id=:id`, dev)
+                                  snmpv3_security_level = :snmpv3_security_level,
+                                  tags = :tags
+                            WHERE id = :id`, dev)
 	if err != nil {
 		log.Warningf("HandleUpdate: devices update: %v", err)
 		jsonBadRequest(w, err)
@@ -242,43 +318,78 @@ func HandleDeviceUpsert(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Get(&dev, `SELECT id AS profile_id
                           FROM profiles
-                         WHERE category=$1 AND vendor=$2 AND model=$3`, dev.Category, dev.Vendor, dev.Model)
+                         WHERE category = $1
+                           AND model = $2
+                           AND vendor = $3`, dev.Category, dev.Model, dev.Vendor)
 	if err != nil {
 		log.Errorf("ERR: upsert: invalid profile (%q,%q,%q) for dev#%d: %v", dev.Category, dev.Vendor, dev.Model, dev.ID, err)
 		jsonBadRequest(w, fmt.Errorf("invalid profile (%q,%q,%q)", dev.Category, dev.Vendor, dev.Model))
 		return
 	}
-	_, err = db.NamedExec(`INSERT INTO devices
-                                       (id,profile_id,active,hostname,polling_frequency,ping_frequency,tags,to_influx,to_kafka,to_prometheus,
-                                       ip_address,snmp_port,snmp_version,snmp_community,snmp_timeout,snmp_retries,snmp_disable_bulk,snmp_connection_count,
-                                       snmpv3_security_level,snmpv3_auth_user,snmpv3_auth_proto,snmpv3_auth_passwd,snmpv3_privacy_proto,snmpv3_privacy_passwd)
-                                VALUES (:id,:profile_id,:active,:hostname,:polling_frequency,:ping_frequency,:tags,:to_influx,:to_kafka,:to_prometheus,
-                                       :ip_address,:snmp_port,:snmp_version,:snmp_community,:snmp_timeout,:snmp_retries,:snmp_disable_bulk,:snmp_connection_count,
-                                       :snmpv3_security_level,:snmpv3_auth_user,:snmpv3_auth_proto,:snmpv3_auth_passwd,:snmpv3_privacy_proto,:snmpv3_privacy_passwd)
-             ON CONFLICT(id) DO UPDATE
-                                   SET profile_id = :profile_id,
-                                       active = :active,
-                                       hostname = :hostname,
-                                       polling_frequency = :polling_frequency,
-                                       ping_frequency = :ping_frequency,
-                                       tags = :tags,
-                                       to_influx = :to_influx,
-                                       to_kafka = :to_kafka,
-                                       to_prometheus = :to_prometheus,
-                                       ip_address = :ip_address,
-                                       snmp_port = :snmp_port,
-                                       snmp_version = :snmp_version,
-                                       snmp_community = :snmp_community,
-                                       snmp_timeout = :snmp_timeout,
-                                       snmp_retries = :snmp_retries,
-                                       snmp_disable_bulk = :snmp_disable_bulk,
-                                       snmp_connection_count = :snmp_connection_count,
-                                       snmpv3_security_level = :snmpv3_security_level,
-                                       snmpv3_auth_user = :snmpv3_auth_user,
-                                       snmpv3_auth_proto = :snmpv3_auth_proto,
-                                       snmpv3_auth_passwd = :snmpv3_auth_passwd,
-                                       snmpv3_privacy_proto = :snmpv3_privacy_proto,
-                                       snmpv3_privacy_passwd = :snmpv3_privacy_passwd`, dev)
+	_, err = db.NamedExec(`INSERT INTO devices (active,
+                                                hostname,
+                                                id,
+                                                ip_address,
+                                                ping_frequency,
+                                                polling_frequency,
+                                                profile_id,
+                                                snmp_connection_count,
+                                                snmp_community,
+                                                snmp_disable_bulk,
+                                                snmp_port,
+                                                snmp_retries,
+                                                snmp_timeout,
+                                                snmp_version,
+                                                snmpv3_auth_passwd,
+                                                snmpv3_auth_proto,
+                                                snmpv3_auth_user,
+                                                snmpv3_privacy_passwd,
+                                                snmpv3_privacy_proto,
+                                                snmpv3_security_level,
+                                                tags)
+                                        VALUES (:active,
+                                                :hostname,
+                                                :id,
+                                                :ip_address,
+                                                :ping_frequency,
+                                                :polling_frequency,
+                                                :profile_id,
+                                                :snmp_connection_count,
+                                                :snmp_community,
+                                                :snmp_disable_bulk,
+                                                :snmp_port,
+                                                :snmp_retries,
+                                                :snmp_timeout,
+                                                :snmp_version,
+                                                :snmpv3_auth_passwd,
+                                                :snmpv3_auth_proto,
+                                                :snmpv3_auth_user,
+                                                :snmpv3_privacy_passwd,
+                                                :snmpv3_privacy_proto,
+                                                :snmpv3_security_level,
+                                                :tags)
+                               ON CONFLICT(id)
+                                     DO UPDATE
+                                           SET active = :active,
+                                               hostname = :hostname,
+                                               ip_address = :ip_address,
+                                               ping_frequency = :ping_frequency,
+                                               polling_frequency = :polling_frequency,
+                                               profile_id = :profile_id,
+                                               snmp_community = :snmp_community,
+                                               snmp_connection_count = :snmp_connection_count,
+                                               snmp_disable_bulk = :snmp_disable_bulk,
+                                               snmp_port = :snmp_port,
+                                               snmp_retries = :snmp_retries,
+                                               snmp_timeout = :snmp_timeout,
+                                               snmp_version = :snmp_version,
+                                               snmpv3_auth_passwd = :snmpv3_auth_passwd,
+                                               snmpv3_auth_proto = :snmpv3_auth_proto,
+                                               snmpv3_auth_user = :snmpv3_auth_user,
+                                               snmpv3_privacy_passwd = :snmpv3_privacy_passwd,
+                                               snmpv3_privacy_proto = :snmpv3_privacy_proto,
+                                               snmpv3_security_level = :snmpv3_security_level,
+                                               tags = :tags`, dev)
 	if err != nil {
 		log.Errorf("ERR: upsert dev#%d: %v:", dev.ID, err)
 		jsonBadRequest(w, err)
@@ -302,7 +413,8 @@ func HandleDeviceDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Infof("HandleDelete: deleting device %d", id)
-	res, err := db.Exec(`DELETE FROM devices WHERE id=$1`, id)
+	res, err := db.Exec(`DELETE FROM devices
+                               WHERE id = $1`, id)
 	if err != nil {
 		log.Error("HandleDelete: delete device:", err)
 		jsonBadRequest(w, err)
