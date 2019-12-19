@@ -55,6 +55,7 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                        p.model,
                                        p.honor_running_only,
                                        polling_frequency,
+                                       snmp_alternate_community,
                                        snmp_community,
                                        snmp_connection_count,
                                        snmp_disable_bulk,
@@ -134,7 +135,8 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                  m.oid,
                                                  m.to_influx,
                                                  m.to_kafka,
-                                                 m.to_prometheus
+                                                 m.to_prometheus,
+                                                 m.use_alternate_community
                                             FROM measure_metrics mm,
                                                  metrics m
                                            WHERE m.active = TRUE
@@ -157,7 +159,8 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                   m.running_if_only,
                                                   m.to_influx,
                                                   m.to_kafka,
-                                                  m.to_prometheus
+                                                  m.to_prometheus,
+                                                  m.use_alternate_community
                                              FROM measure_metrics mm,
                                                   metrics m
                                             WHERE m.active = TRUE
