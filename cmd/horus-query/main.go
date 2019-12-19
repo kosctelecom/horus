@@ -46,11 +46,12 @@ var (
 	jsonf       = getopt.StringLong("request", 'r', "", "request json file", "json")
 	debug       = getopt.IntLong("debug", 'd', 0, "debug level")
 	devID       = getopt.IntLong("id", 'i', 0, "id of the device to query")
-	dsn         = getopt.StringLong("dsn", 0, "", "postgres db DSN", "url")
+	dsn         = getopt.StringLong("dsn", 0, "postgres://horus:horus@localhost/horus", "postgres db DSN", "url")
 	compact     = getopt.BoolLong("compact", 'c', "print compacted json result")
 	printQuery  = getopt.BoolLong("print-query", 'p', "print the json query before executing it")
 	scalarMeas  = getopt.ListLong("scalar", 's', "id of scalar measures to query: all if empty, none if 0", "id,...")
 	indexedMeas = getopt.ListLong("indexed", 't', "id of indexed measures to query: all if empty, none if 0", "id,...")
+	prune       = getopt.BoolLong("prune", 0, "prune result to keep only metrics to be exported to kafka")
 )
 
 func main() {
@@ -148,6 +149,10 @@ func main() {
 	res := req.Poll(ctx)
 	if res.PollErr != "" {
 		log.Printf("Poll error: %v", res.PollErr)
+		return
+	}
+	if *prune {
+		res.PruneForKafka()
 	}
 	for i := range res.Indexed {
 		res.Indexed[i].DedupDesc()
