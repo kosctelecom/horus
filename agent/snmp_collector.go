@@ -72,6 +72,9 @@ func (c *SnmpCollector) Push(pollRes *PollResult) {
 
 	for _, scalar := range pollRes.Scalar {
 		for _, res := range scalar.Results {
+			if !res.toProm {
+				continue
+			}
 			var sample PromSample
 			if res.AsLabel {
 				sample = PromSample{
@@ -118,12 +121,12 @@ func (c *SnmpCollector) Push(pollRes *PollResult) {
 		for _, indexedRes := range indexed.Results {
 			resAsLabels := make(map[string]string)
 			for _, res := range indexedRes {
-				if res.AsLabel {
+				if res.toProm && res.AsLabel {
 					resAsLabels[res.Name] = fmt.Sprintf("%v", res.Value)
 				}
 			}
 			for _, res := range indexedRes {
-				if res.AsLabel {
+				if !res.toProm || res.AsLabel {
 					continue
 				}
 				labels := make(map[string]string)

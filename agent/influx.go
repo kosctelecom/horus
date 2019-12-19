@@ -203,8 +203,11 @@ func (c *InfluxClient) makeBatchPoints(res *PollResult) (influxclient.BatchPoint
 			tags[k] = v
 		}
 		fields := make(map[string]interface{})
-		for _, m := range scalar.Results {
-			fields[m.Name] = m.Value
+		for _, r := range scalar.Results {
+			if !r.toInflux {
+				continue
+			}
+			fields[r.Name] = r.Value
 		}
 		pt, err := influxclient.NewPoint(scalar.Name, tags, fields, res.PollStart)
 		if err != nil {
@@ -215,17 +218,20 @@ func (c *InfluxClient) makeBatchPoints(res *PollResult) (influxclient.BatchPoint
 
 	for _, indexed := range res.Indexed {
 		// each indexed.Results[i] (i.e. all measures for one index) is a new point
-		for _, tabRes := range indexed.Results {
+		for _, indexedRes := range indexed.Results {
 			tags := make(map[string]string)
 			for k, v := range res.Tags {
 				tags[k] = v
 			}
 			fields := make(map[string]interface{})
-			for _, m := range tabRes {
-				if m.AsLabel {
-					tags[m.Name] = fmt.Sprintf("%v", m.Value)
+			for _, r := range indexedRes {
+				if !r.toInflux {
+					continue
+				}
+				if r.AsLabel {
+					tags[r.Name] = fmt.Sprintf("%v", r.Value)
 				} else {
-					fields[m.Name] = m.Value
+					fields[r.Name] = r.Value
 				}
 			}
 			pt, err := influxclient.NewPoint(indexed.Name, tags, fields, res.PollStart)

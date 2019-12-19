@@ -110,6 +110,7 @@ func (c *KafkaClient) Push(res *PollResult) {
 		log.Errorf("kafka client not initialized...")
 		return
 	}
+	res.PruneForKafka()
 	log.Debugf("%s: pushing result to kafka queue", res.RequestID)
 	c.results <- res
 	log.Debug2f("%s: pushed result to kafka queue", res.RequestID)
