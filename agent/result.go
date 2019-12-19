@@ -306,15 +306,11 @@ func handleResults() {
 		}
 
 		for _, s := range res.Scalar {
-			for range s.Results {
-				res.metricCount++
-			}
+			res.metricCount += len(s.Results)
 		}
 		for _, x := range res.Indexed {
 			for _, xr := range x.Results {
-				for range xr {
-					res.metricCount++
-				}
+				res.metricCount += len(xr)
 			}
 		}
 
@@ -337,24 +333,24 @@ func handleResults() {
 // - poll_duration_ms: the snmp polling duration in ms
 // - poll_error: the polling error if any
 // - current_load: current agent load (current_jobs/total_capacity)
-func (res *PollResult) sendReport() {
+func (p *PollResult) sendReport() {
 	log.Debugf("report: id=%s agent_id=%d poll_err=%q poll_dur=%dms metric_count=%d",
-		res.RequestID, res.AgentID, res.PollErr, res.Duration, res.metricCount)
-	if res.reportURL == "" {
-		glog.Warningf("no report url for req %s", res.RequestID)
+		p.RequestID, p.AgentID, p.PollErr, p.Duration, p.metricCount)
+	if p.reportURL == "" {
+		glog.Warningf("no report url for req %s", p.RequestID)
 		return
 	}
-	req, err := http.NewRequest("GET", res.reportURL, nil)
+	req, err := http.NewRequest("GET", p.reportURL, nil)
 	if err != nil {
 		glog.Errorf("sendReport: %v", err)
 		return
 	}
 	q := req.URL.Query()
-	q.Add("request_id", res.RequestID)
-	q.Add("agent_id", strconv.Itoa(res.AgentID))
-	q.Add("poll_duration_ms", strconv.FormatInt(res.Duration, 10))
-	q.Add("poll_error", res.PollErr)
-	q.Add("metric_count", strconv.Itoa(res.metricCount))
+	q.Add("request_id", p.RequestID)
+	q.Add("agent_id", strconv.Itoa(p.AgentID))
+	q.Add("poll_duration_ms", strconv.FormatInt(p.Duration, 10))
+	q.Add("poll_error", p.PollErr)
+	q.Add("metric_count", strconv.Itoa(p.metricCount))
 	q.Add("current_load", fmt.Sprintf("%.4f", CurrentLoad()))
 	req.URL.RawQuery = q.Encode()
 
@@ -363,13 +359,13 @@ func (res *PollResult) sendReport() {
 		if i > 0 {
 			time.Sleep(time.Duration(1<<uint(i-1)) * 3 * time.Second)
 		}
-		log.Debug2f("%s - posting report, try #%d/3", res.RequestID, i+1)
+		log.Debug2f("%s - posting report, try #%d/3", p.RequestID, i+1)
 		resp, err := client.Do(req)
 		if err != nil {
 			glog.Errorf("send report, try #%d/3: %v", i+1, err)
 			continue
 		}
-		log.Debug2f("%s - report posted at try #%d/3, status: %s", res.RequestID, i+1, resp.Status)
+		log.Debug2f("%s - report posted at try #%d/3, status: %s", p.RequestID, i+1, resp.Status)
 		resp.Body.Close()
 		break
 	}
