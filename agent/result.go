@@ -156,11 +156,7 @@ func (p *PollResult) PruneForKafka() {
 				ss = append(ss, res)
 			}
 		}
-		if len(ss) == 0 {
-			p.Scalar = append(p.Scalar[:i], p.Scalar[i+1:]...)
-		} else {
-			p.Scalar[i].Results = ss
-		}
+		p.Scalar[i].Results = ss
 	}
 	for i, indexed := range p.Indexed {
 		for j, indexedRes := range indexed.Results {
