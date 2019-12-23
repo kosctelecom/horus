@@ -96,9 +96,6 @@ func (s *SnmpParams) UnmarshalJSON(data []byte) error {
 	if params.Community == "" {
 		return errors.New("invalid snmp params: community cannot be empty")
 	}
-	if params.AlternateCommunity == "" {
-		params.AlternateCommunity = params.Community
-	}
 	if params.Port == 0 {
 		params.Port = 161
 	}

@@ -57,14 +57,13 @@ func TestRequest(t *testing.T) {
 					PingFrequency:    60,
 					Tags:             "{}",
 					SnmpParams: SnmpParams{
-						IPAddress:          "10.2.0.9",
-						Port:               161,
-						Version:            Version2c,
-						Community:          "snmpxxx9",
-						AlternateCommunity: "snmpxxx9",
-						Timeout:            20,
-						Retries:            1,
-						ConnectionCount:    1,
+						IPAddress:       "10.2.0.9",
+						Port:            161,
+						Version:         Version2c,
+						Community:       "snmpxxx9",
+						Timeout:         20,
+						Retries:         1,
+						ConnectionCount: 1,
 					},
 					Profile: Profile{
 						Category: "c",
@@ -100,7 +99,8 @@ func TestRequest(t *testing.T) {
 					"ip_address": "10.2.0.9",
 					"snmp_timeout": 20,
 					"snmp_version": "2c",
-					"snmp_community": "snmpxxx3"
+					"snmp_community": "snmpxxx3",
+					"snmp_alternate_community": "snmpxxx4"
 				}
 			}`,
 			SnmpRequest{
@@ -118,7 +118,7 @@ func TestRequest(t *testing.T) {
 						Port:               161,
 						Version:            Version2c,
 						Community:          "snmpxxx3",
-						AlternateCommunity: "snmpxxx3",
+						AlternateCommunity: "snmpxxx4",
 						Timeout:            20,
 						Retries:            1,
 						ConnectionCount:    1,
@@ -169,14 +169,13 @@ func TestRequest(t *testing.T) {
 					PingFrequency:    0,
 					Tags:             "{}",
 					SnmpParams: SnmpParams{
-						IPAddress:          "10.2.0.92",
-						Port:               161,
-						Version:            Version2c,
-						Community:          "snmpxxx2",
-						AlternateCommunity: "snmpxxx2",
-						Timeout:            20,
-						Retries:            1,
-						ConnectionCount:    1,
+						IPAddress:       "10.2.0.92",
+						Port:            161,
+						Version:         Version2c,
+						Community:       "snmpxxx2",
+						Timeout:         20,
+						Retries:         1,
+						ConnectionCount: 1,
 					},
 					Profile: Profile{
 						Category: "c1",
