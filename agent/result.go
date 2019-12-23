@@ -149,14 +149,20 @@ func MakePollResult(req SnmpRequest) PollResult {
 
 // PruneForKafka prunes PollResult to keep only metrics to be exported to kafka.
 func (p *PollResult) PruneForKafka() {
-	for i, s := range p.Scalar {
+	n := 0
+	for _, s := range p.Scalar {
 		ss := make([]Result, 0, len(s.Results))
 		for _, res := range s.Results {
 			if res.toKafka {
 				ss = append(ss, res)
 			}
 		}
-		p.Scalar[i].Results = ss
+		if len(ss) == 0 {
+			p.Scalar = append(p.Scalar[:n], p.Scalar[n+1:]...)
+		} else {
+			p.Scalar[n].Results = ss
+			n++
+		}
 	}
 	for i, indexed := range p.Indexed {
 		for j, indexedRes := range indexed.Results {
