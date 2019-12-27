@@ -109,8 +109,8 @@ CREATE TABLE reports (
     requested_at timestamp with time zone NOT NULL,
     post_status character varying NOT NULL,
     report_received_at timestamp with time zone,
-    snmp_duration_ms integer,
-    snmp_error character varying NOT NULL DEFAULT ''
+    poll_duration_ms integer,
+    poll_error character varying NOT NULL DEFAULT ''
 );
 
 ALTER TABLE agents OWNER TO horus;

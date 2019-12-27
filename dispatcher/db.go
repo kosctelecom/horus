@@ -119,8 +119,8 @@ func InitDB(dsn string) error {
 	}
 	updReportStmt, err = db.Prepare(`UPDATE reports
                                         SET report_received_at = NOW(),
-                                            snmp_duration_ms = $2,
-                                            snmp_error = $3
+                                            poll_duration_ms = $2,
+                                            poll_error = $3
                                       WHERE uuid = $1`)
 	if err != nil {
 		return fmt.Errorf("prepare updReportStmt: %v", err)
