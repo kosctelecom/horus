@@ -24,19 +24,19 @@ import (
 )
 
 var (
-	db                      *sqlx.DB
-	lockDevStmt             *sql.Stmt
-	unlockDevStmt           *sql.Stmt
-	unlockAllDevStmt        *sql.Stmt
-	unlockDevFromReportStmt *sql.Stmt
-	unlockFromOngoingStmt   *sql.Stmt
-	unlockFromAgentStmt     *sql.Stmt
-	setDevLastPolledAt      *sql.Stmt
-	setDevLastPingedAt      *sql.Stmt
-	insertMeasLastPolledAt  *sql.Stmt
-	insertReportStmt        *sql.Stmt
-	updReportStmt           *sql.Stmt
-	checkAgentStmt          *sql.Stmt
+	db                       *sqlx.DB
+	lockDevStmt              *sql.Stmt
+	unlockDevStmt            *sql.Stmt
+	unlockAllDevStmt         *sql.Stmt
+	unlockDevFromReportStmt  *sql.Stmt
+	unlockFromOngoingStmt    *sql.Stmt
+	unlockFromAgentStmt      *sql.Stmt
+	setDevLastPolledAt       *sql.Stmt
+	setDevLastPingedAt       *sql.Stmt
+	insertMetricLastPolledAt *sql.Stmt
+	insertReportStmt         *sql.Stmt
+	updReportStmt            *sql.Stmt
+	checkAgentStmt           *sql.Stmt
 )
 
 // InitDB initializes db connection and prepares the db statements
@@ -103,13 +103,14 @@ func InitDB(dsn string) error {
 	if err != nil {
 		return fmt.Errorf("prepare setLastPingDate: %v", err)
 	}
-	insertMeasLastPolledAt, err = db.Prepare(`INSERT INTO measure_poll_times
-                                                          (device_id, measure_id, last_polled_at)
-                                                   VALUES ($1, $2, NOW())
-                                              ON CONFLICT (device_id, measure_id) DO UPDATE
-                                                      SET last_polled_at = NOW()`)
+	insertMetricLastPolledAt, err = db.Prepare(`INSERT INTO metric_poll_times
+                                                            (device_id, metric_id, last_polled_at)
+                                                     VALUES ($1, $2, NOW())
+                                                ON CONFLICT (device_id, metric_id)
+                                                  DO UPDATE
+                                                        SET last_polled_at = NOW()`)
 	if err != nil {
-		return fmt.Errorf("prepare insertMeasLastPolledAt: %v", err)
+		return fmt.Errorf("prepare insertMetricLastPolledAt: %v", err)
 	}
 	insertReportStmt, err = db.Prepare(`INSERT INTO reports
                                                     (uuid, device_id, agent_id, post_status, requested_at)

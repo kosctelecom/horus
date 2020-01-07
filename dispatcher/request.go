@@ -218,13 +218,17 @@ func RequestWithLock(id int) (model.SnmpRequest, error) {
 func updateLastPolledAt(req model.SnmpRequest) {
 	sqlExec(req.UID, "setDevLastPolledAt", setDevLastPolledAt, req.Device.ID)
 	for _, scalar := range req.ScalarMeasures {
-		if scalar.PollingFrequency > 0 {
-			sqlExec(req.UID, "insertMeasLastPolledAt", insertMeasLastPolledAt, req.Device.ID, scalar.ID)
+		for _, m := range scalar.Metrics {
+			if m.PollingFrequency > 0 {
+				sqlExec(req.UID, "insertMetricLastPolledAt", insertMetricLastPolledAt, req.Device.ID, m.ID)
+			}
 		}
 	}
 	for _, indexed := range req.IndexedMeasures {
-		if indexed.PollingFrequency > 0 {
-			sqlExec(req.UID, "insertMeasLastPolledAt", insertMeasLastPolledAt, req.Device.ID, indexed.ID)
+		for _, m := range indexed.Metrics {
+			if m.PollingFrequency > 0 {
+				sqlExec(req.UID, "insertMetricLastPolledAt", insertMetricLastPolledAt, req.Device.ID, m.ID)
+			}
 		}
 	}
 }
