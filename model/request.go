@@ -17,7 +17,6 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	"horus/log"
 	"strings"
 	"time"
 )
@@ -118,35 +117,6 @@ func (r *SnmpRequest) UnmarshalJSON(data []byte) error {
 	}
 	*r = SnmpRequest(req)
 	return nil
-}
-
-// FilterMeasures removes from request all measures which are not to be polled at this time
-// because their polling interval is bigger than the global one.
-func (r *SnmpRequest) FilterMeasures() {
-	var filtScalar []ScalarMeasure
-	for _, m := range r.ScalarMeasures {
-		log.Debug3f("measure %s: pollFreq=%d, last polled at=%v", m.Name, m.PollingFrequency, m.LastPolledAt.Time)
-		minPollTime := time.Now().Add(-time.Duration(m.PollingFrequency) * time.Second)
-		if m.PollingFrequency == 0 || !m.LastPolledAt.Valid || m.LastPolledAt.Time.Before(minPollTime) {
-			log.Debug3f("measure %s kept", m.Name)
-			filtScalar = append(filtScalar, m)
-		} else {
-			log.Debug2f("measure %s skipped", m.Name)
-		}
-	}
-	r.ScalarMeasures = filtScalar
-	var filtIndexed []IndexedMeasure
-	for _, m := range r.IndexedMeasures {
-		log.Debug3f("measure %s: pollFreq=%d, last polled at=%v", m.Name, m.PollingFrequency, m.LastPolledAt.Time)
-		minPollTime := time.Now().Add(-time.Duration(m.PollingFrequency) * time.Second)
-		if m.PollingFrequency == 0 || !m.LastPolledAt.Valid || m.LastPolledAt.Time.Before(minPollTime) {
-			log.Debug3f("measure %s kept", m.Name)
-			filtIndexed = append(filtIndexed, m)
-		} else {
-			log.Debug2f("measure %s skipped", m.Name)
-		}
-	}
-	r.IndexedMeasures = filtIndexed
 }
 
 // Targets returns the list of host targets for this ping request.

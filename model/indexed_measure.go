@@ -41,13 +41,14 @@ type IndexedMeasure struct {
 	// IndexPos is the position of the index metric in the Metrics array.
 	IndexPos int `db:"-"`
 
-	// PollingFrequency is the measure specific polling frequency.
-	// It is only taken in account if greater than the device polling frequency.
-	PollingFrequency int `db:"polling_frequency"`
+	/*
+		// PollingFrequency is the measure specific polling frequency.
+		// It is only taken in account if greater than the device polling frequency.
+		PollingFrequency int `db:"polling_frequency"`
 
-	// LastPolledAt is the measure last poll time.
-	LastPolledAt NullTime `db:"last_polled_at"`
-
+		// LastPolledAt is the measure last poll time.
+		LastPolledAt NullTime `db:"last_polled_at"`
+	*/
 	// FilterPattern is the regex pattern used to filter the IndexedResults of this metric group.
 	// It can be used to only keep results from interesting interfaces.
 	FilterPattern string `db:"filter_pattern"`

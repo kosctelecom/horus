@@ -30,13 +30,6 @@ type ScalarMeasure struct {
 	// Description is the description of the scalar metric
 	Description string `db:"description"`
 
-	// PollingFrequency is the measures polling frequency.
-	// It is only taken in account if greater than device polling frequency.
-	PollingFrequency int `db:"polling_frequency"`
-
-	// LastPolledAt is the measure last poll time
-	LastPolledAt NullTime `db:"last_polled_at"`
-
 	// Metrics is the list of metrics of this scalar measure
 	Metrics []Metric
 }

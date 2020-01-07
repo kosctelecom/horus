@@ -35,6 +35,13 @@ type Metric struct {
 	// Description is the metric description.
 	Description string `db:"description"`
 
+	// PollingFrequency is the metric polling frequency.
+	// Must be a multiple of the device polling frequency.
+	PollingFrequency int `db:"polling_frequency"`
+
+	// LastPolledAt is the metric's last poll time (on this device).
+	LastPolledAt NullTime `db:"last_polled_at"`
+
 	// Active indicates if this metric is actually polled (all inactive metrics are ignored).
 	Active bool `db:"active"`
 

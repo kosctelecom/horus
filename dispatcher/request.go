@@ -81,12 +81,6 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 	err = db.Select(&req.ScalarMeasures, `SELECT m.description,
                                                  m.id,
                                                  m.name,
-                                                 m.polling_frequency,
-                                            (SELECT last_polled_at
-                                               FROM measure_poll_times t
-                                              WHERE t.device_id = d.id AND t.measure_id = m.id
-                                           ORDER BY last_polled_at DESC
-                                              LIMIT 1)
                                             FROM devices d,
                                                  measures m,
                                                  profile_measures pm
@@ -94,7 +88,6 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                              AND d.profile_id = pm.profile_id
                                              AND m.id = pm.measure_id
                                              AND m.is_indexed = FALSE
-                                             AND m.polling_frequency >= 0
                                         ORDER BY m.id`, devID)
 	if err != nil {
 		return req, fmt.Errorf("select scalar measures: %v", err)
@@ -105,14 +98,7 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                   m.id,
                                                   m.index_metric_id,
                                                   m.invert_filter_match,
-                                                  m.name,
-                                                  m.polling_frequency,
-                                             (SELECT last_polled_at
-                                                FROM measure_poll_times t
-                                               WHERE t.device_id = d.id
-                                                 AND t.measure_id = m.id
-                                            ORDER BY last_polled_at DESC
-                                               LIMIT 1)
+                                                  m.name
                                              FROM devices d,
                                                   measures m,
                                                   profile_measures pm
@@ -120,12 +106,10 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                               AND d.profile_id = pm.profile_id
                                               AND m.id = pm.measure_id
                                               AND m.is_indexed = TRUE
-                                              AND m.polling_frequency >= 0
                                          ORDER BY m.id`, devID)
 	if err != nil {
 		return req, fmt.Errorf("select indexed measures: %v", err)
 	}
-	req.FilterMeasures()
 	for i, scalar := range req.ScalarMeasures {
 		err = db.Select(&scalar.Metrics, `SELECT m.active,
                                                  m.description,
@@ -133,16 +117,20 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                  m.id,
                                                  m.name,
                                                  m.oid,
+                                                 m.polling_frequency,
                                                  m.to_influx,
                                                  m.to_kafka,
                                                  m.to_prometheus,
-                                                 m.use_alternate_community
+                                                 m.use_alternate_community,
+                                                 t.last_polled_at
                                             FROM measure_metrics mm,
                                                  metrics m
+                                       LEFT JOIN metric_poll_times t ON (t.metric_id = m.id AND t.device_id = $1)
                                            WHERE m.active = TRUE
                                              AND m.id = mm.metric_id
-                                             AND mm.measure_id = $1
-                                        ORDER BY m.id`, scalar.ID)
+                                             AND mm.measure_id = $2
+                                             AND (t.last_polled_at IS NULL OR EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - t.last_polled_at) >= m.polling_frequency)
+                                        ORDER BY m.id`, devID, scalar.ID)
 		if err != nil {
 			return req, fmt.Errorf("select scalar metrics: %v", err)
 		}
@@ -156,17 +144,21 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                   m.index_pattern,
                                                   m.name,
                                                   m.oid,
+                                                  m.polling_frequency,
                                                   m.running_if_only,
                                                   m.to_influx,
                                                   m.to_kafka,
                                                   m.to_prometheus,
-                                                  m.use_alternate_community
+                                                  m.use_alternate_community,
+                                                  t.last_polled_at
                                              FROM measure_metrics mm,
                                                   metrics m
+                                        LEFT JOIN metric_poll_times t ON (t.metric_id = m.id AND t.device_id = $1)
                                             WHERE m.active = TRUE
                                               AND m.id = mm.metric_id
-                                              AND mm.measure_id = $1
-                                         ORDER BY m.id`, indexed.ID)
+                                              AND mm.measure_id = $2
+                                              AND (t.last_polled_at IS NULL OR EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - t.last_polled_at) >= m.polling_frequency)
+                                         ORDER BY m.id`, devID, indexed.ID)
 		if err != nil {
 			return req, fmt.Errorf("select indexed metrics: %v", err)
 		}
