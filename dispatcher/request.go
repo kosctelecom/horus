@@ -80,7 +80,7 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 
 	err = db.Select(&req.ScalarMeasures, `SELECT m.description,
                                                  m.id,
-                                                 m.name,
+                                                 m.name
                                             FROM devices d,
                                                  measures m,
                                                  profile_measures pm
