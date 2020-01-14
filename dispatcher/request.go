@@ -78,7 +78,8 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 		return req, fmt.Errorf("request: %v", err)
 	}
 
-	err = db.Select(&req.ScalarMeasures, `SELECT m.description,
+	var scalarMeasures []model.ScalarMeasure
+	err = db.Select(&scalarMeasures, `SELECT m.description,
                                                  m.id,
                                                  m.name
                                             FROM devices d,
@@ -92,7 +93,8 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 	if err != nil {
 		return req, fmt.Errorf("select scalar measures: %v", err)
 	}
-	err = db.Select(&req.IndexedMeasures, `SELECT m.description,
+	var indexedMeasures []model.IndexedMeasure
+	err = db.Select(&indexedMeasures, `SELECT m.description,
                                                   m.filter_metric_id,
                                                   m.filter_pattern,
                                                   m.id,
@@ -110,7 +112,7 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 	if err != nil {
 		return req, fmt.Errorf("select indexed measures: %v", err)
 	}
-	for i, scalar := range req.ScalarMeasures {
+	for _, scalar := range scalarMeasures {
 		err = db.Select(&scalar.Metrics, `SELECT m.active,
                                                  m.description,
                                                  m.export_as_label,
@@ -134,9 +136,11 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 		if err != nil {
 			return req, fmt.Errorf("select scalar metrics: %v", err)
 		}
-		req.ScalarMeasures[i] = scalar
+		if len(scalar.Metrics) > 0 {
+			req.ScalarMeasures = append(req.ScalarMeasures, scalar)
+		}
 	}
-	for i, indexed := range req.IndexedMeasures {
+	for _, indexed := range indexedMeasures {
 		err = db.Select(&indexed.Metrics, `SELECT m.active,
                                                   m.description,
                                                   m.export_as_label,
@@ -162,7 +166,9 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 		if err != nil {
 			return req, fmt.Errorf("select indexed metrics: %v", err)
 		}
-		req.IndexedMeasures[i] = indexed
+		if len(indexed.Metrics) > 0 {
+			req.IndexedMeasures = append(req.IndexedMeasures, indexed)
+		}
 	}
 	if LocalIP != "" && Port != 0 {
 		req.ReportURL = fmt.Sprintf("http://%s:%d%s", LocalIP, Port, model.ReportURI)
