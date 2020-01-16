@@ -45,12 +45,18 @@ type Result struct {
 	// AsLabel tells if the result is exported as a prometheus label.
 	AsLabel bool `json:"as_label,omitempty"`
 
+	// ToInflux tells wether the result is exported to influxDB
+	ToInflux bool `json:"to_influx,omitempty"`
+
+	// ToKafka tells wether the result is exported to kafka
+	ToKafka bool `json:"to_kafka,omitempty"`
+
+	// ToProm tells wether the result is exported to prometheus
+	ToProm bool `json:"to_prom,omitempty"`
+
 	snmpType gosnmp.Asn1BER
 	rawValue interface{}
 	suffix   string
-	toInflux bool
-	toKafka  bool
-	toProm   bool
 }
 
 // TabularResults is a map of Result array containing all values for a given indexed oid.
@@ -153,7 +159,7 @@ func (p *PollResult) PruneForKafka() {
 	for _, s := range p.Scalar {
 		ss := make([]Result, 0, len(s.Results))
 		for _, res := range s.Results {
-			if res.toKafka {
+			if res.ToKafka {
 				ss = append(ss, res)
 			}
 		}
@@ -168,7 +174,7 @@ func (p *PollResult) PruneForKafka() {
 		for j, indexedRes := range indexed.Results {
 			ir := make([]Result, 0, len(indexedRes))
 			for _, res := range indexedRes {
-				if res.toKafka {
+				if res.ToKafka {
 					ir = append(ir, res)
 				}
 			}
@@ -187,11 +193,11 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 		Description: metric.Description,
 		Oid:         string(metric.Oid),
 		AsLabel:     metric.ExportAsLabel,
+		ToInflux:    metric.ToInflux,
+		ToKafka:     metric.ToKafka,
+		ToProm:      metric.ToProm,
 		snmpType:    pdu.Type,
 		rawValue:    pdu.Value,
-		toInflux:    metric.ToInflux,
-		toKafka:     metric.ToKafka,
-		toProm:      metric.ToProm,
 	}
 	if len(pdu.Name) > len(metric.Oid) {
 		res.suffix = pdu.Name[len(metric.Oid)+1:]

@@ -204,7 +204,7 @@ func (c *InfluxClient) makeBatchPoints(res *PollResult) (influxclient.BatchPoint
 		}
 		fields := make(map[string]interface{})
 		for _, r := range scalar.Results {
-			if !r.toInflux {
+			if !r.ToInflux {
 				continue
 			}
 			fields[r.Name] = r.Value
@@ -225,7 +225,7 @@ func (c *InfluxClient) makeBatchPoints(res *PollResult) (influxclient.BatchPoint
 			}
 			fields := make(map[string]interface{})
 			for _, r := range indexedRes {
-				if !r.toInflux {
+				if !r.ToInflux {
 					continue
 				}
 				if r.AsLabel {
