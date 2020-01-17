@@ -29,19 +29,18 @@ func TestScalarMeasure(t *testing.T) {
 		{
 			`{
 			"Name": "sysUsage",
-			"PollingFrequency": 300,
 			"Metrics": [
-				{"Name":"sysName", "Oid":".1.3.6.1.2.1.1.5.0", "Active":true}
+				{"Name":"sysName", "Oid":".1.3.6.1.2.1.1.5.0", "Active":true, "PollingFrequency": 300}
 			]
 		}`,
 			ScalarMeasure{
-				Name:             "sysUsage",
-				PollingFrequency: 300,
+				Name: "sysUsage",
 				Metrics: []Metric{
 					Metric{
-						Name:   "sysName",
-						Oid:    ".1.3.6.1.2.1.1.5.0",
-						Active: true,
+						Name:             "sysName",
+						Oid:              ".1.3.6.1.2.1.1.5.0",
+						Active:           true,
+						PollingFrequency: 300,
 					},
 				},
 			},

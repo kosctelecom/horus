@@ -149,8 +149,8 @@ func TestRequest(t *testing.T) {
 					"snmp_community": "snmpxxx2"
 				},
 				"ScalarMeasures": [
-					{"Name": "sysUsage", "PollingFrequency": 300, "Metrics":[
-						{"Name":"sysName", "Oid":".1.3.6.1.2.1.1.5.0", "Active":true}
+					{"Name": "sysUsage", "Metrics":[
+						{"Name":"sysName", "Oid":".1.3.6.1.2.1.1.5.0", "Active":true, "PollingFrequency": 300}
 					]
 				}],
 				"IndexedMeasures": [{
@@ -185,29 +185,29 @@ func TestRequest(t *testing.T) {
 				},
 				ScalarMeasures: []ScalarMeasure{
 					ScalarMeasure{
-						Name:             "sysUsage",
-						PollingFrequency: 300,
+						Name: "sysUsage",
 						Metrics: []Metric{
 							Metric{
-								Name:          "sysName",
-								Oid:           ".1.3.6.1.2.1.1.5.0",
-								Active:        true,
-								ExportAsLabel: false,
+								Name:             "sysName",
+								Oid:              ".1.3.6.1.2.1.1.5.0",
+								Active:           true,
+								ExportAsLabel:    false,
+								PollingFrequency: 300,
 							},
 						},
 					},
 				},
 				IndexedMeasures: []IndexedMeasure{
 					IndexedMeasure{
-						Name:             "ifStatus",
-						PollingFrequency: 0,
+						Name: "ifStatus",
 						Metrics: []Metric{
 							Metric{
-								ID:            8,
-								Name:          "ifIndex",
-								Oid:           ".1.3.6.1.2.1.2.2.1.1",
-								Active:        true,
-								ExportAsLabel: true,
+								ID:               8,
+								Name:             "ifIndex",
+								Oid:              ".1.3.6.1.2.1.2.2.1.1",
+								Active:           true,
+								ExportAsLabel:    true,
+								PollingFrequency: 0,
 							},
 						},
 						IndexMetricID: 8,
