@@ -1,7 +1,7 @@
 CREATE TABLE agents (
     id serial PRIMARY KEY,
     ip_address inet NOT NULL,
-    port integer NOT NULL DEFAULT 8000,
+    port integer NOT NULL DEFAULT 80,
     active boolean NOT NULL DEFAULT false,
     is_alive boolean NOT NULL DEFAULT false,
     load real NOT NULL DEFAULT 0,
@@ -22,32 +22,33 @@ COMMENT ON COLUMN profiles.honor_running_only IS 'do we honor the metric''s runn
 
 CREATE TABLE devices (
     id serial PRIMARY KEY,
-    profile_id integer NOT NULL REFERENCES profiles(id),
     active boolean NOT NULL DEFAULT true,
     hostname character varying NOT NULL,
     ip_address character varying NOT NULL UNIQUE,
-    snmp_port integer NOT NULL DEFAULT 161,
-    snmp_version character varying NOT NULL DEFAULT '2c',
-    snmp_community character varying NOT NULL,
-    polling_frequency integer NOT NULL DEFAULT 300,
     is_polling boolean NOT NULL DEFAULT false,
-    last_polled_at timestamp with time zone,
-    snmp_timeout integer NOT NULL DEFAULT 10,
-    snmp_retries integer NOT NULL DEFAULT 1,
-    snmp_disable_bulk boolean NOT NULL DEFAULT false,
+    ping_frequency integer NOT NULL DEFAULT 0,
+    polling_frequency integer NOT NULL DEFAULT 300,
+    profile_id integer NOT NULL REFERENCES profiles(id),
+    snmp_alternate_community character varying NOT NULL DEFAULT '',
+    snmp_community character varying NOT NULL,
     snmp_connection_count integer NOT NULL DEFAULT 1,
+    snmp_disable_bulk boolean NOT NULL DEFAULT false,
+    snmp_port integer NOT NULL DEFAULT 161,
+    snmp_retries integer NOT NULL DEFAULT 1,
+    snmp_timeout integer NOT NULL DEFAULT 10,
+    snmp_version character varying NOT NULL DEFAULT '2c',
+    snmpv3_auth_passwd character varying NOT NULL DEFAULT '',
+    snmpv3_auth_proto character varying NOT NULL DEFAULT '',
+    snmpv3_auth_user character varying NOT NULL DEFAULT '',
+    snmpv3_privacy_passwd character varying NOT NULL DEFAULT '',
+    snmpv3_privacy_proto character varying NOT NULL DEFAULT '',
+    snmpv3_security_level character varying NOT NULL DEFAULT '',
+    tags json NOT NULL DEFAULT '{}'::json,
     to_influx boolean NOT NULL DEFAULT false,
     to_kafka boolean NOT NULL DEFAULT true,
     to_prometheus boolean NOT NULL DEFAULT true,
-    tags json NOT NULL DEFAULT '{}'::json,
-    snmpv3_security_level character varying NOT NULL DEFAULT '',
-    snmpv3_auth_user character varying NOT NULL DEFAULT '',
-    snmpv3_auth_passwd character varying NOT NULL DEFAULT '',
-    snmpv3_auth_proto character varying NOT NULL DEFAULT '',
-    snmpv3_privacy_passwd character varying NOT NULL DEFAULT '',
-    snmpv3_privacy_proto character varying NOT NULL DEFAULT '',
-    ping_frequency integer NOT NULL DEFAULT 0,
-    last_pinged_at timestamp with time zone
+    last_pinged_at timestamp with time zone,
+    last_polled_at timestamp with time zone
 );
 
 CREATE TABLE metrics (
@@ -59,6 +60,11 @@ CREATE TABLE metrics (
     description text NOT NULL,
     export_as_label boolean NOT NULL DEFAULT false,
     running_if_only boolean NOT NULL DEFAULT false,
+    to_influx boolean NOT NULL DEFAULT false,
+    to_kafka boolean NOT NULL DEFAULT true,
+    to_prometheus boolean NOT NULL DEFAULT true,
+    use_alternate_community boolean NOT NULL DEFAULT false,
+    polling_frequency integer NOT NULL DEFAULT 0,
     UNIQUE (oid, index_pattern)
 );
 
@@ -71,7 +77,6 @@ CREATE TABLE measures (
     id serial PRIMARY KEY,
     name character varying NOT NULL,
     description text NOT NULL,
-    polling_frequency integer NOT NULL DEFAULT 0,
     is_indexed boolean NOT NULL DEFAULT false,
     index_metric_id integer REFERENCES metrics(id),
     filter_metric_id integer REFERENCES metrics(id),
@@ -81,31 +86,31 @@ CREATE TABLE measures (
 
 CREATE TABLE measure_metrics (
     id serial PRIMARY KEY,
-    measure_id integer NOT NULL REFERENCES measures(id),
-    metric_id integer NOT NULL REFERENCES metrics(id),
+    measure_id integer NOT NULL REFERENCES measures(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    metric_id integer NOT NULL REFERENCES metrics(id) ON UPDATE CASCADE ON DELETE CASCADE,
     UNIQUE (measure_id, metric_id)
 );
 
-CREATE TABLE measure_poll_times (
+CREATE TABLE metric_poll_times (
     id serial PRIMARY KEY,
-    device_id integer NOT NULL REFERENCES devices(id),
-    measure_id integer NOT NULL REFERENCES measures(id),
+    device_id integer NOT NULL REFERENCES devices(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    metric_id integer NOT NULL REFERENCES measures(id) ON UPDATE CASCADE ON DELETE CASCADE,
     last_polled_at timestamp with time zone NOT NULL,
-    UNIQUE (device_id, measure_id)
+    UNIQUE (device_id, metric_id)
 );
 
 CREATE TABLE profile_measures (
     id serial PRIMARY KEY,
-    profile_id integer NOT NULL REFERENCES profiles(id),
-    measure_id integer NOT NULL REFERENCES measures(id),
+    profile_id integer NOT NULL REFERENCES profiles(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    measure_id integer NOT NULL REFERENCES measures(id) ON UPDATE CASCADE ON DELETE CASCADE,
     UNIQUE (profile_id, measure_id)
 );
 
 CREATE TABLE reports (
     id serial PRIMARY KEY,
     uuid character varying NOT NULL UNIQUE,
-    device_id integer NOT NULL REFERENCES devices(id),
-    agent_id integer NOT NULL REFERENCES agents(id),
+    device_id integer NOT NULL REFERENCES devices(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    agent_id integer NOT NULL REFERENCES agents(id) ON UPDATE CASCADE ON DELETE CASCADE,
     requested_at timestamp with time zone NOT NULL,
     post_status character varying NOT NULL,
     report_received_at timestamp with time zone,
@@ -119,6 +124,6 @@ ALTER TABLE devices OWNER TO horus;
 ALTER TABLE metrics OWNER TO horus;
 ALTER TABLE measures OWNER TO horus;
 ALTER TABLE measure_metrics OWNER TO horus;
-ALTER TABLE measure_poll_times OWNER TO horus;
+ALTER TABLE metric_poll_times OWNER TO horus;
 ALTER TABLE profile_measures OWNER TO horus;
 ALTER TABLE reports OWNER TO horus;
