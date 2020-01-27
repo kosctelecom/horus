@@ -35,9 +35,6 @@ type Profile struct {
 
 	// Model is the device model.
 	Model string `db:"model" json:"model"`
-
-	// HonorRunningOnly tells if we must take into account the metric RunningIfOnly flag.
-	HonorRunningOnly bool `db:"honor_running_only" json:"honor_running_only,omitempty"`
 }
 
 // UnmarshalJSON implements json Unmarhsaler interface for a Profile.

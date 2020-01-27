@@ -402,12 +402,7 @@ func (r *SnmpRequest) Walk(ctx context.Context) ([]IndexedResults, error) {
 
 	for _, meas := range r.IndexedMeasures {
 		var indexed IndexedResults
-		if r.Device.HonorRunningOnly && meas.HasMetricWithRunningOnly() {
-			r.Debugf(2, "meas %s: only getting metrics for running ifaces", meas.Name)
-			indexed, err = r.walkRunningMeasure(ctx, meas)
-		} else {
-			indexed, err = r.walkMeasure(ctx, meas)
-		}
+		indexed, err = r.walkMeasure(ctx, meas)
 		if err != nil {
 			r.Errorf("Walk %s: %v", meas.Name, err)
 		}

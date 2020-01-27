@@ -14,11 +14,8 @@ CREATE TABLE profiles (
     category character varying NOT NULL,
     vendor character varying NOT NULL,
     model character varying NOT NULL,
-    honor_running_only boolean NOT NULL DEFAULT false,
     UNIQUE(category, vendor, model)
 );
-
-COMMENT ON COLUMN profiles.honor_running_only IS 'do we honor the metric''s running_if_only flag?';
 
 CREATE TABLE devices (
     id serial PRIMARY KEY,
@@ -59,7 +56,6 @@ CREATE TABLE metrics (
     index_pattern character varying NOT NULL DEFAULT '',
     description text NOT NULL,
     export_as_label boolean NOT NULL DEFAULT false,
-    running_if_only boolean NOT NULL DEFAULT false,
     to_influx boolean NOT NULL DEFAULT false,
     to_kafka boolean NOT NULL DEFAULT true,
     to_prometheus boolean NOT NULL DEFAULT true,
@@ -71,7 +67,6 @@ CREATE TABLE metrics (
 COMMENT ON COLUMN metrics.active IS 'only active metrics are taken into account';
 COMMENT ON COLUMN metrics.index_pattern IS 'regex to apply to extract index from tabular oid (only for unnatural index positions)';
 COMMENT ON COLUMN metrics.export_as_label IS 'do we export this metric value as a prometheus label?';
-COMMENT ON COLUMN metrics.running_if_only IS 'only query this oid on running ifaces (only active if not exported as label & profile honor_running_only flag set)';
 
 CREATE TABLE measures (
     id serial PRIMARY KEY,

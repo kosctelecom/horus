@@ -124,14 +124,3 @@ func (x *IndexedMeasure) RemoveInactive() {
 	x.Metrics = filtered
 	log.Debug3f("metrics after = %v", Names(filtered))
 }
-
-// HasMetricWithRunningOnly returns true if this measure has a metric with
-// RunningIfaceOnly flag is true.
-func (x IndexedMeasure) HasMetricWithRunningOnly() bool {
-	for _, metr := range x.Metrics {
-		if metr.RunningIfaceOnly {
-			return true
-		}
-	}
-	return false
-}

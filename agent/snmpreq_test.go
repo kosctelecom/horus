@@ -55,14 +55,14 @@ const Req = `{
 		"Metrics":[
 			{"ID":8, "Name":"ifIndex", "Oid":".1.3.6.1.2.1.2.2.1.1", "Active":false},
 			{"ID":46, "Name":"ifName", "Oid":".1.3.6.1.2.1.31.1.1.1.1", "Active":true, "AsLabel":true},
-			{"ID":10, "Name":"ifOperStatus", "Oid":".1.3.6.1.2.1.2.2.1.8", "Active":true, "RunningIfaceOnly":false},
-			{"ID":11, "Name":"ifAdminStatus", "Oid":".1.3.6.1.2.1.2.2.1.7", "Active":true, "RunningIfaceOnly":false},
-			{"ID":18, "Name":"ifHCInOctets", "Oid":".1.3.6.1.2.1.31.1.1.1.6", "Active":true, "RunningIfaceOnly":true},
-			{"ID":19, "Name":"ifHCOutOctets", "Oid":".1.3.6.1.2.1.31.1.1.1.7", "Active":true, "RunningIfaceOnly":true},
-			{"ID":14, "Name":"ifInErrors", "Oid":".1.3.6.1.2.1.2.2.1.14", "Active":true, "RunningIfaceOnly":true},
-			{"ID":17, "Name":"ifOutErrors", "Oid":".1.3.6.1.2.1.2.2.1.20", "Active":true, "RunningIfaceOnly":true},
-			{"ID":13, "Name":"ifInDiscards", "Oid":".1.3.6.1.2.1.2.2.1.13", "Active":true, "RunningIfaceOnly":true},
-			{"ID":16, "Name":"ifOutDiscards", "Oid":".1.3.6.1.2.1.2.2.1.19", "Active":true, "RunningIfaceOnly":true}],
+			{"ID":10, "Name":"ifOperStatus", "Oid":".1.3.6.1.2.1.2.2.1.8", "Active":true},
+			{"ID":11, "Name":"ifAdminStatus", "Oid":".1.3.6.1.2.1.2.2.1.7", "Active":true},
+			{"ID":18, "Name":"ifHCInOctets", "Oid":".1.3.6.1.2.1.31.1.1.1.6", "Active":true},
+			{"ID":19, "Name":"ifHCOutOctets", "Oid":".1.3.6.1.2.1.31.1.1.1.7", "Active":true},
+			{"ID":14, "Name":"ifInErrors", "Oid":".1.3.6.1.2.1.2.2.1.14", "Active":true},
+			{"ID":17, "Name":"ifOutErrors", "Oid":".1.3.6.1.2.1.2.2.1.20", "Active":true},
+			{"ID":13, "Name":"ifInDiscards", "Oid":".1.3.6.1.2.1.2.2.1.13", "Active":true},
+			{"ID":16, "Name":"ifOutDiscards", "Oid":".1.3.6.1.2.1.2.2.1.19", "Active":true}],
 		"IndexMetricID": 46}
 	]
 }`
@@ -195,31 +195,5 @@ func TestWalkIndexedMulti(t *testing.T) {
 	}
 	if testing.Verbose() {
 		t.Logf("double connection mode: res = %+v", res)
-	}
-}
-
-func TestWalkRunning(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode")
-	}
-	if snmpIPAddr == "" || snmpCommunity == "" {
-		t.Skip("SNMP_IP or SNMP_COMMUNITY env vars not defined, skipping")
-	}
-	sreq := strings.ReplaceAll(strings.ReplaceAll(Req, "SNMP_IP", snmpIPAddr), "SNMP_COMMUNITY", snmpCommunity)
-	var req SnmpRequest
-	if err := json.Unmarshal([]byte(sreq), &req); err != nil {
-		t.Fatalf("unmarshal: %v", err)
-	}
-	if err := req.Dial(context.Background()); err != nil {
-		t.Fatalf("Dial: %v", err)
-	}
-	defer req.Close()
-	res, err := req.Walk(context.Background())
-	if err != nil {
-		t.Errorf("WalkRunning: %v", err)
-	}
-	if testing.Verbose() {
-		t.Logf("res = %+v", res)
-		_ = res
 	}
 }

@@ -60,9 +60,6 @@ type Metric struct {
 	// UseAlternateCommunity is a flag telling wether to use the alternate snmp community for this metric.
 	UseAlternateCommunity bool `db:"use_alternate_community"`
 
-	// RunningIfaceOnly tells to retrieve this metric only for running ifaces (for indexed metrics).
-	RunningIfaceOnly bool `db:"running_if_only"`
-
 	// IndexPattern is the regex with subexpression used to extract index from tabular Oids.
 	IndexPattern string `json:",omitempty" db:"index_pattern"`
 
