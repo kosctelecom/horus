@@ -24,11 +24,16 @@ type PingCollector struct {
 // Push converts a ping measure to prometheus samples and pushes them to the sample queue.
 func (c *PingCollector) Push(meas PingMeasure) {
 	log.Debug2f(">> posting ping measures for %s at %v", meas.IpAddr, meas.Stamp)
+	var hostId string
+	if len(meas.Hostname) >= 4 {
+		hostId = meas.Hostname[:4]
+	}
 	ping_min := PromSample{
 		Name:  "ping_min_duration_seconds",
 		Desc:  "min ping RTT time on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
+			"id":            hostId,
 			"host":          meas.Hostname,
 			"ip_address":    meas.IpAddr,
 			"device_type":   meas.Category,
@@ -44,6 +49,7 @@ func (c *PingCollector) Push(meas PingMeasure) {
 		Desc:  "max ping RTT time on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
+			"id":            hostId,
 			"host":          meas.Hostname,
 			"ip_address":    meas.IpAddr,
 			"device_type":   meas.Category,
@@ -59,6 +65,7 @@ func (c *PingCollector) Push(meas PingMeasure) {
 		Desc:  "average ping RTT time on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
+			"id":            hostId,
 			"host":          meas.Hostname,
 			"ip_address":    meas.IpAddr,
 			"device_type":   meas.Category,
@@ -74,6 +81,7 @@ func (c *PingCollector) Push(meas PingMeasure) {
 		Desc:  "ping packet loss ratio on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
+			"id":            hostId,
 			"host":          meas.Hostname,
 			"ip_address":    meas.IpAddr,
 			"device_type":   meas.Category,
