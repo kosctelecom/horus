@@ -48,6 +48,9 @@ type Metric struct {
 	// ExportAsLabel tells if this metric is exported as a prometheus label (instead of value).
 	ExportAsLabel bool `db:"export_as_label"`
 
+	// IsStringCounter tells wether the metric is of Counter64String type
+	IsStringCounter bool `db:"is_string_counter"`
+
 	// ToKafka is a flag telling if the results should be exported to Kafka.
 	ToKafka bool `db:"to_kafka"`
 

@@ -206,7 +206,17 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 	case gosnmp.NoSuchObject:
 		return res, fmt.Errorf("oid %s: NoSuchObject", pdu.Name)
 	case gosnmp.OctetString:
-		res.Value = string(pdu.Value.([]byte))
+		sval := string(pdu.Value.([]byte))
+		if metric.IsStringCounter {
+			// Counter64String values, converted to float and exported if valid
+			val, err := strconv.Atoi(sval)
+			if err != nil {
+				return res, fmt.Errorf("oid %s: invalid Counter64String value %s: %v", pdu.Name, sval, err)
+			}
+			res.Value = float64(val)
+		} else {
+			res.Value = sval
+		}
 	case gosnmp.Counter64:
 		// 64 bit counters are automatically wrapped by 2^53 to avoid precision loss due
 		// to rounding (https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
