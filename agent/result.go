@@ -269,6 +269,8 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 					results = append(results, metr...)
 				}
 			}
+			// groups together metrics with composite indexes i.e.
+			// oid1.i1 metric will be grouped with oid2.i1.s1 and oid3.i1.s1.s2
 			lastDot := strings.LastIndex(index, ".")
 			if lastDot <= 0 {
 				break
@@ -276,7 +278,8 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 			index = index[:lastDot]
 			log.Debug2f(">> %s - new index: %s", uid, index)
 		}
-		if len(results) >= 1 {
+		if len(results) > 1 {
+			// skip empty results and those with index only
 			indexed.Results = append(indexed.Results, results)
 		}
 	}
