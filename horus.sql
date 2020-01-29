@@ -61,6 +61,7 @@ CREATE TABLE metrics (
     to_prometheus boolean NOT NULL DEFAULT true,
     use_alternate_community boolean NOT NULL DEFAULT false,
     polling_frequency integer NOT NULL DEFAULT 0,
+    is_string_counter boolean NOT NULL DEFAULT false,
     UNIQUE (oid, index_pattern)
 );
 
