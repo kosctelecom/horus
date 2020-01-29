@@ -49,7 +49,7 @@ Database structure
 - The `export_as_label` flag indicates wether the result should be exported as a Prometheus label, when it's a string for example.
 - The `use_alternate_community` flag indicates wether to use the alternate snmp community for this metric if it is defined, falls back to the main community otherwise.
 - The `polling_frequency` field defines a specific polling frequency for this metric. It must be a multiple of the device polling frequency, allows to poll this metric less frequently.
-- The `is_string_counter` flag indicates wether the metric value is a counter exported as a string (ADVA specific `StringCounter` type)
+- The `is_string_counter` flag indicates wether the metric value is a counter exported as a string (ADVA specific `Counter64String` type)
 
 ## measures table
 
