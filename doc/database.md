@@ -17,7 +17,7 @@ Database structure
 | field                      | type   | default | description
 | ---------------------------| ------ | ------- | --------------------------------------------------------------
 | active                     | bool   | false   | flag to activate device polling.
-| hostname                   | string | -       | device hostname (fqdn).
+| hostname                   | string | -       | device hostname (fqdn)
 | ip\_address                | string | -       | device IP address for snmp requests.
 | ping\_frequency            | int    | 0       | ping frequency in seconds for the device. The device is pinged only if the value of this field is > 0.
 | polling\_frequency         | int    | 0       | snmp polling frequency in seconds for the device. The device is polled only if the value of this field is > 0.
@@ -81,13 +81,3 @@ This table defines the N:N relation between measures and metrics.
 ## profile\_measures table
 
 This table defines the N:N relation between profiles and measures.
-
-
-Example
-=======
-
-See [metrics-sample.sql](../metrics-sample.sql) for a simple metrics definition. It defines:
-
-- a profile for a generic switch
-- a scalar measure for device info (name, uptime, etc.) and 3 indexed measures for each interface status, inbound and outbound counters
-- the corresponding snmp metrics and relations

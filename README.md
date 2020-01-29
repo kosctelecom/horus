@@ -39,17 +39,14 @@ $ ./cmd/bin/horus-dispatcher -h
 $ ./cmd/bin/horus-agent -h
 ```
 
-
-## Usage
-
-The Horus project compilation results in 3 binaries located in the cmd/bin directory:
+The project compilation results in 3 binaries located in the cmd/bin directory:
 
 - [horus-dispatcher(1)](./doc/horus-dispatcher.1.md): the dispatcher that retrieves available jobs from db and send them to agents
 - [horus-agent(1)](./doc/horus-agent.1.md): the agent that performs the snmp or ping requests and sends the result to kafka, Prometheus and influxDB
 - [horus-query(1)](./doc/horus-query.1.md): test command that polls a device and prints the json result to stdout
 
 
-## Database creation
+## Creating and populating the database
 
 We first need to create a postgres user and database. In the psql admin console, run:
 
@@ -67,10 +64,39 @@ $ sudo -u postgres psql -d horus < horus.sql
 
 See [doc/database.md](./doc/database.md) for a detailed description of each table.
 
-We can also import some sample metrics:
+Then we can create a local agent running on port 8000:
+
+```
+ horus=# INSERT INTO agents (id, ip_address, port, active) VALUES (1, '127.0.0.1', 8000, true);
+```
+
+and a device to poll:
+
+```
+horus=# INSERT INTO devices (id, profile_id, active, hostname, ip_address, snmp_version, snmp_community, polling_frequency, ping_frequency, to_influx, to_kafka, to_prometheus)
+             VALUES (1, 1, true, 'switch-01.lan', '10.0.0.1', '2c', 'mycommunity', 120, 60, false, true, true);
+```
+
+and import some sample metrics:
 
 ```
 $ sudo -u postgres psql -d horus < metrics-sample.sql
+```
+
+This script defines:
+- a profile for a generic switch
+- a scalar measure for device info (name, uptime, etc.)
+- 3 indexed measures for each interface status, inbound and outbound counters
+- the corresponding snmp metrics and relations
+
+
+## Starting the agent and the dispatcher
+
+With the previous database config, we can start an agent and the dispatcher (preferably on different shells):
+
+```
+$ ./cmd/bin/horus-agent -d1 --port 8000 --prom-max-age 900 --kafka-host kafka.kosc.local --kafka-partition 0 --kafka-topic horus
+$ ./cmd/bin/horus-dispatcher -c postgres://horus:secret@localhost/horus -d1
 ```
 
 
@@ -92,15 +118,15 @@ scrape_configs:
     scrape_timeout: 15s
     metrics_path: /metrics
     static_configs:
-    - targets: ['localhost:8001']
+    - targets: ['localhost:8000']
 
   # snmp metrics
   - job_name: 'snmp'
-    scrape_interval: 5m
-    scrape_timeout: 2m
+    scrape_interval: 2m
+    scrape_timeout: 1m
     metrics_path: /snmpmetrics
     static_configs:
-    - targets: ['localhost:8001']
+    - targets: ['localhost:8000']
     metric_relabel_configs:
     - source_labels: [id]
       target_label: instance
@@ -111,7 +137,7 @@ scrape_configs:
     scrape_timeout: 15s
     metrics_path: /pingmetrics
     static_configs:
-    - targets: ['localhost:8001']
+    - targets: ['localhost:8000']
     metric_relabel_configs:
     - source_labels: [id]
       target_label: instance
