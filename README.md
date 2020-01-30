@@ -99,6 +99,7 @@ $ ./cmd/bin/horus-agent -d1 --port 8000 --prom-max-age 900 --kafka-host kafka.ko
 $ ./cmd/bin/horus-dispatcher -c postgres://horus:secret@localhost/horus -d1
 ```
 
+You can start the agent or the dispatcher without any argument to get all options and their usage.
 
 ## Prometheus config
 

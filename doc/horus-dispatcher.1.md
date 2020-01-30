@@ -10,7 +10,7 @@ SYNOPSIS
 
 | **horus-dispatcher** \[**-h**|**-v**] \[**-c** _url_] \[**-d** _level_] \[**-g** _seconds_] \[**-i** _address_] \[**-k** _seconds_] \[**--log** _dir_]
 |                      \[**--max-load-delta** _value_] \[**--ping-batch-count** _value_]
-|                      \[**-p** _port_] \[**-q** _seconds_] \[**-r** _days_] \[**-u** _seconds_]
+|                      \[**-p** _port_] \[**-q** _seconds_] \[**-r** _days_] \[**--report-flush-freq hours**] \[**-u** _seconds_]
 
 DESCRIPTION
 ===========
@@ -79,6 +79,10 @@ Options
 -r, --poll-error-retention-period
 
 :   Specifies the number of days during which to keep poll errors in reports table (successful reports are not kept). Defaults to 3 days; Flushing disabled when set to 0.
+
+    --report-flush-freq=hours
+
+:   Specifies the db reports table flush frequency; all entries with null report\_received\_at older than this period are deleted. Defaults to 3 hours.
 
 -u, --device-unlock-freq
 

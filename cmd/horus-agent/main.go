@@ -58,7 +58,7 @@ var (
 	sweepFreq = getopt.IntLong("prom-sweep-frequency", 0, 120, "Prometheus old samples cleaning frequency", "sec")
 
 	// influx conf
-	influxHost    = getopt.StringLong("influx-host", 0, "", "influx server address (influx push disabled if empty)")
+	influxHost    = getopt.StringLong("influx-host", 0, "", "influx server address (push to influx disabled if empty)")
 	influxUser    = getopt.StringLong("influx-user", 0, "", "influx user")
 	influxPasswd  = getopt.StringLong("influx-password", 0, "", "influx user password")
 	influxDB      = getopt.StringLong("influx-db", 0, "", "influx database")
@@ -67,7 +67,7 @@ var (
 	influxRetries = getopt.IntLong("influx-retries", 0, 2, "influx write retries in case of error")
 
 	// kafka conf
-	kafkaHost      = getopt.StringLong("kafka-host", 0, "", "kafka broker ip address (kafka push disabled if empty)")
+	kafkaHost      = getopt.StringLong("kafka-host", 0, "", "kafka broker host (push to kafka disabled if empty)")
 	kafkaTopic     = getopt.StringLong("kafka-topic", 0, "", "kafka snmp results topic")
 	kafkaPartition = getopt.IntLong("kafka-partition", 0, 0, "kafka write partition")
 

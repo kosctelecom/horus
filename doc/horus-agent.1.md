@@ -128,7 +128,7 @@ Kafka related options
 
     --kafka-host
 
-:   Specifies the Kafka broker IP address. Push to Kafka is disabled if empty (default).
+:   Specifies the Kafka broker host or IP address. Push to Kafka is disabled if empty (default).
 
     --kafka-partition
 
