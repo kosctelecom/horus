@@ -34,6 +34,9 @@ type pingQueue struct {
 
 // PingMeasure is the result of a ping request.
 type PingMeasure struct {
+	// HostID is the host db id
+	HostID int
+
 	// Hostname is the pinged host name
 	Hostname string
 
@@ -194,6 +197,7 @@ func processOutput(req model.PingRequest, output string) []PingMeasure {
 		}
 		for _, host := range req.Hosts {
 			if host.IpAddr == ipAddr {
+				meas.HostID = host.ID
 				meas.Hostname = host.Name
 				meas.Category = host.Category
 				meas.Vendor = host.Vendor

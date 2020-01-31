@@ -53,6 +53,9 @@ type OngoingPolls struct {
 
 // PingHost is a host to ping.
 type PingHost struct {
+	// ID is the target db id
+	ID int `db:"id" json:"id"`
+
 	// Name is the target hostname
 	Name string `db:"hostname" json:"hostname"`
 

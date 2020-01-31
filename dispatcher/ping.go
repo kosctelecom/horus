@@ -32,12 +32,14 @@ import (
 // PingBatchCount is the number of hosts per ping request, set at startup.
 var PingBatchCount int
 
-// PingRequests returns current available ping jobs. Retrieves from db the list of hosts
-// that where pinged past the ping frequency and merges them into
+// RetrievePingRequests returns current available ping jobs. Retrieves from db
+// the list of hosts that where pinged past the ping frequency and partition them
+// into ping requests.
 func PingRequests() ([]model.PingRequest, error) {
 	var hosts []model.PingHost
 	log.Debug("retrieving available ping jobs")
 	err := db.Select(&hosts, `SELECT d.hostname,
+                                     d.id,
                                      d.ip_address,
                                      p.category,
                                      p.model,
