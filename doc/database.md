@@ -4,11 +4,11 @@ Database structure
 ## agents table
 
 - Lists all available agents, only `active` ones are taken in account.
-- The `is_alive`, `load` and `last_checked_at` are update on each keep-alive request.
+- The `is_alive`, `load` and `last_checked_at` are updated on each keep-alive request.
 
 ## devices table
 
-- Lists all devices to poll, only `active` ones are taken in account.
+- Lists all devices to poll, only `active` ones are taken into account.
 - Each device is part of a profile through the `profile_id` field. It defines the list of metrics to poll (see below).
 - The `is_polling` flag is set by the dispatcher to lock the device during the polling, it is unlocked when the dispatcher receives the poll report. A cleaner goroutine unlocks periodically locked devices with no polling.
 - The `last_polled_at` and `last_pinged_at` fields are updated by the dispatcher on each successful job submission.
@@ -49,7 +49,7 @@ Database structure
 - The `export_as_label` flag indicates wether the result should be exported as a Prometheus label, when it's a string for example.
 - The `use_alternate_community` flag indicates wether to use the alternate snmp community for this metric if it is defined, falls back to the main community otherwise.
 - The `polling_frequency` field defines a specific polling frequency for this metric. It must be a multiple of the device polling frequency, allows to poll this metric less frequently.
-- The `is_string_counter` flag indicates wether the metric value is a counter exported as a string (ADVA specific `Counter64String` type)
+- The `is_string_counter` flag indicates wether the metric value is a counter exported as a string (`Counter64String` type)
 
 ## measures table
 

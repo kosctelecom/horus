@@ -15,8 +15,8 @@ Horus' main distinguishing features compared to other snmp collectors are:
 - related snmp metrics can be grouped as measures
 - profiles can be defined to group a list of measures specific to a type of device
 
-Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 5 minutes,
-with up to 27K metrics per device.  The polling is dispatched over 4 agents collecting each about 650K metrics, using 2.5GB max memory and 2 cpu cores.
+Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 1 to 5 minutes,
+with up to 27K metrics per device.  The polling is dispatched over 4 agents collecting each about 650K metrics, using 3GB max memory and 2 cpu cores.
 
 
 ## Architecture overview
@@ -100,6 +100,7 @@ $ ./cmd/bin/horus-dispatcher -c postgres://horus:secret@localhost/horus -d1
 ```
 
 You can start the agent or the dispatcher without any argument to get all options and their usage.
+
 
 ## Prometheus config
 

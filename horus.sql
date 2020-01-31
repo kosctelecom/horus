@@ -68,6 +68,7 @@ CREATE TABLE metrics (
 COMMENT ON COLUMN metrics.active IS 'only active metrics are taken into account';
 COMMENT ON COLUMN metrics.index_pattern IS 'regex to apply to extract index from tabular oid (only for unnatural index positions)';
 COMMENT ON COLUMN metrics.export_as_label IS 'do we export this metric value as a prometheus label?';
+COMMENT ON COLUMN metrics.is_string_counter IS 'is the metric a string counter (of type Counter64String)?';
 
 CREATE TABLE measures (
     id serial PRIMARY KEY,
