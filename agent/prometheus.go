@@ -199,8 +199,7 @@ func (c *PromCollector) Collect(ch chan<- prometheus.Metric) {
 	c.Unlock()
 
 	for _, sample := range samples {
-		id := sample.Labels["id"]
-		log.Debug3f("scraping sample %s@%s[%s] ts=%d (%s)", sample.Name, id, sample.Labels["ifName"],
+		log.Debug3f("scraping sample %s id=%s ifName=%s ts=%d (%s)", sample.Name, sample.Labels["id"], sample.Labels["ifName"],
 			sample.Stamp.Unix(), sample.Stamp.Format(time.RFC3339))
 		desc := prometheus.NewDesc(sample.Name, sample.Desc, nil, sample.Labels)
 		metr, err := prometheus.NewConstMetric(desc, prometheus.UntypedValue, sample.Value)
