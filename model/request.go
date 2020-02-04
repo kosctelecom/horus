@@ -122,11 +122,20 @@ func (r *SnmpRequest) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// Targets returns the list of host targets for this ping request.
+// Targets returns the list of host IPs of this ping request.
 func (r PingRequest) Targets() []string {
 	res := make([]string, len(r.Hosts))
 	for i, h := range r.Hosts {
 		res[i] = h.IpAddr
+	}
+	return res
+}
+
+// HostIDs returns the list of host IDs of this ping request.
+func (r PingRequest) HostIDs() []int {
+	res := make([]int, len(r.Hosts))
+	for i, h := range r.Hosts {
+		res[i] = h.ID
 	}
 	return res
 }
