@@ -21,7 +21,7 @@ CREATE TABLE devices (
     id serial PRIMARY KEY,
     active boolean NOT NULL DEFAULT true,
     hostname character varying NOT NULL,
-    ip_address character varying NOT NULL UNIQUE,
+    ip_address character varying,
     is_polling boolean NOT NULL DEFAULT false,
     ping_frequency integer NOT NULL DEFAULT 0,
     polling_frequency integer NOT NULL DEFAULT 300,
@@ -45,7 +45,8 @@ CREATE TABLE devices (
     to_kafka boolean NOT NULL DEFAULT true,
     to_prometheus boolean NOT NULL DEFAULT true,
     last_pinged_at timestamp with time zone,
-    last_polled_at timestamp with time zone
+    last_polled_at timestamp with time zone,
+    UNIQUE (hostname, ip_address)
 );
 
 CREATE TABLE metrics (
