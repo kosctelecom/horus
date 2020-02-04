@@ -125,6 +125,10 @@ func (p *pingQueue) ping(ctx context.Context, req model.PingRequest) {
 	req.Stamp = time.Now()
 	args := []string{"-q", "-p", "50", "-i", "10", "-t", "100", "-C", strconv.Itoa(PingPacketCount)}
 	for _, host := range req.Hosts {
+		if host.IpAddr == "" {
+			log.Infof("ping: skipping host %s without ipaddr", host.Name)
+			continue
+		}
 		args = append(args, host.IpAddr)
 	}
 	log.Debug2f("%s - launching fping %s...", req.UID, args)
