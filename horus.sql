@@ -41,9 +41,6 @@ CREATE TABLE devices (
     snmpv3_privacy_proto character varying NOT NULL DEFAULT '',
     snmpv3_security_level character varying NOT NULL DEFAULT '',
     tags json NOT NULL DEFAULT '{}'::json,
-    to_influx boolean NOT NULL DEFAULT false,
-    to_kafka boolean NOT NULL DEFAULT true,
-    to_prometheus boolean NOT NULL DEFAULT true,
     last_pinged_at timestamp with time zone,
     last_polled_at timestamp with time zone,
     UNIQUE (hostname, ip_address)
@@ -56,13 +53,13 @@ CREATE TABLE metrics (
     oid character varying NOT NULL,
     index_pattern character varying NOT NULL DEFAULT '',
     description text NOT NULL,
+    is_string_counter boolean NOT NULL DEFAULT false,
     export_as_label boolean NOT NULL DEFAULT false,
+    use_alternate_community boolean NOT NULL DEFAULT false,
+    polling_frequency integer NOT NULL DEFAULT 0,
     to_influx boolean NOT NULL DEFAULT false,
     to_kafka boolean NOT NULL DEFAULT true,
     to_prometheus boolean NOT NULL DEFAULT true,
-    use_alternate_community boolean NOT NULL DEFAULT false,
-    polling_frequency integer NOT NULL DEFAULT 0,
-    is_string_counter boolean NOT NULL DEFAULT false,
     UNIQUE (oid, index_pattern)
 );
 

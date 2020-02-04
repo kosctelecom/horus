@@ -21,6 +21,7 @@ Database structure
 | ip\_address                | string | -       | device IP address for snmp requests.
 | ping\_frequency            | int    | 0       | ping frequency in seconds for the device. The device is pinged only if the value of this field is > 0.
 | polling\_frequency         | int    | 0       | snmp polling frequency in seconds for the device. The device is polled only if the value of this field is > 0.
+| profile\_id                | int    | -       | the id of the device profile (see profiles table below)
 | snmp\_alternate\_community | string |""       | alternate snmp community to use for metrics with `use_alternate_community` flag set (same as `snmp_community` if empty)
 | snmp\_community            | string | -       | device snmp community.
 | snmp\_connection\_count    | bool   | 1       | max number of parallel snmp connections allowed for the device.
@@ -36,9 +37,6 @@ Database structure
 | snmpv3\_privacy\_proto     | string | ""      | snmp v3 privacy protocol, one of `DES` or `AES`.
 | snmpv3\_security\_level    | string | ""      | snmp v3 security level, one of `NoAuthNoPriv`, `AuthNoPriv` or `AuthPriv`.
 | tags                       | json   | {}      | json to export as labels or tags in all measures of this device. Default labels already include: id, hostname, category, vendor and model
-| to\_influx                 | bool   | false   | flag to export results to influxdb. If set, agents must also have influx connection to make it work.
-| to\_kafka                  | bool   | false   | flag to export results to kafka. Same note as above.
-| to\_prometheus             | bool   | false   | flag to export results to prometheus. One of these 3 flags must be activated.
 
 ## metrics table
 
@@ -49,7 +47,8 @@ Database structure
 - The `export_as_label` flag indicates wether the result should be exported as a Prometheus label, when it's a string for example.
 - The `use_alternate_community` flag indicates wether to use the alternate snmp community for this metric if it is defined, falls back to the main community otherwise.
 - The `polling_frequency` field defines a specific polling frequency for this metric. It must be a multiple of the device polling frequency, allows to poll this metric less frequently.
-- The `is_string_counter` flag indicates wether the metric value is a counter exported as a string (`Counter64String` type)
+- The `is_string_counter` flag indicates wether the metric value is a counter exported as a string (`Counter64String` type).
+- The `to_influx`, `to_kafka` and `to_prometheus` flags indicate where to export the metric results. If set, it is only active if the agent also have the corresponding data sink connection params (see [horus-agent(1)](horus-agent.1.md)).
 
 ## measures table
 
