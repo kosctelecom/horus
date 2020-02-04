@@ -99,7 +99,7 @@ func InitDB(dsn string) error {
 	}
 	setDevLastPingedAt, err = db.Prepare(`UPDATE devices
                                              SET last_pinged_at = NOW()
-                                           WHERE ip_address = ANY($1)`)
+                                           WHERE id = ANY($1)`)
 	if err != nil {
 		return fmt.Errorf("prepare setLastPingDate: %v", err)
 	}
