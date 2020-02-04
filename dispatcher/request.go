@@ -49,7 +49,7 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 	err := db.Get(&req.Device, `SELECT active,
                                        d.id,
                                        hostname,
-                                       ip_address,
+                                       COALESCE(ip_address, '') AS ip_address,
                                        p.category,
                                        p.vendor,
                                        p.model,
@@ -75,6 +75,15 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                    AND d.id = $1`, devID)
 	if err != nil {
 		return req, fmt.Errorf("request: %v", err)
+	}
+
+	if req.Device.SnmpParams.IPAddress == "" {
+		addrs, err := net.LookupHost(req.Device.Hostname)
+		if err != nil {
+			return req, fmt.Errorf("snmp request: lookup %s: %v", req.Device.Hostname, err)
+		}
+		log.Debug2f("host %s resolved to %s", req.Device.Hostname, addrs[0])
+		req.Device.SnmpParams.IPAddress = addrs[0]
 	}
 
 	var scalarMeasures []model.ScalarMeasure

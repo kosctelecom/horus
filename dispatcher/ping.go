@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"horus/log"
 	"horus/model"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -32,7 +33,7 @@ import (
 // PingBatchCount is the number of hosts per ping request, set at startup.
 var PingBatchCount int
 
-// RetrievePingRequests returns current available ping jobs. Retrieves from db
+// PingRequests returns current available ping jobs. Retrieves from db
 // the list of hosts that where pinged past the ping frequency and partition them
 // into ping requests.
 func PingRequests() ([]model.PingRequest, error) {
@@ -40,7 +41,7 @@ func PingRequests() ([]model.PingRequest, error) {
 	log.Debug("retrieving available ping jobs")
 	err := db.Select(&hosts, `SELECT d.hostname,
                                      d.id,
-                                     d.ip_address,
+                                     COALESCE(d.ip_address, '') AS ip_address,
                                      p.category,
                                      p.model,
                                      p.vendor
@@ -51,13 +52,26 @@ func PingRequests() ([]model.PingRequest, error) {
                                  AND d.ping_frequency > 0
                                  AND d.profile_id = p.id
                             ORDER BY d.last_pinged_at`)
-	if err == sql.ErrNoRows || len(hosts) == 0 {
+	if err == sql.ErrNoRows || (err == nil && len(hosts) == 0) {
+		// the second test is necessary to avoid returning PingRequest with
+		// one empty entry as we can get empty hosts without NoRows error.
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("got %d ping hosts", len(hosts))
+	for i, host := range hosts {
+		if host.IpAddr == "" {
+			addrs, err := net.LookupHost(host.Name)
+			if err != nil {
+				log.Errorf("ping: lookup %s: %v", host.Name, err)
+				continue
+			}
+			log.Debug2f("host %s resolved to %s", host.Name, addrs[0])
+			hosts[i].IpAddr = addrs[0]
+		}
+	}
 	var parts [][]model.PingHost
 	for len(hosts) > PingBatchCount {
 		hosts, parts = hosts[PingBatchCount:], append(parts, hosts[0:PingBatchCount])
@@ -107,7 +121,7 @@ func SendPingRequests(ctx context.Context) {
 			log.Errorf("%s - post ping request: %v, skipping...", req.UID, err)
 			continue
 		}
-		sqlExec(req.UID, "setDevLastPingedAt", setDevLastPingedAt, pq.Array(req.Targets()))
+		sqlExec(req.UID, "setDevLastPingedAt", setDevLastPingedAt, pq.Array(req.HostIDs()))
 	}
 }
 
