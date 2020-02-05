@@ -25,7 +25,14 @@ func TestGetLocalIP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("exec `hostname -I`: %v", err)
 	}
-	sysIP := strings.TrimSpace(string(out))
+	sysIPs := strings.Split(strings.TrimSpace(string(out)), " ")
+	var sysIP string
+	for _, ip := range sysIPs {
+		if !strings.HasPrefix(ip, "127.0.0.1") {
+			sysIP = ip
+			break
+		}
+	}
 	localIP := getLocalIP()
 	if localIP != sysIP {
 		t.Errorf("getLocalIP: expected %s, got %s", sysIP, localIP)
