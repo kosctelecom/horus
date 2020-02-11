@@ -22,6 +22,7 @@ import (
 	"horus/model"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -74,17 +75,15 @@ var (
 	// fping conf
 	pingPacketCount = getopt.IntLong("fping-packet-count", 0, 15, "number of ping requests sent to each host")
 	maxPingProcs    = getopt.IntLong("fping-max-procs", 0, 5, "max number of simultaneous fping processes")
-	fpingExec       = getopt.StringLong("fping-path", 0, agent.DefaultFpingExec, "specify the location of the fping program")
 )
+
+func checkFping() error {
+	return exec.Command("fping", "127.0.0.1").Run()
+}
 
 func main() {
 	getopt.SetParameters("")
 	getopt.Parse()
-
-	if len(os.Args) == 1 {
-		getopt.PrintUsage(os.Stderr)
-		os.Exit(1)
-	}
 
 	glog.WithConf(glog.Conf{Verbosity: *debug, LogDir: *logDir, PrintLocation: *debug > 0})
 
@@ -110,19 +109,20 @@ func main() {
 		}
 	}()
 
-	if *maxResAge == 0 && *influxHost == "" && *kafkaHost == "" {
-		glog.Exitf("either prom-max-age or influx-host or kafka-host must be defined")
-	}
-
 	if *maxPingProcs > 0 {
-		agent.FpingExec = *fpingExec
-		if _, err := os.Stat(agent.FpingExec); os.IsNotExist(err) {
-			glog.Exitf("fping binary not found at %s", agent.FpingExec)
+		if err := checkFping(); err != nil {
+			glog.Exitf("fping binary not found in PATH. Please install fping and/or set $PATH accordingly.")
 		}
 		if *pingPacketCount == 0 {
 			glog.Exitf("fping-packet-count cannot be zero")
 		}
 	}
+
+	if *maxResAge == 0 && *influxHost == "" && *kafkaHost == "" {
+		getopt.PrintUsage(os.Stderr)
+		glog.Exitf("either prom-max-age or influx-host or kafka-host must be defined")
+	}
+
 	agent.MockMode = *mock
 	agent.MaxRequests = *snmpJobCount
 	agent.StatsUpdFreq = *statUpdFreq

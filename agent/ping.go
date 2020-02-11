@@ -68,9 +68,6 @@ type PingMeasure struct {
 	Stamp time.Time
 }
 
-// DefaultFpingExec is the default fping binary location
-const DefaultFpingExec = "/usr/bin/fping"
-
 var (
 	// MaxPingProcs is the simultaneous fping process limit for this agent
 	MaxPingProcs int
@@ -80,9 +77,6 @@ var (
 
 	// pingQ is the ping jobs queue
 	pingQ pingQueue
-
-	// FpingExec is the fping binary path
-	FpingExec string
 )
 
 // AddPingRequest adds a new ping request to the queue.
@@ -132,7 +126,7 @@ func (p *pingQueue) ping(ctx context.Context, req model.PingRequest) {
 		args = append(args, host.IpAddr)
 	}
 	log.Debug2f("%s - launching fping %s...", req.UID, args)
-	cmd := exec.Command(FpingExec, args...)
+	cmd := exec.Command("fping", args...)
 	var out bytes.Buffer
 	cmd.Stderr = &out
 	err := cmd.Run()
@@ -151,7 +145,7 @@ func (p *pingQueue) ping(ctx context.Context, req model.PingRequest) {
 	log.Debugf("%s - ping measures pushed to collector", req.UID)
 }
 
-// parseOutput parses fping output and returns the ping measure
+// processOutput parses fping output and returns the ping measure
 // for each host.
 //
 // example of output:
@@ -174,7 +168,7 @@ func processOutput(req model.PingRequest, output string) []PingMeasure {
 			tokens := strings.Fields(line)
 			ipAddr := tokens[0]
 			if len(tokens) < 3 {
-				log.Errorf("parseOutput: invalid output line `%s`", line)
+				log.Errorf("processOutput: invalid output line `%s`", line)
 				continue
 			}
 			for _, tok := range tokens[2:] {
