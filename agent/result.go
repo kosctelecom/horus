@@ -275,7 +275,7 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		for {
 			for _, tabRes := range tabResults {
 				if metr, ok := tabRes[index]; ok {
-					log.Debug2f(">> %s - found %d metrics for %s", uid, len(metr), metr[0].Name)
+					log.Debug3f(">> %s - found %d metric(s) with index %s for %s", uid, len(metr), index, metr[0].Name)
 					results = append(results, metr...)
 				}
 			}
@@ -286,7 +286,6 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 				break
 			}
 			index = index[:lastDot]
-			log.Debug2f(">> %s - new index: %s", uid, index)
 		}
 		if len(results) > 1 {
 			// skip empty results and those with index only
