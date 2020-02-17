@@ -120,11 +120,30 @@ func (c *SnmpCollector) Push(pollRes *PollResult) {
 	for _, indexed := range pollRes.Indexed {
 		for _, indexedRes := range indexed.Results {
 			resAsLabels := make(map[string]string)
+			var promMetricCount int
 			for _, res := range indexedRes {
-				if res.ToProm && res.AsLabel {
-					resAsLabels[res.Name] = fmt.Sprintf("%v", res.Value)
+				if res.ToProm {
+					promMetricCount++
+					if res.AsLabel {
+						resAsLabels[res.Name] = fmt.Sprintf("%v", res.Value)
+					}
 				}
 			}
+			if len(resAsLabels) == promMetricCount {
+				// all prom metrics of this measure are labels
+				for k, v := range pollRes.Tags {
+					resAsLabels[k] = v
+				}
+				sample := PromSample{
+					Name:   indexed.Name,
+					Value:  1,
+					Stamp:  pollRes.stamp,
+					Labels: resAsLabels,
+				}
+				c.promSamples <- &sample
+				continue
+			}
+
 			for _, res := range indexedRes {
 				if !res.ToProm || res.AsLabel {
 					continue
