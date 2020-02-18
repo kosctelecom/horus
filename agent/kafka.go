@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/optiopay/kafka"
-	"github.com/optiopay/kafka/proto"
+	"github.com/optiopay/kafka/v2"
+	"github.com/optiopay/kafka/v2/proto"
 	"github.com/vma/glog"
 )
 
