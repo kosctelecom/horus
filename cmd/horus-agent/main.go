@@ -77,10 +77,6 @@ var (
 	maxPingProcs    = getopt.IntLong("fping-max-procs", 0, 5, "max number of simultaneous fping processes")
 )
 
-func checkFping() error {
-	return exec.Command("fping", "127.0.0.1").Run()
-}
-
 func main() {
 	getopt.SetParameters("")
 	getopt.Parse()
@@ -110,7 +106,7 @@ func main() {
 	}()
 
 	if *maxPingProcs > 0 {
-		if err := checkFping(); err != nil {
+		if _, err := exec.LookPath("fping"); err != nil {
 			glog.Exitf("fping binary not found in PATH. Please install fping and/or set $PATH accordingly.")
 		}
 		if *pingPacketCount == 0 {
