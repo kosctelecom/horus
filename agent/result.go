@@ -206,7 +206,16 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 	case gosnmp.NoSuchObject:
 		return res, fmt.Errorf("oid %s: NoSuchObject", pdu.Name)
 	case gosnmp.OctetString:
-		sval := strings.TrimSpace(string(pdu.Value.([]byte)))
+		val := pdu.Value.([]byte)
+		for i := len(val); i > 0; i-- {
+			// remove trailing null bytes
+			if val[i-1] == 0 {
+				val = val[:i-1]
+			} else {
+				break
+			}
+		}
+		sval := strings.TrimSpace(string(val))
 		if metric.IsStringCounter {
 			// Counter64String values, converted to float and exported if valid
 			val, err := strconv.Atoi(sval)
