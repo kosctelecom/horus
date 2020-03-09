@@ -48,7 +48,7 @@ General options
 
 -j, --snmp-jobs
 
-:   Specifies the snmp polling job capacity of this agent. Defaults to 1.
+:   Specifies the snmp polling job capacity of this agent. Defaults to 1; when set to 0, snmp polling is disabled.
 
     --log
 

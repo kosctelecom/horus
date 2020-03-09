@@ -38,7 +38,7 @@ Options
 
 -g, --db-ping-freq
 
-:   Specifies the db query frequency in seconds for new available ping jobs. Defaults to 10s; when set at 0, ping queries are disabled.
+:   Specifies the db query frequency in seconds for new available ping jobs. Defaults to 10s; when set to 0, ping queries are disabled.
 
 -h, --help
 
@@ -74,7 +74,7 @@ Options
 
 -q, --db-snmp-freq
 
-:   Specifies the check frequency in seconds for new available snmp polling jobs in database. Defaults to 30s.
+:   Specifies the check frequency in seconds for new available snmp polling jobs in database. Defaults to 30s; when set to 0, snmp queries are disabled.
 
 -r, --poll-error-retention-period
 
