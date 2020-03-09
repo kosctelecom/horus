@@ -16,7 +16,6 @@ package agent
 
 import (
 	"context"
-	"fmt"
 	"horus/log"
 	"horus/model"
 	"runtime"
@@ -38,8 +37,8 @@ var (
 	// MockMode activates mock snmp polling mode.
 	MockMode bool
 
-	// MaxRequests is the maximum number of parallel polling requests.
-	MaxRequests int
+	// MaxSNMPRequests is the maximum number of parallel polling requests.
+	MaxSNMPRequests int
 
 	// GracefulQuitMode rejects new poll jobs, waiting for ongoing ones to finish before exiting.
 	GracefulQuitMode bool

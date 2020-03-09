@@ -104,7 +104,7 @@ var (
 // - /snmpmetrics for snmp polling results
 // - /pingmetrics for ping results
 func InitCollectors(maxResAge, sweepFreq int) error {
-	workersCount.Set(float64(MaxRequests))
+	workersCount.Set(float64(MaxSNMPRequests))
 	sysMem.Set(float64(sysTotalMemory()))
 	prometheus.MustRegister(currSampleCount)
 	prometheus.MustRegister(ongoingPollCount)

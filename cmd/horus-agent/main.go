@@ -120,7 +120,7 @@ func main() {
 	}
 
 	agent.MockMode = *mock
-	agent.MaxRequests = *snmpJobCount
+	agent.MaxSNMPRequests = *snmpJobCount
 	agent.StatsUpdFreq = *statUpdFreq
 	agent.InterPollDelay = time.Duration(*interPollDelay) * time.Millisecond
 	agent.PingPacketCount = *pingPacketCount
