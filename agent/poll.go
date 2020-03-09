@@ -105,8 +105,12 @@ func AddSnmpRequest(req SnmpRequest) bool {
 	}
 }
 
-// CurrentLoad returns the current load of the agent.
-func CurrentLoad() float64 {
+// CurrentSNMPLoad returns the current snmp load of the agent. It is calculated as
+// the current number of all snmp requests in queue over the queue size.
+func CurrentSNMPLoad() float64 {
+	if snmpq.size == 0 {
+		return 0
+	}
 	return float64(len(snmpq.requests)+int(waiting)+len(ongoingReqs)) / float64(snmpq.size)
 }
 
