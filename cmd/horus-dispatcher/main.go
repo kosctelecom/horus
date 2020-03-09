@@ -52,7 +52,7 @@ var (
 	dsn             = getopt.StringLong("dsn", 'c', "", "postgres db DSN", "url")
 	unlockFreq      = getopt.IntLong("device-unlock-freq", 'u', 600, "device unlocker frequency (resets the db is_polling flag)", "seconds")
 	keepAliveFreq   = getopt.IntLong("agent-keepalive-freq", 'k', 30, "agent keep-alive frequency", "seconds")
-	dbSnmpQueryFreq = getopt.IntLong("db-snmp-freq", 'q', 30, "db query frequency for available polling jobs", "seconds")
+	dbSnmpQueryFreq = getopt.IntLong("db-snmp-freq", 'q', 30, "db query frequency for available polling jobs (0 to disable snmp)", "seconds")
 	dbPingQueryFreq = getopt.IntLong("db-ping-freq", 'g', 10, "db query frequency for available ping jobs (0 to disable ping)", "seconds")
 	pingBatchCount  = getopt.IntLong("ping-batch-count", 0, 100, "number of hosts per fping process")
 	dbPollErrRP     = getopt.IntLong("poll-error-retention-period", 'r', 3, "how long to keep poll errors in reports table (0 is forever)", "days")
@@ -141,6 +141,8 @@ func main() {
 				}
 			}
 		}()
+	} else {
+		log.Info("snmp requests disabled")
 	}
 
 	if *dbPingQueryFreq > 0 {
@@ -159,6 +161,8 @@ func main() {
 				}
 			}
 		}()
+	} else {
+		log.Info("ping requests disabled")
 	}
 
 	if *unlockFreq > 0 {
