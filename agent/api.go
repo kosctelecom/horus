@@ -27,6 +27,13 @@ import (
 
 // HandleSnmpRequest handles snmp polling job requests.
 func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
+	if MaxSNMPRequests == 0 {
+		log.Debug("snmp polling not enabled, rejecting request")
+		w.WriteHeader(http.StatusTooManyRequests)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		log.Debugf("rejecting request from %s with %s method", r.RemoteAddr, r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
