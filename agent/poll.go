@@ -64,21 +64,22 @@ var (
 // Init initializes the worker queue and starts the job dispatcher
 // and the result handler.
 func Init() error {
-	if MaxRequests == 0 {
-		return fmt.Errorf("agent: MaxRequests must be set")
+	if MaxSNMPRequests > 0 {
+		glog.Infof("initializing %d snmp workers", MaxSNMPRequests)
+		snmpq = snmpQueue{
+			size:     MaxSNMPRequests,
+			requests: make(chan SnmpRequest, MaxSNMPRequests),
+			workers:  make(chan struct{}, MaxSNMPRequests),
+		}
+		pollResults = make(chan *PollResult, MaxSNMPRequests)
+		log.Debug2("starting dispatcher loop")
+		go snmpq.dispatch(StopCtx)
+		log.Debug2("starting results handler")
+		go handlePollResults()
+	} else {
+		log.Info("snmp polling disabled")
 	}
 
-	glog.Infof("initializing %d workers", MaxRequests)
-	snmpq = snmpQueue{
-		size:     MaxRequests,
-		requests: make(chan SnmpRequest, MaxRequests),
-		workers:  make(chan struct{}, MaxRequests),
-	}
-	pollResults = make(chan *PollResult, MaxRequests)
-	log.Debug2("starting dispatcher loop")
-	go snmpq.dispatch(StopCtx)
-	log.Debug2("starting results handler")
-	go handleResults()
 	log.Debug2("starting mem usage logger")
 	go updateStats()
 
