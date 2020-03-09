@@ -350,9 +350,9 @@ func (indexed IndexedResults) Filter(meas model.IndexedMeasure) IndexedResults {
 	}
 }
 
-// handleResults exports asynchronously each new result
+// handlePollResults exports asynchronously each new result
 // to each active receiver (influx, kafka or prometheus).
-func handleResults() {
+func handlePollResults() {
 	for res := range pollResults {
 		res.stamp = time.Now()
 		ongoingMu.Lock()
