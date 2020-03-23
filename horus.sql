@@ -1,6 +1,6 @@
 CREATE TABLE agents (
     id serial PRIMARY KEY,
-    ip_address string NOT NULL,
+    ip_address character varying NOT NULL,
     port integer NOT NULL DEFAULT 80,
     active boolean NOT NULL DEFAULT false,
     is_alive boolean NOT NULL DEFAULT false,
