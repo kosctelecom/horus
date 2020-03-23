@@ -76,7 +76,8 @@ CREATE TABLE measures (
     index_metric_id integer REFERENCES metrics(id),
     filter_metric_id integer REFERENCES metrics(id),
     filter_pattern character varying NOT NULL DEFAULT '',
-    invert_filter_match boolean NOT NULL DEFAULT false
+    invert_filter_match boolean NOT NULL DEFAULT false,
+    UNIQUE (name)
 );
 
 CREATE TABLE measure_metrics (
