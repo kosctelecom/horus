@@ -51,3 +51,11 @@ func (o *OID) UnmarshalJSON(value []byte) error {
 	*o = OID(sval)
 	return nil
 }
+
+// CacheKey computes the key used to cache metric result depending on the community used.
+func (o OID) CacheKey(useAltCommunity bool) string {
+	if useAltCommunity {
+		return string(o) + ":alt"
+	}
+	return string(o)
+}
