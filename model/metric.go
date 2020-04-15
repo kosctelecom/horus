@@ -62,9 +62,6 @@ type Metric struct {
 	// ToInflux is a flag telling if the results should be exported to InfluxDB.
 	ToInflux bool `db:"to_influx"`
 
-	// UseAlternateCommunity is a flag telling wether to use the alternate snmp community for this metric.
-	UseAlternateCommunity bool `db:"use_alternate_community"`
-
 	// IndexPattern is the regex with subexpression used to extract index from tabular Oids.
 	IndexPattern string `json:",omitempty" db:"index_pattern"`
 

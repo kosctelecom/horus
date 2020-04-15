@@ -56,6 +56,9 @@ type IndexedMeasure struct {
 
 	// FilterRegex is the compiled FilterPattern pattern.
 	FilterRegex *regexp.Regexp `db:"-" json:"-"`
+
+	// UseAlternateCommunity tells wether to use the alternate community for all metrics of this measure.
+	UseAlternateCommunity bool `db:"use_alternate_community"`
 }
 
 // UnmarshalJSON unserializes data into an IndexedMetric.

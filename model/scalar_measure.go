@@ -32,6 +32,9 @@ type ScalarMeasure struct {
 
 	// Metrics is the list of metrics of this scalar measure
 	Metrics []Metric
+
+	// UseAlternateCommunity tells wether to use the alternate community for all metrics of this measure.
+	UseAlternateCommunity bool `db:"use_alternate_community"`
 }
 
 // RemoveInactive filters out all metrics of this scalar measure marked as inactive.
