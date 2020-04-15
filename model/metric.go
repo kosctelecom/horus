@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/lib/pq"
 )
 
 // Metric represents a single snmp OID to poll.
@@ -48,8 +50,8 @@ type Metric struct {
 	// ExportAsLabel tells if this metric is exported as a prometheus label (instead of value).
 	ExportAsLabel bool `db:"export_as_label"`
 
-	// IsStringCounter tells wether the metric is of Counter64String type
-	IsStringCounter bool `db:"is_string_counter"`
+	// PostProcessors is a list of post transformations to apply to metric result.
+	PostProcessors pq.StringArray `db:"post_processors"`
 
 	// ToKafka is a flag telling if the results should be exported to Kafka.
 	ToKafka bool `db:"to_kafka"`
@@ -70,9 +72,12 @@ type Metric struct {
 	IndexRegex *regexp.Regexp `json:"-" db:"-"`
 }
 
+// PostProcessorPat is a pattern listing all valid transformations available.
+var PostProcessorPat = regexp.MustCompile(`^(parse-hex-[bl]e|parse-int|to-string)$`)
+
 // UnmarshalJSON unserializes a Metric. Checks specifically if the index pattern
 // is valid and contains at least one sub-expression.
-func (metric *Metric) UnmarshalJSON(data []byte) error {
+func (m *Metric) UnmarshalJSON(data []byte) error {
 	type M Metric
 	var metr M
 
@@ -93,7 +98,14 @@ func (metric *Metric) UnmarshalJSON(data []byte) error {
 			return fmt.Errorf("index_pattern `%s` must contain at least one capture group for the index", metr.IndexPattern)
 		}
 	}
-	*metric = Metric(metr)
+	for i, pp := range metr.PostProcessors {
+		trimmed := strings.TrimSpace(pp)
+		if !PostProcessorPat.MatchString(trimmed) {
+			return fmt.Errorf("invalid post processor `%s` for metric %s", pp, metr.Name)
+		}
+		metr.PostProcessors[i] = trimmed
+	}
+	*m = Metric(metr)
 	return nil
 }
 
