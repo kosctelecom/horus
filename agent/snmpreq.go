@@ -32,8 +32,8 @@ type SnmpRequest struct {
 	model.SnmpRequest
 
 	// resultCache is a cache for walk results to avoid rewalking
-	// the same oids. Only unique base oids are cached.
-	resultCache   map[model.OID]TabularResults
+	// the same oids (of same community). Only unique base oids are cached.
+	resultCache   map[string]TabularResults
 	resultCacheMu sync.RWMutex
 
 	// snmpClis is an array of gosnmp connections
@@ -116,7 +116,7 @@ func (s *SnmpRequest) UnmarshalJSON(data []byte) error {
 		}
 	}
 
-	s.resultCache = make(map[model.OID]TabularResults)
+	s.resultCache = make(map[string]TabularResults)
 	snmpParams := s.Device.SnmpParams
 	s.snmpClis = make([]*gosnmp.GoSNMP, snmpParams.ConnectionCount)
 	for i := 0; i < snmpParams.ConnectionCount; i++ {
@@ -215,7 +215,7 @@ func (r *SnmpRequest) getMeasure(ctx context.Context, meas model.ScalarMeasure) 
 	for i, cli := range r.snmpClis {
 		go func(i int, cli *gosnmp.GoSNMP) {
 			for metric := range metrics {
-				if metric.UseAlternateCommunity && r.Device.AlternateCommunity != "" {
+				if meas.UseAlternateCommunity && r.Device.AlternateCommunity != "" {
 					cli.Community = r.Device.AlternateCommunity
 				} else {
 					cli.Community = r.Device.Community
@@ -270,10 +270,10 @@ func (r *SnmpRequest) getMeasure(ctx context.Context, meas model.ScalarMeasure) 
 // If a cached result is available for this request, the Oid is not requested again.
 // The results of single-metric requests are put in local cache map.
 // All metrics with the same base oid but different index position are extracted at once.
-func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, conIdx int) (TabularResults, error) {
+func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, conIdx int, useAltCommunity bool) (TabularResults, error) {
 	oid := grouped[0].Oid
 	r.resultCacheMu.RLock()
-	cached, ok := r.resultCache[oid]
+	cached, ok := r.resultCache[oid.CacheKey(useAltCommunity)]
 	r.resultCacheMu.RUnlock()
 	if ok {
 		r.Debugf(1, "con#%d: returning cached res map for oid %s", conIdx, oid)
@@ -307,9 +307,9 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 		}
 		return nil
 	}
-	r.Debugf(2, "con#%d: walking indexed metric %s", conIdx, oid)
+	r.Debugf(2, "con#%d: walking indexed metric %s, alternate community: %v", conIdx, oid, useAltCommunity)
 	cli := r.snmpClis[conIdx]
-	if grouped[0].UseAlternateCommunity && r.Device.AlternateCommunity != "" {
+	if useAltCommunity && r.Device.AlternateCommunity != "" {
 		cli.Community = r.Device.AlternateCommunity
 	} else {
 		cli.Community = r.Device.Community
@@ -324,18 +324,19 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 		return tabResult, fmt.Errorf("Walk: %v", err)
 	}
 	r.resultCacheMu.Lock()
-	if _, ok := r.resultCache[oid]; !ok && len(grouped) == 1 {
+	if _, ok := r.resultCache[oid.CacheKey(useAltCommunity)]; !ok && len(grouped) == 1 {
 		// cache only non-grouped metrics
-		r.resultCache[oid] = tabResult
+		r.resultCache[oid.CacheKey(useAltCommunity)] = tabResult
 	}
 	r.resultCacheMu.Unlock()
 	r.Debugf(3, "con#%d: res map for group indexed oid %s: %d metrics", conIdx, oid, len(tabResult))
 	return tabResult, nil
 }
 
-// walkSingleMetric is a simplified walkMetric when there is only one metric and one snmp connection.
+// walkSingleMetric is a simplified walkMetric when there is only one metric and
+// one snmp connection and no alternate community.
 func (r *SnmpRequest) walkSingleMetric(ctx context.Context, metr model.Metric) (TabularResults, error) {
-	return r.walkMetric(ctx, []model.Metric{metr}, 0)
+	return r.walkMetric(ctx, []model.Metric{metr}, 0, false)
 }
 
 // walkMeasure queries an indexed measure and returns the corresponding indexed results.
@@ -363,7 +364,7 @@ func (r *SnmpRequest) walkMeasure(ctx context.Context, measure model.IndexedMeas
 				oid, name := grouped[0].Oid, grouped[0].Name
 				start := time.Now()
 				r.Debugf(2, "con#%d: start walking indexed oid %s [%s], %d metric(s)", conIdx, oid, name, len(grouped))
-				groupedRes, err := r.walkMetric(ctx, grouped, conIdx)
+				groupedRes, err := r.walkMetric(ctx, grouped, conIdx, measure.UseAlternateCommunity)
 				walkResults <- snmpwalkResult{oid, groupedRes, err}
 				r.Debugf(1, "con#%d: done walking indexed oid %s [%s]: took %v", conIdx, oid, name, time.Since(start).Truncate(time.Millisecond))
 			}
