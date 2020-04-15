@@ -88,35 +88,37 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 
 	var scalarMeasures []model.ScalarMeasure
 	err = db.Select(&scalarMeasures, `SELECT m.description,
-                                                 m.id,
-                                                 m.name
-                                            FROM devices d,
-                                                 measures m,
-                                                 profile_measures pm
-                                           WHERE d.id = $1
-                                             AND d.profile_id = pm.profile_id
-                                             AND m.id = pm.measure_id
-                                             AND m.is_indexed = FALSE
-                                        ORDER BY m.id`, devID)
+                                             m.id,
+                                             m.name,
+                                             m.use_alternate_community
+                                        FROM devices d,
+                                             measures m,
+                                             profile_measures pm
+                                       WHERE d.id = $1
+                                         AND d.profile_id = pm.profile_id
+                                         AND m.id = pm.measure_id
+                                         AND m.is_indexed = FALSE
+                                    ORDER BY m.id`, devID)
 	if err != nil {
 		return req, fmt.Errorf("select scalar measures: %v", err)
 	}
 	var indexedMeasures []model.IndexedMeasure
 	err = db.Select(&indexedMeasures, `SELECT m.description,
-                                                  m.filter_metric_id,
-                                                  m.filter_pattern,
-                                                  m.id,
-                                                  m.index_metric_id,
-                                                  m.invert_filter_match,
-                                                  m.name
-                                             FROM devices d,
-                                                  measures m,
-                                                  profile_measures pm
-                                            WHERE d.id = $1
-                                              AND d.profile_id = pm.profile_id
-                                              AND m.id = pm.measure_id
-                                              AND m.is_indexed = TRUE
-                                         ORDER BY m.id`, devID)
+                                              m.filter_metric_id,
+                                              m.filter_pattern,
+                                              m.id,
+                                              m.index_metric_id,
+                                              m.invert_filter_match,
+                                              m.name,
+                                              m.use_alternate_community
+                                         FROM devices d,
+                                              measures m,
+                                              profile_measures pm
+                                        WHERE d.id = $1
+                                          AND d.profile_id = pm.profile_id
+                                          AND m.id = pm.measure_id
+                                          AND m.is_indexed = TRUE
+                                     ORDER BY m.id`, devID)
 	if err != nil {
 		return req, fmt.Errorf("select indexed measures: %v", err)
 	}
@@ -125,14 +127,13 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                  m.description,
                                                  m.export_as_label,
                                                  m.id,
-                                                 m.is_string_counter,
                                                  m.name,
                                                  m.oid,
                                                  m.polling_frequency,
+                                                 m.post_processors,
                                                  m.to_influx,
                                                  m.to_kafka,
                                                  m.to_prometheus,
-                                                 m.use_alternate_community,
                                                  t.last_polled_at
                                             FROM measure_metrics mm,
                                                  metrics m
@@ -155,14 +156,13 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                   m.export_as_label,
                                                   m.id,
                                                   m.index_pattern,
-                                                  m.is_string_counter,
                                                   m.name,
                                                   m.oid,
                                                   m.polling_frequency,
+                                                  m.post_processors,
                                                   m.to_influx,
                                                   m.to_kafka,
                                                   m.to_prometheus,
-                                                  m.use_alternate_community,
                                                   t.last_polled_at
                                              FROM measure_metrics mm,
                                                   metrics m
