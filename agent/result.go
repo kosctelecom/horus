@@ -15,6 +15,7 @@
 package agent
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"horus/log"
@@ -206,25 +207,40 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 	case gosnmp.NoSuchObject:
 		return res, fmt.Errorf("oid %s: NoSuchObject", pdu.Name)
 	case gosnmp.OctetString:
-		val := pdu.Value.([]byte)
-		for i := len(val); i > 0; i-- {
-			// remove trailing null bytes
-			if val[i-1] == 0 {
-				val = val[:i-1]
-			} else {
-				break
-			}
+		if len(metric.PostProcessors) == 0 {
+			// default processor
+			metric.PostProcessors = []string{"to-string"}
 		}
-		sval := strings.TrimSpace(string(val))
-		if metric.IsStringCounter {
-			// Counter64String values, converted to float and exported if valid
-			val, err := strconv.Atoi(sval)
-			if err != nil {
-				return res, fmt.Errorf("oid %s: invalid Counter64String value %s: %v", pdu.Name, sval, err)
+		res.Value = pdu.Value.([]byte)
+		for _, pp := range metric.PostProcessors {
+			val := res.Value.([]byte)
+			switch pp {
+			case "parse-hex-be":
+				n, err := bigEndianUint(val)
+				if err != nil {
+					return res, fmt.Errorf("parse `%+v`: %v", val, err)
+				}
+				log.Debug3f("%s: parsing `%x` as big endian num => %v", res.Name, string(val), n)
+				res.Value = float64(n)
+			case "parse-hex-le":
+				n, err := littleEndianUint(val)
+				if err != nil {
+					return res, fmt.Errorf("parse `%+v`: %v", val, err)
+				}
+				log.Debug3f("%s: parsing `%x` as little endian num => %v", res.Name, string(val), n)
+				res.Value = float64(n)
+			case "parse-int":
+				sv := string(val)
+				v, err := strconv.Atoi(sv)
+				if err != nil {
+					return res, fmt.Errorf("%s: invalid int value %s: %v", res.Name, sv, err)
+				}
+				res.Value = float64(v)
+			case "to-string":
+				res.Value = strings.TrimSpace(string(val))
+			default:
+				return res, fmt.Errorf("%s: invalid post-processor %s", res.Name, pp)
 			}
-			res.Value = float64(val)
-		} else {
-			res.Value = sval
 		}
 	case gosnmp.Counter64:
 		// 64 bit counters are automatically wrapped by 2^53 to avoid precision loss due
@@ -420,4 +436,40 @@ func (p *PollResult) sendReport() {
 		resp.Body.Close()
 		break
 	}
+}
+
+// bigEndianUint converts byte slice to big-endian int64, taking its size in account.
+func bigEndianUint(b []byte) (uint64, error) {
+	var res uint64
+	switch len(b) {
+	case 8:
+		res = binary.BigEndian.Uint64(b)
+	case 4:
+		res = uint64(binary.BigEndian.Uint32(b))
+	case 2:
+		res = uint64(binary.BigEndian.Uint16(b))
+	case 0:
+		res = 0
+	default:
+		return 0, fmt.Errorf("bigEndianUint: invalid slice size %d", len(b))
+	}
+	return res, nil
+}
+
+// littleEndianUint converts byte slice to little-endian int64, taking its size in account.
+func littleEndianUint(b []byte) (uint64, error) {
+	var res uint64
+	switch len(b) {
+	case 8:
+		res = binary.LittleEndian.Uint64(b)
+	case 4:
+		res = uint64(binary.LittleEndian.Uint32(b))
+	case 2:
+		res = uint64(binary.LittleEndian.Uint16(b))
+	case 0:
+		res = 0
+	default:
+		return 0, fmt.Errorf("littleEndianUint: invalid slice size %d", len(b))
+	}
+	return res, nil
 }
