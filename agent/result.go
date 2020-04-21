@@ -418,7 +418,7 @@ func (p *PollResult) sendReport() {
 	q.Add("poll_duration_ms", strconv.FormatInt(p.Duration, 10))
 	q.Add("poll_error", p.PollErr)
 	q.Add("metric_count", strconv.Itoa(p.metricCount))
-	q.Add("current_load", fmt.Sprintf("%.4f", CurrentSNMPLoad()))
+	q.Add("current_load", fmt.Sprintf("%.4f", CurrentLoad()))
 	req.URL.RawQuery = q.Encode()
 
 	client := &http.Client{Timeout: 3 * time.Second}
