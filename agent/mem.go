@@ -12,21 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
+// +build !linux
 
 package agent
 
-import (
-	"horus/log"
-	"syscall"
-)
-
-// sysTotalMemory returns the total system memory on linux.
+// sysTotalMemory returns 0 on non linux systems.
 func sysTotalMemory() uint64 {
-	in := &syscall.Sysinfo_t{}
-	if err := syscall.Sysinfo(in); err != nil {
-		log.Errorf("sysTotalMemory: %v", err)
-		return 0
-	}
-	return uint64(in.Totalram) * uint64(in.Unit)
+	return 0
+}
+
+// CurrentLoad returns 0 on non linux systems.
+func CurrentLoad() float64 {
+	return 0
 }
