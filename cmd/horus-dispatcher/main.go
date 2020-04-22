@@ -58,11 +58,11 @@ var (
 	dbPollErrRP     = getopt.IntLong("poll-error-retention-period", 'r', 3, "how long to keep poll errors in reports table (0 is forever)", "days")
 	dbFlusherFreq   = getopt.IntLong("report-flush-freq", 0, 3, "db reports table flush frequency (all entries with report_received_at=null older than this period are deleted)", "hours")
 	logDir          = getopt.StringLong("log", 0, "", "directory for log files. If empty, all log goes to stderr", "dir")
-	maxLoadDelta    = dispatcher.MaxLoadDelta
+	snmpLoadAvgWin  = getopt.IntLong("load-avg-window", 'w', 30, "SNMP load avg calculation window", "sec")
 )
 
 func main() {
-	getopt.FlagLong(&maxLoadDelta, "max-load-delta", 0, "max load delta allowed between agents before `unsticking` a device from its agent")
+	getopt.FlagLong(&dispatcher.MaxLoadDelta, "max-load-delta", 0, "max load delta allowed between agents before `unsticking` a device from its agent")
 	getopt.SetParameters("")
 	getopt.Parse()
 
@@ -104,7 +104,8 @@ func main() {
 	}
 	defer dispatcher.ReleaseDB()
 
-	dispatcher.MaxLoadDelta = maxLoadDelta
+	dispatcher.LoadAvgWindow = time.Duration(*snmpLoadAvgWin) * time.Second
+
 	if err := dispatcher.LoadAgents(); err != nil {
 		glog.Exitf("error loading agents: %v", err)
 	}

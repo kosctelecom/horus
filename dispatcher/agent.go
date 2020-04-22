@@ -68,10 +68,10 @@ type Agents map[string]*Agent
 var (
 	// MaxLoadDelta is the maximum average load difference allowed between agents
 	// before moving a device to the least loaded agent.
-	MaxLoadDelta = 0.1
+	MaxLoadDelta float64 = 0.1
 
-	// LoadAvgWindow is the window for agent load average calculation.
-	LoadAvgWindow = time.Minute
+	// LoadAvgWindow is the window for agent snmp load average calculation.
+	LoadAvgWindow time.Duration
 
 	// currentAgents is the list of currently active agents in memory.
 	currentAgents   = make(Agents)
