@@ -49,6 +49,7 @@ var (
 	port           = getopt.Int16Long("port", 'p', 8080, "API webserver listen port", "port")
 	showVersion    = getopt.BoolLong("version", 'v', "Print version and build date")
 	snmpJobCount   = getopt.IntLong("snmp-jobs", 'j', 1, "Number of simultaneous snmp jobs", "count")
+	maxMemLoad     = getopt.IntLong("max-mem-load", 'm', 90, "Max memory usage allowed before rejecting new jobs", "percent")
 	mock           = getopt.BoolLong("mock", 0, "Run the agent in mock mode (no actual snmp query)")
 	statUpdFreq    = getopt.IntLong("stat-frequency", 's', 0, "Agent stats update frequency (disabled if 0)", "sec")
 	interPollDelay = getopt.IntLong("inter-poll-delay", 't', 100, "time to wait between successive poll start", "msec")
@@ -121,6 +122,7 @@ func main() {
 
 	agent.MockMode = *mock
 	agent.MaxSNMPRequests = *snmpJobCount
+	agent.MaxAllowedLoad = float64(*maxMemLoad) / 100
 	agent.StatsUpdFreq = *statUpdFreq
 	agent.InterPollDelay = time.Duration(*interPollDelay) * time.Millisecond
 	agent.PingPacketCount = *pingPacketCount
