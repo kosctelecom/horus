@@ -32,8 +32,8 @@ func sysTotalMemory() uint64 {
 	return uint64(in.Totalram) * uint64(in.Unit)
 }
 
-// CurrentLoad returns the current relative memory usage of the agent.
-func CurrentLoad() float64 {
+// CurrentMemLoad returns the current relative memory usage of the agent.
+func CurrentMemLoad() float64 {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	used, total := float64(m.HeapSys-m.HeapReleased), float64(sysTotalMemory())

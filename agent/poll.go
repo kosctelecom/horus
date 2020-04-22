@@ -110,12 +110,13 @@ func AddSnmpRequest(req SnmpRequest) bool {
 	}
 }
 
-// SNMPRequestCount returns the current number of ongoing or queued snmp requests.
-func SNMPRequestCount() int {
+// CurrentSNMPLoad returns the current snmp load of the agent. It is calculated as
+// the current number of all snmp requests in queue over the queue size.
+func CurrentSNMPLoad() float64 {
 	if snmpq.size == 0 {
 		return 0
 	}
-	return len(snmpq.requests) + int(waiting) + len(ongoingReqs)
+	return float64(len(snmpq.requests)+int(waiting)+len(ongoingReqs)) / float64(snmpq.size)
 }
 
 // dispatch treats the poll requests as they come in.

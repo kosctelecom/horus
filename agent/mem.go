@@ -21,7 +21,7 @@ func sysTotalMemory() uint64 {
 	return 0
 }
 
-// CurrentLoad returns 0 on non linux systems.
-func CurrentLoad() float64 {
+// CurrentMemLoad returns 0 on non linux systems.
+func CurrentMemLoad() float64 {
 	return 0
 }

@@ -30,33 +30,32 @@ var MaxAllowedLoad float64
 
 // HandleSnmpRequest handles snmp polling job requests.
 func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
-	currLoad := CurrentLoad()
-
 	if MaxSNMPRequests == 0 {
 		log.Debug("snmp polling not enabled, rejecting request")
 		w.WriteHeader(http.StatusTooManyRequests)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 		return
 	}
 
-	if currLoad >= MaxAllowedLoad {
-		log.Warningf("current mem load high (%.4f%%), rejecting new requests", currLoad)
+	currMemLoad := CurrentMemLoad()
+	if currMemLoad >= MaxAllowedLoad {
+		log.Warningf("current mem load high (%.4f%%), rejecting new requests", currMemLoad)
 		w.WriteHeader(http.StatusTooManyRequests)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", currMemLoad)
 
 	}
 
 	if r.Method != http.MethodPost {
 		log.Debugf("rejecting request from %s with %s method", r.RemoteAddr, r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 		return
 	}
 
 	if GracefulQuitMode {
 		log.Debug("in graceful quit mode, rejecting all new requests")
 		w.WriteHeader(http.StatusLocked)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 		return
 	}
 
@@ -65,7 +64,7 @@ func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Debug2f("error reading body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 		return
 	}
 	r.Body.Close()
@@ -74,17 +73,17 @@ func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(b, &req); err != nil {
 		log.Debugf("invalid json request: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 		return
 	}
 	if AddSnmpRequest(req) {
 		log.Debugf("%s - request successfully queued", req.UID)
 		w.WriteHeader(http.StatusAccepted)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 	} else {
 		glog.Warningf("no more workers, rejecting request %s", req.UID)
 		w.WriteHeader(http.StatusTooManyRequests)
-		fmt.Fprintf(w, "%.4f", currLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 	}
 }
 
@@ -92,7 +91,7 @@ func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
 // Returns current worker count in body.
 func HandleCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "%.4f", CurrentLoad())
+	fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 }
 
 // HandleOngoing returns the list of ongoing snmp requests,
@@ -105,7 +104,7 @@ func HandleOngoing(w http.ResponseWriter, r *http.Request) {
 		ongoing.Requests = append(ongoing.Requests, id)
 	}
 	ongoingMu.RUnlock()
-	ongoing.Load = CurrentLoad()
+	ongoing.Load = CurrentSNMPLoad()
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(ongoing)
