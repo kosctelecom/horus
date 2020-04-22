@@ -52,12 +52,17 @@ var (
 	// StopCtx is a context used to stop the agent gracefully.
 	StopCtx context.Context
 
-	// ongoingReqs is a map with all ongoing request ids as key (value not used).
+	// ongoingReqs is a map with all active poll requests.
 	ongoingReqs = make(map[string]bool)
 	ongoingMu   sync.RWMutex
-	waiting     int64
 
-	snmpq       snmpQueue
+	// waiting is the count of snmp requests waiting to be sent
+	waiting int64
+
+	// snmpq is the global snmp jobs queue.
+	snmpq snmpQueue
+
+	// pollResults is the channel where the poll results are pushed.
 	pollResults chan *PollResult
 )
 
@@ -105,13 +110,12 @@ func AddSnmpRequest(req SnmpRequest) bool {
 	}
 }
 
-// CurrentSNMPLoad returns the current snmp load of the agent. It is calculated as
-// the current number of all snmp requests in queue over the queue size.
-func CurrentSNMPLoad() float64 {
+// SNMPRequestCount returns the current number of ongoing or queued snmp requests.
+func SNMPRequestCount() int {
 	if snmpq.size == 0 {
 		return 0
 	}
-	return float64(len(snmpq.requests)+int(waiting)+len(ongoingReqs)) / float64(snmpq.size)
+	return len(snmpq.requests) + int(waiting) + len(ongoingReqs)
 }
 
 // dispatch treats the poll requests as they come in.
@@ -181,7 +185,7 @@ func updateStats() {
 		}
 		currSampleCount.Set(float64(snmpSampleCount))
 		ongoingPollCount.Set(float64(len(ongoingReqs)))
-		heapMem.Set(float64(m.Alloc))
+		heapMem.Set(float64(m.HeapAlloc))
 		snmpScrapes.Set(float64(snmpCollector.scrapeCount))
 		snmpScrapeDuration.Set(float64(snmpCollector.scrapeDuration) / float64(time.Second))
 		log.Debugf("ongoing=%d prom_samples=%d scrape_count=%d scrape_dur=%v heap=%dMiB", len(ongoingReqs),

@@ -170,10 +170,10 @@ func handleStop(w http.ResponseWriter, r *http.Request) {
 	log.Infof("** graceful stop request from %s", r.RemoteAddr)
 	initialScrapeCount := agent.SnmpScrapeCount()
 	agent.GracefulQuitMode = true
-	if agent.CurrentSNMPLoad() == 0 {
+	if agent.SNMPRequestCount() == 0 {
 		goto end
 	}
-	for agent.CurrentSNMPLoad() > 0 {
+	for agent.SNMPRequestCount() > 0 {
 		time.Sleep(500 * time.Millisecond)
 	}
 	if *maxResAge > 0 {
