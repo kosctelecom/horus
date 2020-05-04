@@ -107,7 +107,6 @@ func (c *KafkaClient) Close() {
 // Push pushes a poll result to the kafka result channel.
 func (c *KafkaClient) Push(res *PollResult) {
 	if c == nil {
-		log.Errorf("kafka client not initialized...")
 		return
 	}
 	res.PruneForKafka()

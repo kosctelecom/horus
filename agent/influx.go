@@ -138,7 +138,6 @@ func (c *InfluxClient) Close() {
 // by sendData()
 func (c *InfluxClient) Push(res *PollResult) {
 	if c == nil {
-		log.Errorf("influx client not initialized...")
 		return
 	}
 	bp, err := c.makeBatchPoints(res)
