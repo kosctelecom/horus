@@ -53,10 +53,11 @@ CREATE TABLE metrics (
     oid character varying NOT NULL,
     index_pattern character varying NOT NULL DEFAULT '',
     description text NOT NULL,
-    is_string_counter boolean NOT NULL DEFAULT false,
     export_as_label boolean NOT NULL DEFAULT false,
+    exported_name character varying,
     use_alternate_community boolean NOT NULL DEFAULT false,
     polling_frequency integer NOT NULL DEFAULT 0,
+    post_processors character varying[] DEFAULT '{}' NOT NULL,
     to_influx boolean NOT NULL DEFAULT false,
     to_kafka boolean NOT NULL DEFAULT true,
     to_prometheus boolean NOT NULL DEFAULT true,
@@ -77,6 +78,7 @@ CREATE TABLE measures (
     filter_metric_id integer REFERENCES metrics(id),
     filter_pattern character varying NOT NULL DEFAULT '',
     invert_filter_match boolean NOT NULL DEFAULT false,
+    use_alternate_community boolean NOT NULL DEFAULT false,
     UNIQUE (name)
 );
 
