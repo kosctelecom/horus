@@ -34,8 +34,11 @@ type Result struct {
 	// Oid is the metric OID as returned by the device.
 	Oid string `json:"oid"`
 
-	// Name is the human readable metric name.
+	// Name is the metric name (from SNMP MIB usually).
 	Name string `json:"name"`
+
+	// ExportedName is the name of the exported metric.
+	ExportedName string `json:"exported_name"`
 
 	// Description is the metric description copied from request.
 	Description string `json:"description,omitempty"`
@@ -190,15 +193,16 @@ func (p *PollResult) PruneForKafka() {
 // Returns an error on snmp NoSuchObject reply or nil value.
 func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 	res := Result{
-		Name:        metric.Name,
-		Description: metric.Description,
-		Oid:         string(metric.Oid),
-		AsLabel:     metric.ExportAsLabel,
-		ToInflux:    metric.ToInflux,
-		ToKafka:     metric.ToKafka,
-		ToProm:      metric.ToProm,
-		snmpType:    pdu.Type,
-		rawValue:    pdu.Value,
+		Name:         metric.Name,
+		Description:  metric.Description,
+		Oid:          string(metric.Oid),
+		AsLabel:      metric.ExportAsLabel,
+		ExportedName: metric.ExportedName,
+		ToInflux:     metric.ToInflux,
+		ToKafka:      metric.ToKafka,
+		ToProm:       metric.ToProm,
+		snmpType:     pdu.Type,
+		rawValue:     pdu.Value,
 	}
 	if len(pdu.Name) > len(metric.Oid) {
 		res.suffix = pdu.Name[len(metric.Oid)+1:]

@@ -50,6 +50,9 @@ type Metric struct {
 	// ExportAsLabel tells if this metric is exported as a prometheus label (instead of value).
 	ExportAsLabel bool `db:"export_as_label"`
 
+	// ExportedName is the name to use for the exported metric (different from the metric name).
+	ExportedName string `db:"exported_name"`
+
 	// PostProcessors is a list of post transformations to apply to metric result.
 	PostProcessors pq.StringArray `db:"post_processors"`
 
