@@ -16,6 +16,8 @@ package agent
 
 import (
 	"fmt"
+
+	"github.com/kosctelecom/horus/log"
 )
 
 // SnmpCollector is a prometheus collector for snmp datas.
@@ -25,6 +27,11 @@ type SnmpCollector struct {
 
 // Push convert a poll result to prometheus samples and push them to the sample queue.
 func (c *SnmpCollector) Push(pollRes *PollResult) {
+	if c == nil {
+		log.Errorf("Push called on nil snmpcollector")
+		return
+	}
+
 	pollTimeout := PromSample{
 		Name:   "snmp_poll_timeout_count",
 		Desc:   "current snmp poll failed due to timeout",
