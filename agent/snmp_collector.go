@@ -136,8 +136,8 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 					}
 				}
 			}
-			if len(resAsLabels) == promMetricCount {
-				// all prom metrics of this measure are labels
+			if promMetricCount > 0 && len(resAsLabels) == promMetricCount {
+				log.Debug2f("all %d prom metrics of indexed measure %s are labels", promMetricCount, indexed.Name)
 				for k, v := range pollRes.Tags {
 					resAsLabels[k] = v
 				}
