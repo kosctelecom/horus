@@ -63,7 +63,7 @@ var (
 	snmpq snmpQueue
 
 	// pollResults is the channel where the poll results are pushed.
-	pollResults chan *PollResult
+	pollResults chan PollResult
 )
 
 // Init initializes the worker queue and starts the job dispatcher
@@ -76,7 +76,7 @@ func Init() error {
 			requests: make(chan SnmpRequest, MaxSNMPRequests),
 			workers:  make(chan struct{}, MaxSNMPRequests),
 		}
-		pollResults = make(chan *PollResult, MaxSNMPRequests)
+		pollResults = make(chan PollResult, MaxSNMPRequests)
 		log.Debug2("starting dispatcher loop")
 		go snmpq.dispatch(StopCtx)
 		log.Debug2("starting results handler")
@@ -162,7 +162,7 @@ func (s *snmpQueue) poll(ctx context.Context, req SnmpRequest) {
 		req.Errorf("unable to connect to snmp device: %v", err)
 		res := MakePollResult(req) // needed for report
 		res.pollErr = err
-		pollResults <- &res
+		pollResults <- res
 		return
 	}
 	pollResults <- req.Poll(ctx)

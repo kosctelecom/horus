@@ -419,7 +419,7 @@ func (r *SnmpRequest) Walk(ctx context.Context) ([]IndexedResults, error) {
 // Poll queries all metrics of the request and returns them in a PollResult.
 // If there was a timeout while getting scalar results, we stop there, there is
 // no Walk attempted to get the indexed results.
-func (r *SnmpRequest) Poll(ctx context.Context) *PollResult {
+func (r *SnmpRequest) Poll(ctx context.Context) PollResult {
 	res := MakePollResult(*r)
 	res.Scalar, res.pollErr = r.Get(ctx)
 	if ErrIsUnreachable(res.pollErr) {
@@ -427,7 +427,7 @@ func (r *SnmpRequest) Poll(ctx context.Context) *PollResult {
 		res.Duration = int64(time.Since(res.PollStart) / time.Millisecond)
 		r.Warningf("poll: %v", res.pollErr)
 		res.IsPartial = len(res.Scalar) > 0
-		return &res
+		return res
 	}
 	res.Indexed, res.pollErr = r.Walk(ctx)
 	res.Duration = int64(time.Since(res.PollStart) / time.Millisecond)
@@ -436,7 +436,7 @@ func (r *SnmpRequest) Poll(ctx context.Context) *PollResult {
 		res.PollErr = res.pollErr.Error()
 		res.IsPartial = len(res.Scalar)+len(res.Indexed) > 0
 	}
-	return &res
+	return res
 }
 
 // ErrIsTimeout tells whether the error is an snmp timeout error.

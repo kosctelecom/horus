@@ -54,7 +54,7 @@ func (sq *snmpQueue) mockPoll(ctx context.Context, req SnmpRequest) {
 		req.Debug(1, ">> cancelling mock poll...")
 		return
 	case <-time.After(time.Duration(res.Duration) * time.Millisecond):
-		pollResults <- &res
+		pollResults <- res
 		req.Debug(1, ">> done mock polling")
 		<-sq.workers
 	}

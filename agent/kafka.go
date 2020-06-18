@@ -42,7 +42,7 @@ type KafkaClient struct {
 	connected bool
 
 	// results is the snmp poll results channel
-	results chan *PollResult
+	results chan PollResult
 
 	broker *kafka.Broker
 	kafka.Producer
@@ -91,7 +91,7 @@ func (c *KafkaClient) dial() error {
 		producerConf.Compression = proto.CompressionGzip
 		producerConf.Logger = log.Klogger{}
 		c.Producer = c.broker.Producer(producerConf)
-		c.results = make(chan *PollResult)
+		c.results = make(chan PollResult)
 		go c.sendData()
 		log.Debugf("connected to kafka %q", c.Host)
 	}
@@ -105,7 +105,7 @@ func (c *KafkaClient) Close() {
 }
 
 // Push pushes a poll result to the kafka result channel.
-func (c *KafkaClient) Push(res *PollResult) {
+func (c *KafkaClient) Push(res PollResult) {
 	if c == nil {
 		return
 	}

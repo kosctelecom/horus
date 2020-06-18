@@ -31,7 +31,7 @@ type bpoints struct {
 	reqID string
 
 	// res is the poll result
-	res *PollResult
+	res PollResult
 	influxclient.BatchPoints
 }
 
@@ -136,7 +136,7 @@ func (c *InfluxClient) Close() {
 // It actually converts the poll result to influx batchpoints
 // and send the latter to the batchpoints channel to be consumed
 // by sendData()
-func (c *InfluxClient) Push(res *PollResult) {
+func (c *InfluxClient) Push(res PollResult) {
 	if c == nil {
 		return
 	}
@@ -188,7 +188,7 @@ func (c *InfluxClient) sendData() {
 }
 
 // makeBatchPoints converts a poll result to influx batch points.
-func (c *InfluxClient) makeBatchPoints(res *PollResult) (influxclient.BatchPoints, error) {
+func (c *InfluxClient) makeBatchPoints(res PollResult) (influxclient.BatchPoints, error) {
 	log.Debug2f("%s - converting to influx batch points", res.RequestID)
 	batchPoints, _ := influxclient.NewBatchPoints(influxclient.BatchPointsConfig{
 		Database:        c.Database,
