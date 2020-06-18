@@ -18,13 +18,14 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
+	"github.com/mitchellh/copystructure"
 	"github.com/vma/glog"
 	"github.com/vma/gosnmp"
 )
@@ -155,6 +156,20 @@ func MakePollResult(req SnmpRequest) PollResult {
 		Tags:      tags,
 		reportURL: req.ReportURL,
 	}
+}
+
+func (p PollResult) Copy() PollResult {
+	cp, err := copystructure.Copy(p)
+	if err != nil {
+		log.Errorf("copy PollResult: %v", err)
+		return PollResult{}
+	}
+	cpy := cp.(PollResult)
+	cpy.stamp = p.stamp
+	cpy.reportURL = p.reportURL
+	cpy.metricCount = p.metricCount
+	cpy.pollErr = p.pollErr
+	return cpy
 }
 
 // PruneForKafka prunes PollResult to keep only metrics to be exported to kafka.
@@ -304,7 +319,7 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		for {
 			for _, tabRes := range tabResults {
 				if metr, ok := tabRes[index]; ok {
-					log.Debug3f(">> %s - found %d metric(s) with index %s for %s", uid, len(metr), index, metr[0].Name)
+					log.Debug3f("%s - found %d metric(s) with index %s for %s", uid, len(metr), index, metr[0].Name)
 					results = append(results, metr...)
 				}
 			}
@@ -391,10 +406,10 @@ func handlePollResults() {
 			}
 		}
 
-		go kafkaCli.Push(res)
-		go snmpCollector.Push(res)
-		go influxCli.Push(res)
-		go res.sendReport()
+		go kafkaCli.Push(res.Copy())
+		go snmpCollector.Push(res.Copy())
+		go influxCli.Push(res.Copy())
+		res.sendReport()
 	}
 }
 
