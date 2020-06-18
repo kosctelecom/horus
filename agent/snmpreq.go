@@ -390,8 +390,10 @@ func (r *SnmpRequest) walkMeasure(ctx context.Context, measure model.IndexedMeas
 		}
 	}
 	indexed := MakeIndexed(r.UID, measure, tabResults)
-	r.Debugf(2, "indexed results count: %d", len(indexed.Results))
-	return indexed.Filter(measure), walkErr
+	res := indexed.Filter(measure)
+	r.Debugf(2, "walkMeasure: indexed results count: %d", len(res.Results))
+	r.Debugf(3, "walkMeasure: indexed=%+v, walk err=%v", res, walkErr)
+	return res, walkErr
 }
 
 // Walk polls all the indexed measures and returns an array of IndexedResults
