@@ -59,6 +59,9 @@ type IndexedMeasure struct {
 
 	// UseAlternateCommunity tells wether to use the alternate community for all metrics of this measure.
 	UseAlternateCommunity bool `db:"use_alternate_community"`
+
+	// LabelsOnly tell wehere this measure contains only labels.
+	LabelsOnly bool `db:"-"`
 }
 
 // UnmarshalJSON unserializes data into an IndexedMetric.

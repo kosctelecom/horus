@@ -177,6 +177,15 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 		if err != nil {
 			return req, fmt.Errorf("select indexed metrics: %v", err)
 		}
+
+		var labelCount int
+		for _, m := range indexed.Metrics {
+			if m.ExportAsLabel {
+				labelCount++
+			}
+		}
+		indexed.LabelsOnly = (labelCount == len(indexed.Metrics))
+
 		if len(indexed.Metrics) > 0 {
 			req.IndexedMeasures = append(req.IndexedMeasures, indexed)
 		}
