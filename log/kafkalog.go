@@ -48,13 +48,6 @@ func (l Klogger) Error(msg string, args ...interface{}) {
 	glog.ErrorDepth(1, join(msg, args...))
 }
 
-func join(msg string, args ...interface{}) (s string) {
-	s += "kafka: " + msg + ": "
-	for i, arg := range args {
-		s += fmt.Sprintf("%v", arg)
-		if i < len(args)-1 {
-			s += " "
-		}
-	}
-	return s
+func join(msg string, args ...interface{}) string {
+	return "kafka: " + msg + ": " + fmt.Sprint(args...)
 }
