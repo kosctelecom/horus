@@ -196,7 +196,14 @@ func (r *SnmpRequest) Get(ctx context.Context) (results []ScalarResults, err err
 			r.Warningf("Get %s: %v, skipping result", scalar.Name, err)
 			continue
 		}
-		results = append(results, ScalarResults{scalar.Name, res})
+		sres := ScalarResults{
+			Name:     scalar.Name,
+			Results:  res,
+			ToProm:   scalar.ToProm,
+			ToKafka:  scalar.ToKafka,
+			ToInflux: scalar.ToInflux,
+		}
+		results = append(results, sres)
 	}
 	return
 }
