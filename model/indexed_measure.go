@@ -60,6 +60,15 @@ type IndexedMeasure struct {
 	// UseAlternateCommunity tells wether to use the alternate community for all metrics of this measure.
 	UseAlternateCommunity bool `db:"use_alternate_community"`
 
+	// ToKafka is a flag telling if the results should be exported to Kafka.
+	ToKafka bool `db:"to_kafka"`
+
+	// ToProm tells if the results are kept for Prometheus scraping.
+	ToProm bool `db:"to_prometheus"`
+
+	// ToInflux is a flag telling if the results should be exported to InfluxDB.
+	ToInflux bool `db:"to_influx"`
+
 	// LabelsOnly tell wehere this measure contains only labels.
 	LabelsOnly bool `db:"-"`
 }

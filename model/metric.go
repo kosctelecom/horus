@@ -56,15 +56,6 @@ type Metric struct {
 	// PostProcessors is a list of post transformations to apply to metric result.
 	PostProcessors pq.StringArray `db:"post_processors"`
 
-	// ToKafka is a flag telling if the results should be exported to Kafka.
-	ToKafka bool `db:"to_kafka"`
-
-	// ToProm tells if the results are kept for Prometheus scraping.
-	ToProm bool `db:"to_prometheus"`
-
-	// ToInflux is a flag telling if the results should be exported to InfluxDB.
-	ToInflux bool `db:"to_influx"`
-
 	// IndexPattern is the regex with subexpression used to extract index from tabular Oids.
 	IndexPattern string `json:",omitempty" db:"index_pattern"`
 

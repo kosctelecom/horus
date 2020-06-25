@@ -90,7 +90,10 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 	err = db.Select(&scalarMeasures, `SELECT m.description,
                                              m.id,
                                              m.name,
-                                             m.use_alternate_community
+                                             m.use_alternate_community,
+                                             m.to_influx,
+                                             m.to_kafka,
+                                             m.to_prometheus
                                         FROM devices d,
                                              measures m,
                                              profile_measures pm
@@ -110,7 +113,10 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                               m.index_metric_id,
                                               m.invert_filter_match,
                                               m.name,
-                                              m.use_alternate_community
+                                              m.use_alternate_community,
+                                              m.to_influx,
+                                              m.to_kafka,
+                                              m.to_prometheus
                                          FROM devices d,
                                               measures m,
                                               profile_measures pm
@@ -132,9 +138,6 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                  m.oid,
                                                  m.polling_frequency,
                                                  m.post_processors,
-                                                 m.to_influx,
-                                                 m.to_kafka,
-                                                 m.to_prometheus,
                                                  t.last_polled_at
                                             FROM measure_metrics mm,
                                                  metrics m
@@ -162,9 +165,6 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                                   m.oid,
                                                   m.polling_frequency,
                                                   m.post_processors,
-                                                  m.to_influx,
-                                                  m.to_kafka,
-                                                  m.to_prometheus,
                                                   t.last_polled_at
                                              FROM measure_metrics mm,
                                                   metrics m
