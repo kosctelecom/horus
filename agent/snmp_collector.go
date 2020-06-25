@@ -78,19 +78,19 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 	c.promSamples <- &mcount
 
 	for _, scalar := range pollRes.Scalar {
+		if !scalar.ToProm {
+			continue
+		}
 		for _, res := range scalar.Results {
-			if !res.ToProm {
-				continue
-			}
 			var sample PromSample
 			if res.AsLabel {
 				sample = PromSample{
 					Name:   scalar.Name + "_" + res.Name,
 					Value:  1,
 					Stamp:  pollRes.stamp,
-					Labels: make(map[string]string),
+					Labels: map[string]string{},
 				}
-				sample.Labels[res.Name] = fmt.Sprintf("%v", res.Value)
+				sample.Labels[res.Name] = fmt.Sprint(res.Value)
 			} else {
 				var value float64
 				switch v := res.Value.(type) {
@@ -113,7 +113,7 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 					Name:   scalar.Name + "_" + res.Name,
 					Value:  value,
 					Stamp:  pollRes.stamp,
-					Labels: make(map[string]string),
+					Labels: map[string]string{},
 				}
 			}
 			for k, v := range pollRes.Tags {
@@ -125,42 +125,46 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 	}
 
 	for _, indexed := range pollRes.Indexed {
+		if !indexed.ToProm {
+			continue
+		}
+
 		for _, indexedRes := range indexed.Results {
-			resAsLabels := make(map[string]string)
-			var promMetricCount int
+			labels := map[string]string{}
 			for _, res := range indexedRes {
-				if res.ToProm {
-					promMetricCount++
-					if res.AsLabel {
-						resAsLabels[res.Name] = fmt.Sprintf("%v", res.Value)
-					}
+				if res.AsLabel {
+					labels[res.Name] = fmt.Sprint(res.Value)
 				}
 			}
-			if promMetricCount > 0 && len(resAsLabels) == promMetricCount {
-				log.Debug2f("all %d prom metrics of indexed measure %s are labels", promMetricCount, indexed.Name)
+			if len(labels) == len(indexedRes) {
+				if !indexed.LabelsOnly {
+					log.Debugf(">> skipping non label-only measure %s with only labels", indexed.Name)
+					continue
+				}
+				log.Debug2f("indexed measure %s is labels-only", indexed.Name)
 				for k, v := range pollRes.Tags {
-					resAsLabels[k] = v
+					labels[k] = v
 				}
 				sample := PromSample{
 					Name:   indexed.Name,
 					Value:  1,
 					Stamp:  pollRes.stamp,
-					Labels: resAsLabels,
+					Labels: labels,
 				}
 				c.promSamples <- &sample
 				continue
 			}
 
 			for _, res := range indexedRes {
-				if !res.ToProm || res.AsLabel {
+				if res.AsLabel {
 					continue
 				}
-				labels := make(map[string]string)
+				l := map[string]string{}
 				for k, v := range pollRes.Tags {
-					labels[k] = v
+					l[k] = v
 				}
-				for k, v := range resAsLabels {
-					labels[k] = v
+				for k, v := range labels {
+					l[k] = v
 				}
 				var value float64
 				switch v := res.Value.(type) {
@@ -180,12 +184,12 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 				default:
 					continue
 				}
-				labels["oid"] = res.Oid
+				l["oid"] = res.Oid
 				sample := PromSample{
 					Name:   indexed.Name + "_" + res.Name,
 					Value:  value,
 					Stamp:  pollRes.stamp,
-					Labels: labels,
+					Labels: l,
 				}
 				c.promSamples <- &sample
 			}

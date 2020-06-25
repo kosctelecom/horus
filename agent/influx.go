@@ -196,6 +196,10 @@ func (c *InfluxClient) makeBatchPoints(res PollResult) (influxclient.BatchPoints
 		Precision:       "s",
 	})
 	for _, scalar := range res.Scalar {
+		if !scalar.ToInflux {
+			continue
+		}
+
 		// each scalar measure is a new influx point
 		tags := make(map[string]string)
 		for k, v := range res.Tags {
@@ -203,9 +207,6 @@ func (c *InfluxClient) makeBatchPoints(res PollResult) (influxclient.BatchPoints
 		}
 		fields := make(map[string]interface{})
 		for _, r := range scalar.Results {
-			if !r.ToInflux {
-				continue
-			}
 			fields[r.Name] = r.Value
 		}
 		pt, err := influxclient.NewPoint(scalar.Name, tags, fields, res.PollStart)
@@ -216,6 +217,10 @@ func (c *InfluxClient) makeBatchPoints(res PollResult) (influxclient.BatchPoints
 	}
 
 	for _, indexed := range res.Indexed {
+		if !indexed.ToInflux {
+			continue
+		}
+
 		// each indexed.Results[i] (i.e. all measures for one index) is a new point
 		for _, indexedRes := range indexed.Results {
 			tags := make(map[string]string)
@@ -224,11 +229,8 @@ func (c *InfluxClient) makeBatchPoints(res PollResult) (influxclient.BatchPoints
 			}
 			fields := make(map[string]interface{})
 			for _, r := range indexedRes {
-				if !r.ToInflux {
-					continue
-				}
 				if r.AsLabel {
-					tags[r.Name] = fmt.Sprintf("%v", r.Value)
+					tags[r.Name] = fmt.Sprint(r.Value)
 				} else {
 					fields[r.Name] = r.Value
 				}
