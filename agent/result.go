@@ -50,15 +50,6 @@ type Result struct {
 	// AsLabel tells if the result is exported as a prometheus label.
 	AsLabel bool `json:"as_label,omitempty"`
 
-	// ToInflux tells wether the result is exported to influxDB
-	ToInflux bool `json:"to_influx,omitempty"`
-
-	// ToKafka tells wether the result is exported to kafka
-	ToKafka bool `json:"to_kafka,omitempty"`
-
-	// ToProm tells wether the result is exported to prometheus
-	ToProm bool `json:"to_prom,omitempty"`
-
 	snmpType gosnmp.Asn1BER
 	rawValue interface{}
 	suffix   string
@@ -73,16 +64,25 @@ type Result struct {
 // {i1=>[res1], i1.i12=>[res11], i1.i13=>[res12], i2=>[res2], i3=>[res3], ...}
 type TabularResults map[string][]Result
 
-// ScalarResults is a list of related scalar results grouped together
+// ScalarResults is a scalar measure results.
 type ScalarResults struct {
 	// Name is the name of the result group
 	Name string `json:"name"`
 
-	// Results is the list of Result part of this group
+	// Results is the list of results of this measure
 	Results []Result `json:"metrics"`
+
+	// ToInflux tells wether this measure is exported to influxDB
+	ToInflux bool `json:"to_influx,omitempty"`
+
+	// ToKafka tells wether this measure is exported to kafka
+	ToKafka bool `json:"to_kafka,omitempty"`
+
+	// ToProm tells wether this measure is exported to prometheus
+	ToProm bool `json:"to_prom,omitempty"`
 }
 
-// IndexedResults represents a list of results grouped by their index.
+// IndexedResults is an indexed measure results.
 type IndexedResults struct {
 	// Name is the measure name.
 	Name string `json:"name"`
@@ -90,6 +90,17 @@ type IndexedResults struct {
 	// Results is an 2-dimensional array of all results for this indexed measure
 	// with the index as first dimension and the oid as second dimension.
 	Results [][]Result `json:"metrics"`
+
+	// ToInflux tells wether this measure is exported to influxDB
+	ToInflux bool `json:"to_influx,omitempty"`
+
+	// ToKafka tells wether this measure is exported to kafka
+	ToKafka bool `json:"to_kafka,omitempty"`
+
+	// ToProm tells wether this measure is exported to prometheus
+	ToProm bool `json:"to_prom,omitempty"`
+
+	LabelsOnly bool `json:"labels_only,omitempty"`
 }
 
 // PollResult is the complete result set of a polling job
@@ -144,7 +155,7 @@ func MakePollResult(req SnmpRequest) PollResult {
 			log.Errorf("json tag unmarshal: %v", err)
 		} else {
 			for k, v := range reqTags {
-				tags[k] = fmt.Sprintf("%v", v)
+				tags[k] = fmt.Sprint(v)
 			}
 		}
 	}
@@ -174,28 +185,24 @@ func (p PollResult) Copy() PollResult {
 
 // PruneForKafka prunes PollResult to keep only metrics to be exported to kafka.
 func (p *PollResult) PruneForKafka() {
-	n := 0
-	for _, s := range p.Scalar {
-		ss := make([]Result, 0, len(s.Results))
+	for i, s := range p.Scalar {
+		if !s.ToKafka {
+			continue
+		}
+		sr := make([]Result, 0, len(s.Results))
 		for _, res := range s.Results {
-			if res.ToKafka {
-				ss = append(ss, res)
-			}
+			sr = append(sr, res)
 		}
-		if len(ss) == 0 {
-			p.Scalar = append(p.Scalar[:n], p.Scalar[n+1:]...)
-		} else {
-			p.Scalar[n].Results = ss
-			n++
-		}
+		p.Scalar[i].Results = sr
 	}
 	for i, indexed := range p.Indexed {
+		if !indexed.ToKafka {
+			continue
+		}
 		for j, indexedRes := range indexed.Results {
 			ir := make([]Result, 0, len(indexedRes))
 			for _, res := range indexedRes {
-				if res.ToKafka {
-					ir = append(ir, res)
-				}
+				ir = append(ir, res)
 			}
 			p.Indexed[i].Results[j] = ir
 		}
@@ -213,9 +220,6 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 		Oid:          string(metric.Oid),
 		AsLabel:      metric.ExportAsLabel,
 		ExportedName: metric.ExportedName,
-		ToInflux:     metric.ToInflux,
-		ToKafka:      metric.ToKafka,
-		ToProm:       metric.ToProm,
 		snmpType:     pdu.Type,
 		rawValue:     pdu.Value,
 	}
@@ -305,7 +309,13 @@ func (i IndexedResults) String() string {
 // Note: tabResults[i] is an array of results for a given oid on all indexes
 // and tabResults is a list of these results for all oids.
 func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResults) IndexedResults {
-	indexed := IndexedResults{Name: meas.Name}
+	indexed := IndexedResults{
+		Name:       meas.Name,
+		ToKafka:    meas.ToKafka,
+		ToProm:     meas.ToProm,
+		ToInflux:   meas.ToInflux,
+		LabelsOnly: meas.LabelsOnly,
+	}
 	if len(tabResults) == 0 {
 		log.Errorf("%s - makeIndexed: measure %s: result list empty...", uid, meas.Name)
 		return indexed
@@ -331,15 +341,16 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 			}
 			index = index[:lastDot]
 		}
-		var labelsCount int
+		var labelCount int
 		for _, r := range results {
 			if r.AsLabel {
-				labelsCount++
+				labelCount++
 			}
 		}
-		if len(results) <= 1 || (labelsCount == len(results) && !meas.LabelsOnly) {
+		if len(results) <= 1 || (labelCount == len(results) && !meas.LabelsOnly) {
 			// skip empty results, those with index only, and
 			// label-only results on non label-only measure
+			log.Debug2f(">>> %s - filtering label-only results (%+v) from non label-only measure %s", uid, results, meas.Name)
 			continue
 		}
 		indexed.Results = append(indexed.Results, results)
@@ -378,7 +389,7 @@ func (indexed IndexedResults) Filter(meas model.IndexedMeasure) IndexedResults {
 	}
 	var filtered [][]Result
 	for _, ir := range indexed.Results {
-		val := fmt.Sprintf("%v", ir[meas.FilterPos].Value)
+		val := fmt.Sprint(ir[meas.FilterPos].Value)
 		match := meas.FilterRegex.MatchString(val)
 		if (match && !meas.InvertFilterMatch) || (!match && meas.InvertFilterMatch) {
 			filtered = append(filtered, ir)
