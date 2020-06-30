@@ -186,26 +186,23 @@ func (p PollResult) Copy() PollResult {
 
 // PruneForKafka prunes PollResult to keep only metrics to be exported to kafka.
 func (p *PollResult) PruneForKafka() {
-	for i, s := range p.Scalar {
+	var n int
+	for _, s := range p.Scalar {
 		if !s.ToKafka {
-			continue
+			p.Scalar = append(p.Scalar[:n], p.Scalar[n+1:]...)
+		} else {
+			p.Scalar[n] = s
+			n++
 		}
-		sr := make([]Result, 0, len(s.Results))
-		for _, res := range s.Results {
-			sr = append(sr, res)
-		}
-		p.Scalar[i].Results = sr
 	}
-	for i, indexed := range p.Indexed {
+
+	n = 0
+	for _, indexed := range p.Indexed {
 		if !indexed.ToKafka {
-			continue
-		}
-		for j, indexedRes := range indexed.Results {
-			ir := make([]Result, 0, len(indexedRes))
-			for _, res := range indexedRes {
-				ir = append(ir, res)
-			}
-			p.Indexed[i].Results[j] = ir
+			p.Indexed = append(p.Indexed[:n], p.Indexed[n+1:]...)
+		} else {
+			p.Indexed[n] = indexed
+			n++
 		}
 	}
 }
