@@ -100,6 +100,7 @@ type IndexedResults struct {
 	// ToProm tells wether this measure is exported to prometheus
 	ToProm bool `json:"to_prom,omitempty"`
 
+	// LabelsOnly tells wether the measure is label-only
 	LabelsOnly bool `json:"labels_only,omitempty"`
 }
 
