@@ -233,7 +233,7 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 	case gosnmp.OctetString:
 		if len(metric.PostProcessors) == 0 {
 			// default processor
-			metric.PostProcessors = []string{"to-string"}
+			metric.PostProcessors = []string{"trim"}
 		}
 		res.Value = pdu.Value.([]byte)
 		for _, pp := range metric.PostProcessors {
@@ -260,7 +260,7 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 					return res, fmt.Errorf("%s: invalid int value %s: %v", res.Name, sv, err)
 				}
 				res.Value = float64(v)
-			case "to-string":
+			case "trim":
 				res.Value = strings.TrimSpace(string(val))
 			default:
 				return res, fmt.Errorf("%s: invalid post-processor %s", res.Name, pp)
