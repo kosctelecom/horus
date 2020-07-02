@@ -120,7 +120,7 @@ func (x *IndexedMeasure) UnmarshalJSON(data []byte) error {
 
 // RemoveInactive filters out all metrics of this indexed measure that are marked as inactive.
 func (x *IndexedMeasure) RemoveInactive() {
-	var filtered []Metric
+	filtered := x.Metrics[:0]
 
 	for _, metric := range x.Metrics {
 		if metric.Active {
@@ -135,7 +135,7 @@ func (x *IndexedMeasure) RemoveInactive() {
 			break
 		}
 	}
-	log.Debug3f("metrics before = %v", Names(x.Metrics))
+	log.Debug3f("metrics before filter: %v", Names(x.Metrics))
 	x.Metrics = filtered
-	log.Debug3f("metrics after = %v", Names(filtered))
+	log.Debug3f("metrics after inactive filter: %v", Names(filtered))
 }
