@@ -186,25 +186,21 @@ func (p PollResult) Copy() PollResult {
 
 // PruneForKafka prunes PollResult to keep only metrics to be exported to kafka.
 func (p *PollResult) PruneForKafka() {
-	var n int
+	ps := p.Scalar[:0]
 	for _, s := range p.Scalar {
-		if !s.ToKafka {
-			p.Scalar = append(p.Scalar[:n], p.Scalar[n+1:]...)
-		} else {
-			p.Scalar[n] = s
-			n++
+		if s.ToKafka {
+			ps = append(ps, s)
 		}
 	}
+	p.Scalar = ps
 
-	n = 0
+	pi := p.Indexed[:0]
 	for _, indexed := range p.Indexed {
-		if !indexed.ToKafka {
-			p.Indexed = append(p.Indexed[:n], p.Indexed[n+1:]...)
-		} else {
-			p.Indexed[n] = indexed
-			n++
+		if indexed.ToKafka {
+			pi = append(pi, indexed)
 		}
 	}
+	p.Indexed = pi
 }
 
 // MakeResult builds a Result from a gosnmp PDU. The value is casted to its
@@ -327,7 +323,6 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		for {
 			for _, tabRes := range tabResults {
 				if metr, ok := tabRes[index]; ok {
-					log.Debug3f("%s - found %d metric(s) with index %s for %s", uid, len(metr), index, metr[0].Name)
 					results = append(results, metr...)
 				}
 			}
@@ -348,7 +343,7 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		if len(results) <= 1 || (labelCount == len(results) && !meas.LabelsOnly) {
 			// skip empty results, those with index only, and
 			// label-only results on non label-only measure
-			log.Debug2f(">>> %s - filtering label-only results (%+v) from non label-only measure %s", uid, results, meas.Name)
+			log.Debug2f(">>> %s - filtering empty or label-only results (%+v) from non label-only measure %s", uid, results, meas.Name)
 			continue
 		}
 		indexed.Results = append(indexed.Results, results)
