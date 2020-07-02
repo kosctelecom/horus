@@ -372,20 +372,20 @@ func (indexed *IndexedResults) DedupDesc() {
 	}
 }
 
-// Filter applies the regex filter to `indexed` and returns a filtered copy.
-func (indexed IndexedResults) Filter(meas model.IndexedMeasure) IndexedResults {
+// Filter filters the indexed result against the regex filter..
+func (indexed *IndexedResults) Filter(meas model.IndexedMeasure) {
 	if meas.FilterPos == -1 {
-		return indexed
+		return
 	}
 	if meas.FilterRegex == nil {
 		glog.Errorf("Filter (idx=%d): nil regexp", meas.FilterPos)
-		return indexed
+		return
 	}
 	if meas.FilterPos < 0 {
 		glog.Error("Filter: invalid index with non-nil filter")
-		return indexed
+		return
 	}
-	var filtered [][]Result
+	filtered := indexed.Results[:0]
 	for _, ir := range indexed.Results {
 		val := fmt.Sprint(ir[meas.FilterPos].Value)
 		match := meas.FilterRegex.MatchString(val)
@@ -393,12 +393,9 @@ func (indexed IndexedResults) Filter(meas model.IndexedMeasure) IndexedResults {
 			filtered = append(filtered, ir)
 		}
 	}
+	indexed.Results = filtered
 	if len(filtered) == 0 {
 		glog.Warning("Filter: empty indexed result after filtering...")
-	}
-	return IndexedResults{
-		Name:    indexed.Name,
-		Results: filtered,
 	}
 }
 
