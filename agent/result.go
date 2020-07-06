@@ -244,6 +244,10 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 	if pdu.Value == nil {
 		return res, fmt.Errorf("oid %s: nil value", pdu.Name)
 	}
+	if len(metric.PostProcessors) == 0 {
+		// default string post-processor, necessary for []byte to string casting
+		metric.PostProcessors = []string{"trim"}
+	}
 	for _, pp := range metric.PostProcessors {
 		switch val := res.Value.(type) {
 		case []byte:
@@ -268,7 +272,7 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 					return res, fmt.Errorf("%s: invalid int value %s: %v", res.Name, val, err)
 				}
 				res.Value = float64(v)
-			default:
+			case "trim":
 				res.Value = strings.TrimSpace(string(val))
 			}
 		case float64:
