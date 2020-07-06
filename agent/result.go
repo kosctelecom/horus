@@ -352,16 +352,17 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 			}
 			index = index[:lastDot]
 		}
+
 		var labelCount int
 		for _, r := range results {
 			if r.AsLabel {
 				labelCount++
 			}
 		}
-		if len(results) <= 1 || (labelCount == len(results) && !meas.LabelsOnly) {
+		if (len(results) <= 1 && len(meas.Metrics) > 1) || (labelCount == len(results) && !meas.LabelsOnly) {
 			// skip empty results, those with index only, and
 			// label-only results on non label-only measure
-			log.Debug2f(">>> %s - filtering empty or label-only results (%+v) from non label-only measure %s", uid, results, meas.Name)
+			log.Debug2f("%s - filtering empty or label-only results (%+v) from non label-only measure %s", uid, results, meas.Name)
 			continue
 		}
 		indexed.Results = append(indexed.Results, results)
