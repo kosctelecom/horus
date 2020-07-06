@@ -160,7 +160,7 @@ func (s *snmpQueue) poll(ctx context.Context, req SnmpRequest) {
 	atomic.AddInt64(&waiting, -1)
 	if err := req.Dial(ctx); err != nil {
 		req.Errorf("unable to connect to snmp device: %v", err)
-		res := MakePollResult(req) // needed for report
+		res := req.MakePollResult() // needed for report
 		res.pollErr = err
 		pollResults <- res
 		return

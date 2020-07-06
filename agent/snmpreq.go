@@ -429,7 +429,7 @@ func (r *SnmpRequest) Walk(ctx context.Context) ([]IndexedResults, error) {
 // If there was a timeout while getting scalar results, we stop there, there is
 // no Walk attempted to get the indexed results.
 func (r *SnmpRequest) Poll(ctx context.Context) PollResult {
-	res := MakePollResult(*r)
+	res := r.MakePollResult()
 	res.Scalar, res.pollErr = r.Get(ctx)
 	if ErrIsUnreachable(res.pollErr) {
 		res.PollErr = res.pollErr.Error()

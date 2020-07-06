@@ -143,16 +143,16 @@ type PollResult struct {
 }
 
 // MakePollResult builds a PollResult from an SnmpRequest.
-func MakePollResult(req SnmpRequest) PollResult {
+func (r SnmpRequest) MakePollResult() PollResult {
 	tags := make(map[string]string)
-	tags["id"] = strconv.Itoa(req.Device.ID)
-	tags["host"] = req.Device.Hostname
-	tags["vendor"] = req.Device.Vendor
-	tags["model"] = req.Device.Model
-	tags["category"] = req.Device.Category
-	if req.Device.Tags != "" {
+	tags["id"] = strconv.Itoa(r.Device.ID)
+	tags["host"] = r.Device.Hostname
+	tags["vendor"] = r.Device.Vendor
+	tags["model"] = r.Device.Model
+	tags["category"] = r.Device.Category
+	if r.Device.Tags != "" {
 		var reqTags map[string]interface{}
-		if err := json.Unmarshal([]byte(req.Device.Tags), &reqTags); err != nil {
+		if err := json.Unmarshal([]byte(r.Device.Tags), &reqTags); err != nil {
 			log.Errorf("json tag unmarshal: %v", err)
 		} else {
 			for k, v := range reqTags {
@@ -161,12 +161,12 @@ func MakePollResult(req SnmpRequest) PollResult {
 		}
 	}
 	return PollResult{
-		RequestID: req.UID,
-		AgentID:   req.AgentID,
-		IPAddr:    req.Device.IPAddress,
+		RequestID: r.UID,
+		AgentID:   r.AgentID,
+		IPAddr:    r.Device.IPAddress,
 		PollStart: time.Now(),
 		Tags:      tags,
-		reportURL: req.ReportURL,
+		reportURL: r.ReportURL,
 	}
 }
 

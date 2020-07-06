@@ -47,7 +47,7 @@ func (sq *snmpQueue) mockPoll(ctx context.Context, req SnmpRequest) {
 	ongoingMu.Unlock()
 	atomic.AddInt64(&waiting, -1)
 	mockRes := mockResults[rand.Intn(len(mockResults))]
-	res := MakePollResult(req)
+	res := req.MakePollResult()
 	res.pollErr, res.Duration = mockRes.pollErr, mockRes.pollDur
 	select {
 	case <-ctx.Done():
