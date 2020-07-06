@@ -132,6 +132,10 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 		for _, indexedRes := range indexed.Results {
 			labels := map[string]string{}
 			for _, res := range indexedRes {
+				if res.Name[:1] == "_" {
+					// XXX temp hack XXX skip metrics whose name starts with `_`
+					continue
+				}
 				if res.AsLabel {
 					labels[res.Name] = fmt.Sprint(res.Value)
 				}
