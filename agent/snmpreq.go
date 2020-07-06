@@ -294,6 +294,11 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 		}
 		if pdu.Value != nil {
 			for _, metric := range grouped {
+				res, err := MakeResult(pdu, metric)
+				if err != nil {
+					r.Warningf("walk %s: make result: %v", metric.Name, err)
+					continue
+				}
 				idx := pdu.Name[len(oid)+1:]
 				if metric.IndexRegex != nil {
 					submatches := metric.IndexRegex.FindStringSubmatch(pdu.Name)
@@ -303,11 +308,6 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 					}
 					idx = strings.Join(submatches[1:], ".") // starts at 1 to skip the entire oid match
 					r.Debugf(3, "con#%d: %s - idx `%s` extracted from oid %s", conIdx, metric.Name, idx, pdu.Name)
-				}
-				res, err := MakeResult(pdu, metric)
-				if err != nil {
-					r.Warningf("walk %s: make result: %v", metric.Name, err)
-					continue
 				}
 				res.Index = idx
 				tabResult[idx] = append(tabResult[idx], res)
@@ -332,8 +332,8 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 		return tabResult, fmt.Errorf("Walk: %v", err)
 	}
 	r.resultCacheMu.Lock()
-	if _, ok := r.resultCache[oid.CacheKey(useAltCommunity)]; !ok && len(grouped) == 1 {
-		// cache only non-grouped metrics
+	if _, ok := r.resultCache[oid.CacheKey(useAltCommunity)]; !ok && len(grouped) == 1 && grouped[0].IndexRegex == nil {
+		// cache only non-grouped metrics with no index-pattern
 		r.resultCache[oid.CacheKey(useAltCommunity)] = tabResult
 	}
 	r.resultCacheMu.Unlock()
