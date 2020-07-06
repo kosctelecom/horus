@@ -64,7 +64,7 @@ type Metric struct {
 }
 
 // PostProcessorPat is a pattern listing all valid transformations available.
-var PostProcessorPat = regexp.MustCompile(`^(parse-hex-[bl]e|parse-int|to-string)$`)
+var PostProcessorPat = regexp.MustCompile(`^parse-hex-[bl]e|parse-int|trim|(div|mul)-\d+$`)
 
 // UnmarshalJSON unserializes a Metric. Checks specifically if the index pattern
 // is valid and contains at least one sub-expression.
