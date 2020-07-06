@@ -50,6 +50,9 @@ type Result struct {
 	// AsLabel tells if the result is exported as a prometheus label.
 	AsLabel bool `json:"as_label,omitempty"`
 
+	// Index is the result index as extracted from the oid according to the index_pattern.
+	Index string `json:"index,omitempty"`
+
 	snmpType gosnmp.Asn1BER
 	rawValue interface{}
 	suffix   string
@@ -281,7 +284,7 @@ func (res Result) String() string {
 	if res.Oid == "" {
 		return ""
 	}
-	return fmt.Sprintf("<name:%s oid:%s suffix:%s snmptype:%#x val:%v>", res.Name, res.Oid, res.suffix, res.snmpType, res.Value)
+	return fmt.Sprintf("<name:%s oid:%s suffix:%s snmptype:%#x val:%v idx=%s>", res.Name, res.Oid, res.suffix, res.snmpType, res.Value, res.Index)
 }
 
 // String returns a string representation of an IndexedResults.
@@ -318,6 +321,7 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		log.Errorf("%s - makeIndexed: measure %s index #%d bigger than tabResults", uid, meas.Name, meas.IndexPos)
 		return indexed
 	}
+
 	for index := range tabResults[meas.IndexPos] {
 		var results []Result
 		for {

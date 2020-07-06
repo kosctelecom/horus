@@ -309,6 +309,7 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 					r.Warningf("walk %s: make result: %v", metric.Name, err)
 					continue
 				}
+				res.Index = idx
 				tabResult[idx] = append(tabResult[idx], res)
 			}
 		}
