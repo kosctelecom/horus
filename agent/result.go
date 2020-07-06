@@ -227,13 +227,26 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 	case gosnmp.NoSuchObject:
 		return res, fmt.Errorf("oid %s: NoSuchObject", pdu.Name)
 	case gosnmp.OctetString:
-		if len(metric.PostProcessors) == 0 {
-			// default processor
-			metric.PostProcessors = []string{"trim"}
-		}
 		res.Value = pdu.Value.([]byte)
-		for _, pp := range metric.PostProcessors {
-			val := res.Value.([]byte)
+	case gosnmp.Counter64:
+		// 64 bit counters are automatically wrapped by 2^53 to avoid precision loss due
+		// to rounding (https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
+		res.Value = float64(gosnmp.ToBigInt(pdu.Value).Uint64() % (1 << 53))
+	case gosnmp.Integer, gosnmp.Counter32, gosnmp.Gauge32, gosnmp.TimeTicks, gosnmp.Uinteger32:
+		res.Value = float64(gosnmp.ToBigInt(pdu.Value).Uint64())
+	case gosnmp.OpaqueFloat:
+		res.Value = float64(pdu.Value.(float32))
+	case gosnmp.OpaqueDouble:
+		res.Value = pdu.Value.(float64)
+	default:
+		res.Value = pdu.Value
+	}
+	if pdu.Value == nil {
+		return res, fmt.Errorf("oid %s: nil value", pdu.Name)
+	}
+	for _, pp := range metric.PostProcessors {
+		switch val := res.Value.(type) {
+		case []byte:
 			switch pp {
 			case "parse-hex-be":
 				n, err := bigEndianUint(val)
@@ -250,31 +263,32 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 				log.Debug3f("%s: parsing `%x` as little endian num => %v", res.Name, string(val), n)
 				res.Value = float64(n)
 			case "parse-int":
-				sv := string(val)
-				v, err := strconv.Atoi(sv)
+				v, err := strconv.Atoi(string(val))
 				if err != nil {
-					return res, fmt.Errorf("%s: invalid int value %s: %v", res.Name, sv, err)
+					return res, fmt.Errorf("%s: invalid int value %s: %v", res.Name, val, err)
 				}
 				res.Value = float64(v)
-			case "trim":
-				res.Value = strings.TrimSpace(string(val))
 			default:
-				return res, fmt.Errorf("%s: invalid post-processor %s", res.Name, pp)
+				res.Value = strings.TrimSpace(string(val))
 			}
+		case float64:
+			switch {
+			case strings.HasPrefix(pp, "div-"):
+				div, err := strconv.ParseFloat(pp[4:], 64)
+				if err != nil || div == 0 {
+					return res, fmt.Errorf("invalid post-processor %s: %v", pp, err)
+				}
+				res.Value = val / div
+			case strings.HasPrefix(pp, "mul-"):
+				div, err := strconv.ParseFloat(pp[4:], 64)
+				if err != nil {
+					return res, fmt.Errorf("invalid post-processor %s: %v", pp, err)
+				}
+				res.Value = val * div
+			}
+		default:
+			log.Warningf("post processor: unhandled type %T (%[1]v for pdu type %v)", res.Value, pdu.Type)
 		}
-	case gosnmp.Counter64:
-		// 64 bit counters are automatically wrapped by 2^53 to avoid precision loss due
-		// to rounding (https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
-		res.Value = float64(gosnmp.ToBigInt(pdu.Value).Uint64() % (1 << 53))
-	case gosnmp.OpaqueFloat:
-		res.Value = float64(pdu.Value.(float32))
-	case gosnmp.OpaqueDouble:
-		res.Value = pdu.Value.(float64)
-	default:
-		res.Value = pdu.Value
-	}
-	if pdu.Value == nil {
-		return res, fmt.Errorf("oid %s: nil value", pdu.Name)
 	}
 	return res, nil
 }
