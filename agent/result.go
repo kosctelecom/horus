@@ -298,11 +298,11 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 }
 
 // String returns a string representation of a Result.
-func (res Result) String() string {
-	if res.Oid == "" {
+func (r Result) String() string {
+	if r.Oid == "" {
 		return ""
 	}
-	return fmt.Sprintf("<name:%s oid:%s suffix:%s snmptype:%#x val:%v idx=%s>", res.Name, res.Oid, res.suffix, res.snmpType, res.Value, res.Index)
+	return fmt.Sprintf("<name:%s exported_name:%s oid:%s suffix:%s snmptype:%s val:%v idx:%s>", r.Name, r.ExportedName, r.Oid, r.suffix, r.snmpType, r.Value, r.Index)
 }
 
 // String returns a string representation of an IndexedResults.
