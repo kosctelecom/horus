@@ -335,11 +335,24 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		log.Errorf("%s - makeIndexed: measure %s: result list empty...", uid, meas.Name)
 		return indexed
 	}
+
+	if !meas.IndexMetricID.Valid {
+		// multiple independent indexed metrics
+		log.Debug3f("independent results for meas %+v: %+v", meas, tabResults)
+		var results []Result
+		for _, tabRes := range tabResults {
+			for _, res := range tabRes {
+				results = append(results, res...)
+			}
+		}
+		indexed.Results = append(indexed.Results, results)
+		return indexed
+	}
+
 	if meas.IndexPos >= len(tabResults) {
 		log.Errorf("%s - makeIndexed: measure %s index #%d bigger than tabResults", uid, meas.Name, meas.IndexPos)
 		return indexed
 	}
-
 	for index := range tabResults[meas.IndexPos] {
 		var results []Result
 		for {
@@ -363,10 +376,9 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 				labelCount++
 			}
 		}
-		if (len(results) <= 1 && len(meas.Metrics) > 1) || (labelCount == len(results) && !meas.LabelsOnly) {
-			// skip empty results, those with index only, and
-			// label-only results on non label-only measure
-			log.Debug2f("%s - filtering empty or label-only results (%+v) from non label-only measure %s", uid, results, meas.Name)
+		if len(results) == 0 || (labelCount == len(results) && !meas.LabelsOnly) {
+			// skip empty results and label-only results for non label-only measure
+			log.Debug2f("%s - filtering empty or label-only results (%+v) for non label-only measure %s", uid, results, meas.Name)
 			continue
 		}
 		indexed.Results = append(indexed.Results, results)
