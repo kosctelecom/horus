@@ -85,7 +85,7 @@ func main() {
 	glog.WithConf(glog.Conf{Verbosity: *debug, LogDir: *logDir, PrintLocation: *debug > 0})
 
 	if *showVersion {
-		fmt.Printf("Revision: %s\nBuild: %s\nBranch: %s\n", Revision, Build, Branch)
+		fmt.Printf("Revision:%s Branch:%s Build:%s\n", Revision, Branch, Build)
 		return
 	}
 
