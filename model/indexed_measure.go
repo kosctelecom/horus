@@ -36,7 +36,7 @@ type IndexedMeasure struct {
 	Metrics []Metric
 
 	// IndexMetricID is the id of the metric used as index.
-	IndexMetricID int `db:"index_metric_id"`
+	IndexMetricID NullInt64 `db:"index_metric_id"`
 
 	// IndexPos is the position of the index metric in the Metrics array.
 	IndexPos int `db:"-"`
@@ -83,14 +83,16 @@ func (x *IndexedMeasure) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	im.IndexPos = -1
-	for i, metric := range im.Metrics {
-		if metric.ID == im.IndexMetricID {
-			im.IndexPos = i
-			break
+	if im.IndexMetricID.Valid {
+		for i, metric := range im.Metrics {
+			if int64(metric.ID) == im.IndexMetricID.Int64 {
+				im.IndexPos = i
+				break
+			}
 		}
-	}
-	if im.IndexPos == -1 {
-		return fmt.Errorf("indexed measure %s: IndexMetricID %d not found in metric list", im.Name, im.IndexMetricID)
+		if im.IndexPos == -1 {
+			return fmt.Errorf("indexed measure %s: IndexMetricID %d not found in metric list", im.Name, im.IndexMetricID.Int64)
+		}
 	}
 	if im.FilterPattern != "" && !im.FilterMetricID.Valid {
 		return fmt.Errorf("indexed measure %s: FilterMetricID cannot be null when FilterPattern is defined", im.Name)
@@ -121,18 +123,18 @@ func (x *IndexedMeasure) UnmarshalJSON(data []byte) error {
 // RemoveInactive filters out all metrics of this indexed measure that are marked as inactive.
 func (x *IndexedMeasure) RemoveInactive() {
 	filtered := x.Metrics[:0]
-
 	for _, metric := range x.Metrics {
 		if metric.Active {
 			filtered = append(filtered, metric)
 		}
 	}
-
-	// recompute index position
-	for i, metric := range filtered {
-		if metric.ID == x.IndexMetricID {
-			x.IndexPos = i
-			break
+	if x.IndexMetricID.Valid {
+		// recompute index position
+		for i, metric := range filtered {
+			if int64(metric.ID) == x.IndexMetricID.Int64 {
+				x.IndexPos = i
+				break
+			}
 		}
 	}
 	log.Debug3f("metrics before filter: %v", Names(x.Metrics))

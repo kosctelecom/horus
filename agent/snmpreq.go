@@ -392,7 +392,7 @@ func (r *SnmpRequest) walkMeasure(ctx context.Context, measure model.IndexedMeas
 		} else {
 			r.Debugf(2, "walkMetric %s: skipping empty tabular result", res.oid)
 		}
-		if grouped[0].ID == measure.IndexMetricID {
+		if measure.IndexMetricID.Valid && int64(grouped[0].ID) == measure.IndexMetricID.Int64 {
 			// recompute index result position on tabResults
 			measure.IndexPos = i
 		}
