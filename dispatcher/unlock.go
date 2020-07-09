@@ -36,7 +36,7 @@ func UnlockDevices() {
 
 	var currentReqs []string
 	for _, agent := range agents {
-		if !agent.Alive || len(agent.lastLoads) == 0 {
+		if !agent.Alive || len(agent.lh.loads) == 0 {
 			// agent is not working, no need to query
 			sqlExec("agent #"+strconv.Itoa(agent.ID), "unlockFromAgent", unlockFromAgentStmt, agent.ID)
 			continue

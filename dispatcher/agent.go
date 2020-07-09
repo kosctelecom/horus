@@ -26,6 +26,14 @@ import (
 	"time"
 )
 
+// loadHistory is the agent previous loads, used for load avg calculation.
+type loadHistory struct {
+	// loads is a load map whose key is the timestamp returned by time.UnixNano()
+	// On each job post or keepalive, a new value is added and entries older than LoadAvgWindow are removed.
+	loads map[int64]float64
+	sync.Mutex
+}
+
 // Agent represents an snmp agent
 type Agent struct {
 	// ID is the agent id
@@ -52,11 +60,8 @@ type Agent struct {
 	// pingJobURL is the full url for posting agent's ping jobs
 	pingJobURL string
 
-	// last agent loads, used for load avg calculation. The key is the timestamp returned by time.UnixNano().
-	// On each job post or keepalive, a new value is added and the entries older than LoadAvgWindow are purged.
-	lastLoads map[int64]float64
-
-	lastLoadsMu sync.Mutex
+	// lh is the agent load history
+	lh *loadHistory
 
 	// loadAvg is the load average taken over LoadAvgWindow.
 	loadAvg float64
@@ -259,29 +264,29 @@ func LoadAgents() error {
 // setLoad saves agents last instataneous load, updates its
 // load average and removes old load samples.
 func (a *Agent) setLoad(load float64) {
-	a.lastLoadsMu.Lock()
-	defer a.lastLoadsMu.Unlock()
+	a.lh.Lock()
+	defer a.lh.Unlock()
 
 	if !a.Alive {
-		a.lastLoads = nil
+		a.lh.loads = nil
 		a.loadAvg = 0
 		return
 	}
 
 	var acc float64
-	if a.lastLoads == nil {
-		a.lastLoads = make(map[int64]float64)
+	if a.lh.loads == nil {
+		a.lh.loads = map[int64]float64{}
 	}
 	now := time.Now().UnixNano()
-	a.lastLoads[now] = load
-	for ts, load := range a.lastLoads {
+	a.lh.loads[now] = load
+	for ts, load := range a.lh.loads {
 		if ts < now-int64(LoadAvgWindow) {
-			delete(a.lastLoads, ts)
+			delete(a.lh.loads, ts)
 		} else {
 			acc += load
 		}
 	}
-	a.loadAvg = acc / float64(len(a.lastLoads))
+	a.loadAvg = acc / float64(len(a.lh.loads))
 }
 
 // currentAgentsCopy makes a locked copy of current agents map.
