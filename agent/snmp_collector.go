@@ -189,6 +189,7 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 					continue
 				}
 				l["oid"] = res.Oid
+				l["index"] = res.Index
 				sample := PromSample{
 					Name:   indexed.Name + "_" + res.Name,
 					Value:  value,
