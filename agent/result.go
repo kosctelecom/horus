@@ -173,6 +173,7 @@ func (r SnmpRequest) MakePollResult() PollResult {
 	}
 }
 
+// Copy returns a deep copy of PollResult.
 func (p PollResult) Copy() PollResult {
 	cp, err := copystructure.Copy(p)
 	if err != nil {
@@ -306,11 +307,11 @@ func (r Result) String() string {
 }
 
 // String returns a string representation of an IndexedResults.
-func (i IndexedResults) String() string {
-	str := i.Name + " = [\n"
-	for _, ir := range i.Results {
+func (x IndexedResults) String() string {
+	str := x.Name + " = [\n"
+	for _, xr := range x.Results {
 		str += "  [\n"
-		for _, r := range ir {
+		for _, r := range xr {
 			str += "  " + r.String() + ",\n"
 		}
 		str += "  ]\n"
@@ -389,12 +390,12 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 // DedupDesc strips the description field from all entries of an
 // indexed result, except the first one.
 // This is essential to reduce the size of the json pushed to kafka.
-func (indexed *IndexedResults) DedupDesc() {
+func (x *IndexedResults) DedupDesc() {
 	found := make(map[string]bool)
-	for i, ir := range indexed.Results {
+	for i, ir := range x.Results {
 		for j := range ir {
 			if _, ok := found[ir[j].Name]; ok {
-				indexed.Results[i][j].Description = ""
+				x.Results[i][j].Description = ""
 			} else {
 				found[ir[j].Name] = true
 			}
@@ -403,7 +404,7 @@ func (indexed *IndexedResults) DedupDesc() {
 }
 
 // Filter filters the indexed result against the regex filter..
-func (indexed *IndexedResults) Filter(meas model.IndexedMeasure) {
+func (x *IndexedResults) Filter(meas model.IndexedMeasure) {
 	if meas.FilterPos == -1 {
 		return
 	}
@@ -415,15 +416,15 @@ func (indexed *IndexedResults) Filter(meas model.IndexedMeasure) {
 		glog.Error("Filter: invalid index with non-nil filter")
 		return
 	}
-	filtered := indexed.Results[:0]
-	for _, ir := range indexed.Results {
+	filtered := x.Results[:0]
+	for _, ir := range x.Results {
 		val := fmt.Sprint(ir[meas.FilterPos].Value)
 		match := meas.FilterRegex.MatchString(val)
 		if (match && !meas.InvertFilterMatch) || (!match && meas.InvertFilterMatch) {
 			filtered = append(filtered, ir)
 		}
 	}
-	indexed.Results = filtered
+	x.Results = filtered
 	if len(filtered) == 0 {
 		glog.Warning("Filter: empty indexed result after filtering...")
 	}
