@@ -27,14 +27,19 @@ import (
 	"github.com/vma/gosnmp"
 )
 
+// resultCache is a cache for walk results to avoid rewalking the same oids (with same community).
+// Only unique base oids without index pattern are cached.
+type resultCache struct {
+	cache map[string]TabularResults
+	sync.RWMutex
+}
+
 // SnmpRequest is a model.SnmpRequest with a snmp connection handler and a logger.
 type SnmpRequest struct {
 	model.SnmpRequest
 
-	// resultCache is a cache for walk results to avoid rewalking
-	// the same oids (of same community). Only unique base oids are cached.
-	resultCache   map[string]TabularResults
-	resultCacheMu sync.RWMutex
+	// rc is the result cache
+	rc *resultCache
 
 	// snmpClis is an array of gosnmp connections
 	snmpClis []*gosnmp.GoSNMP
@@ -116,7 +121,7 @@ func (s *SnmpRequest) UnmarshalJSON(data []byte) error {
 		}
 	}
 
-	s.resultCache = make(map[string]TabularResults)
+	s.rc = &resultCache{cache: make(map[string]TabularResults)}
 	snmpParams := s.Device.SnmpParams
 	s.snmpClis = make([]*gosnmp.GoSNMP, snmpParams.ConnectionCount)
 	for i := 0; i < snmpParams.ConnectionCount; i++ {
@@ -279,9 +284,9 @@ func (r *SnmpRequest) getMeasure(ctx context.Context, meas model.ScalarMeasure) 
 // All metrics with the same base oid but different index position are extracted at once.
 func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, conIdx int, useAltCommunity bool) (TabularResults, error) {
 	oid := grouped[0].Oid
-	r.resultCacheMu.RLock()
-	cached, ok := r.resultCache[oid.CacheKey(useAltCommunity)]
-	r.resultCacheMu.RUnlock()
+	r.rc.RLock()
+	cached, ok := r.rc.cache[oid.CacheKey(useAltCommunity)]
+	r.rc.RUnlock()
 	if ok {
 		r.Debugf(1, "con#%d: returning cached res map for oid %s", conIdx, oid)
 		return cached, nil
@@ -331,12 +336,12 @@ func (r *SnmpRequest) walkMetric(ctx context.Context, grouped []model.Metric, co
 	if err != nil {
 		return tabResult, fmt.Errorf("Walk: %v", err)
 	}
-	r.resultCacheMu.Lock()
-	if _, ok := r.resultCache[oid.CacheKey(useAltCommunity)]; !ok && len(grouped) == 1 && grouped[0].IndexRegex == nil {
+	r.rc.Lock()
+	if _, ok := r.rc.cache[oid.CacheKey(useAltCommunity)]; !ok && len(grouped) == 1 && grouped[0].IndexRegex == nil {
 		// cache only non-grouped metrics with no index-pattern
-		r.resultCache[oid.CacheKey(useAltCommunity)] = tabResult
+		r.rc.cache[oid.CacheKey(useAltCommunity)] = tabResult
 	}
-	r.resultCacheMu.Unlock()
+	r.rc.Unlock()
 	r.Debugf(3, "con#%d: res map for group indexed oid %s: %d metrics", conIdx, oid, len(tabResult))
 	return tabResult, nil
 }
