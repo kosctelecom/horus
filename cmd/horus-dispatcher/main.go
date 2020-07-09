@@ -17,9 +17,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"horus/dispatcher"
-	"horus/log"
-	"horus/model"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,6 +27,10 @@ import (
 
 	_ "net/http/pprof"
 
+	"github.com/kosctelecom/horus/dispatcher"
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
+	_ "github.com/lib/pq"
 	"github.com/vma/getopt"
 	"github.com/vma/glog"
 	"github.com/vma/httplogger"
