@@ -59,8 +59,8 @@ type PingHost struct {
 	// Name is the target hostname
 	Name string `db:"hostname" json:"hostname"`
 
-	// IpAddr is the target ip address
-	IpAddr string `db:"ip_address" json:"ip_address"`
+	// IPAddr is the target ip address
+	IPAddr string `db:"ip_address" json:"ip_address"`
 
 	// Category is the equipment category (for profile identification)
 	Category string `db:"category" json:"category"`
@@ -91,7 +91,7 @@ const (
 	// CheckURI is the agent keep-alive uri
 	CheckURI = "/r/check"
 
-	// PingURI is the agent uri for ping jobs
+	// PingJobURI is the agent uri for ping jobs
 	PingJobURI = "/r/ping"
 
 	// OngoingURI is the agent current ongoing request list uri endpoint
@@ -126,7 +126,7 @@ func (r *SnmpRequest) UnmarshalJSON(data []byte) error {
 func (r PingRequest) Targets() []string {
 	res := make([]string, len(r.Hosts))
 	for i, h := range r.Hosts {
-		res[i] = h.IpAddr
+		res[i] = h.IPAddr
 	}
 	return res
 }

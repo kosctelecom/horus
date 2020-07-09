@@ -40,8 +40,8 @@ type PingMeasure struct {
 	// Hostname is the pinged host name
 	Hostname string
 
-	// IpAddr is the ip address of the pinged host
-	IpAddr string
+	// IPAddr is the ip address of the pinged host
+	IPAddr string
 
 	// Category is the device category (for profile identification)
 	Category string
@@ -119,11 +119,11 @@ func (p *pingQueue) ping(ctx context.Context, req model.PingRequest) {
 	req.Stamp = time.Now()
 	args := []string{"-q", "-p", "50", "-i", "10", "-t", "100", "-C", strconv.Itoa(PingPacketCount)}
 	for _, host := range req.Hosts {
-		if host.IpAddr == "" {
+		if host.IPAddr == "" {
 			log.Infof("ping: skipping host %s without ipaddr", host.Name)
 			continue
 		}
-		args = append(args, host.IpAddr)
+		args = append(args, host.IPAddr)
 	}
 	log.Debug2f("%s - launching fping %s...", req.UID, args)
 	cmd := exec.Command("fping", args...)
@@ -186,7 +186,7 @@ func processOutput(req model.PingRequest, output string) []PingMeasure {
 		min, max, avg, loss := computeStats(samples)
 		log.Debug2f("%s: min=%.2f max=%.2f avg=%.2f loss=%.2f%%", ipAddr, min, max, avg, 100*loss)
 		meas := PingMeasure{
-			IpAddr: ipAddr,
+			IPAddr: ipAddr,
 			Min:    min / 1000,
 			Max:    max / 1000,
 			Avg:    avg / 1000,
@@ -194,7 +194,7 @@ func processOutput(req model.PingRequest, output string) []PingMeasure {
 			Stamp:  req.Stamp,
 		}
 		for _, host := range req.Hosts {
-			if host.IpAddr == ipAddr {
+			if host.IPAddr == ipAddr {
 				meas.HostID = host.ID
 				meas.Hostname = host.Name
 				meas.Category = host.Category

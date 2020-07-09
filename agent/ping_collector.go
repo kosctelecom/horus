@@ -26,68 +26,68 @@ type PingCollector struct {
 
 // Push converts a ping measure to prometheus samples and pushes them to the sample queue.
 func (c *PingCollector) Push(meas PingMeasure) {
-	log.Debug2f(">> posting ping measures for %s at %v", meas.IpAddr, meas.Stamp)
-	ping_min := PromSample{
+	log.Debug2f(">> posting ping measures for %s at %v", meas.IPAddr, meas.Stamp)
+	pingMin := PromSample{
 		Name:  "ping_min_duration_seconds",
 		Desc:  "min ping RTT time on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
 			"id":         strconv.Itoa(meas.HostID),
 			"host":       meas.Hostname,
-			"ip_address": meas.IpAddr,
+			"ip_address": meas.IPAddr,
 			"category":   meas.Category,
 			"vendor":     meas.Vendor,
 			"model":      meas.Model,
 		},
 		Value: meas.Min,
 	}
-	c.promSamples <- &ping_min
+	c.promSamples <- &pingMin
 
-	ping_max := PromSample{
+	pingMax := PromSample{
 		Name:  "ping_max_duration_seconds",
 		Desc:  "max ping RTT time on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
 			"id":         strconv.Itoa(meas.HostID),
 			"host":       meas.Hostname,
-			"ip_address": meas.IpAddr,
+			"ip_address": meas.IPAddr,
 			"category":   meas.Category,
 			"vendor":     meas.Vendor,
 			"model":      meas.Model,
 		},
 		Value: meas.Max,
 	}
-	c.promSamples <- &ping_max
+	c.promSamples <- &pingMax
 
-	ping_avg := PromSample{
+	pingAvg := PromSample{
 		Name:  "ping_avg_duration_seconds",
 		Desc:  "average ping RTT time on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
 			"id":         strconv.Itoa(meas.HostID),
 			"host":       meas.Hostname,
-			"ip_address": meas.IpAddr,
+			"ip_address": meas.IPAddr,
 			"category":   meas.Category,
 			"vendor":     meas.Vendor,
 			"model":      meas.Model,
 		},
 		Value: meas.Avg,
 	}
-	c.promSamples <- &ping_avg
+	c.promSamples <- &pingAvg
 
-	ping_loss := PromSample{
+	pingLoss := PromSample{
 		Name:  "ping_loss_ratio",
 		Desc:  "ping packet loss ratio on this measure",
 		Stamp: meas.Stamp,
 		Labels: map[string]string{
 			"id":         strconv.Itoa(meas.HostID),
 			"host":       meas.Hostname,
-			"ip_address": meas.IpAddr,
+			"ip_address": meas.IPAddr,
 			"category":   meas.Category,
 			"vendor":     meas.Vendor,
 			"model":      meas.Model,
 		},
 		Value: meas.Loss,
 	}
-	c.promSamples <- &ping_loss
+	c.promSamples <- &pingLoss
 }

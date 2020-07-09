@@ -61,19 +61,21 @@ func PingHosts() ([]model.PingHost, error) {
 	}
 	log.Debugf("got %d ping hosts", len(hosts))
 	for i, host := range hosts {
-		if host.IpAddr == "" {
+		if host.IPAddr == "" {
 			addrs, err := net.LookupHost(host.Name)
 			if err != nil {
 				log.Errorf("ping: lookup %s: %v", host.Name, err)
 				continue
 			}
 			log.Debug2f("host %s resolved to %s", host.Name, addrs[0])
-			hosts[i].IpAddr = addrs[0]
+			hosts[i].IPAddr = addrs[0]
 		}
 	}
 	return hosts, nil
 }
 
+// SendPingRequests sends current ping requests to agents
+// with load-balancing and agent stickyness
 func SendPingRequests(ctx context.Context) {
 	var agents []Agent
 	var agentHosts = make(map[int][]model.PingHost)
