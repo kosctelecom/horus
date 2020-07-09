@@ -234,7 +234,7 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 		// to rounding (https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
 		res.Value = float64(gosnmp.ToBigInt(pdu.Value).Uint64() % (1 << 53))
 	case gosnmp.Integer, gosnmp.Counter32, gosnmp.Gauge32, gosnmp.TimeTicks, gosnmp.Uinteger32:
-		res.Value = float64(gosnmp.ToBigInt(pdu.Value).Uint64())
+		res.Value = float64(gosnmp.ToBigInt(pdu.Value).Int64())
 	case gosnmp.OpaqueFloat:
 		res.Value = float64(pdu.Value.(float32))
 	case gosnmp.OpaqueDouble:
