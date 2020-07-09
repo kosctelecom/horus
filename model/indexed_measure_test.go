@@ -42,7 +42,7 @@ func TestIndexedMeas(t *testing.T) {
 			}`,
 			IndexedMeasure{
 				Name:           "ifStatus",
-				IndexMetricID:  8,
+				IndexMetricID:  NullInt64{8, true},
 				FilterMetricID: NullInt64{9, true},
 				FilterPattern:  "DSL",
 				FilterRegex:    regexp.MustCompile("DSL"),

@@ -210,7 +210,7 @@ func TestRequest(t *testing.T) {
 								PollingFrequency: 0,
 							},
 						},
-						IndexMetricID: 8,
+						IndexMetricID: NullInt64{8, true},
 						IndexPos:      0,
 						FilterPos:     -1,
 					},
