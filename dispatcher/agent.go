@@ -240,6 +240,7 @@ func LoadAgents() error {
 		a.checkURL = fmt.Sprintf("http://%s:%d%s", a.Host, a.Port, model.CheckURI)
 		a.pingJobURL = fmt.Sprintf("http://%s:%d%s", a.Host, a.Port, model.PingJobURI)
 		a.name = fmt.Sprintf("%s:%d", a.Host, a.Port)
+		a.lh = &loadHistory{loads: map[int64]float64{}}
 		newAgents[a.name] = &a
 	}
 	log.Debug2f(">> LoadAgents: new agents = %+v", newAgents)
@@ -268,15 +269,12 @@ func (a *Agent) setLoad(load float64) {
 	defer a.lh.Unlock()
 
 	if !a.Alive {
-		a.lh.loads = nil
+		a.lh.loads = map[int64]float64{}
 		a.loadAvg = 0
 		return
 	}
 
 	var acc float64
-	if a.lh.loads == nil {
-		a.lh.loads = map[int64]float64{}
-	}
 	now := time.Now().UnixNano()
 	a.lh.loads[now] = load
 	for ts, load := range a.lh.loads {
