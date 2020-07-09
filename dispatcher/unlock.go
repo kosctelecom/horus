@@ -17,13 +17,13 @@ package dispatcher
 import (
 	"encoding/json"
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 	"github.com/lib/pq"
 )
 

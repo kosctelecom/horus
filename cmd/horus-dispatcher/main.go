@@ -18,14 +18,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
-
-	_ "net/http/pprof"
 
 	"github.com/kosctelecom/horus/dispatcher"
 	"github.com/kosctelecom/horus/log"

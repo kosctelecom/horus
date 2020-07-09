@@ -17,10 +17,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"horus/agent"
-	"horus/log"
-	"horus/model"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -28,8 +26,9 @@ import (
 	"syscall"
 	"time"
 
-	_ "net/http/pprof"
-
+	"github.com/kosctelecom/horus/agent"
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 	"github.com/vma/getopt"
 	"github.com/vma/glog"
 	"github.com/vma/httplogger"

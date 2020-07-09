@@ -17,12 +17,12 @@ package agent
 import (
 	"fmt"
 	"hash/fnv"
-	"horus/log"
 	"net/http"
 	"sort"
 	"sync"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

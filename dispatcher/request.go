@@ -20,8 +20,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -29,6 +27,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 	"github.com/teris-io/shortid"
 )
 

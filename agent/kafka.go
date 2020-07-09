@@ -17,11 +17,11 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
-	"horus/log"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
 	"github.com/optiopay/kafka/v2"
 	"github.com/optiopay/kafka/v2/proto"
 	"github.com/vma/glog"

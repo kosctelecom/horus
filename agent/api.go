@@ -17,11 +17,11 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 	"github.com/vma/glog"
 )
 

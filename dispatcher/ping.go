@@ -20,14 +20,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"math"
 	"net"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 	"github.com/lib/pq"
 )
 

@@ -16,13 +16,13 @@ package agent
 
 import (
 	"context"
-	"horus/log"
-	"horus/model"
 	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 	"github.com/vma/glog"
 )
 

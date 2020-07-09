@@ -16,11 +16,11 @@ package agent
 
 import (
 	"fmt"
-	"horus/log"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
 	"github.com/vma/glog"
 	"github.com/vma/influxclient"
 )

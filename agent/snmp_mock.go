@@ -17,11 +17,11 @@ package agent
 import (
 	"context"
 	"errors"
-	"horus/log"
 	"math/rand"
 	"sync/atomic"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
 	"github.com/vma/glog"
 )
 

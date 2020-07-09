@@ -18,12 +18,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 	"github.com/vma/gosnmp"
 )
 
