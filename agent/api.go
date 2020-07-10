@@ -42,7 +42,7 @@ func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
 		log.Warningf("current mem load high (%.4f%%), rejecting new requests", currMemLoad)
 		w.WriteHeader(http.StatusTooManyRequests)
 		fmt.Fprintf(w, "%.4f", currMemLoad)
-
+		return
 	}
 
 	if r.Method != http.MethodPost {
