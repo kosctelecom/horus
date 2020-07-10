@@ -154,7 +154,7 @@ func postPingRequest(ctx context.Context, req model.PingRequest, agent Agent) er
 	}
 	htReq = htReq.WithContext(ctx)
 	htReq.Header.Set("Content-Type", "application/json")
-	client := &http.Client{Timeout: 3 * time.Second}
+	client := &http.Client{Timeout: time.Duration(HTTPTimeout) * time.Second}
 	log.Debugf("%s - posting to agent #%d (%s)", req.UID, agent.ID, agent.name)
 	log.Debug2f(">> %s@%s - pinged hosts: %s", req.UID, agent.name, strings.Join(req.Targets(), " "))
 	resp, err := client.Do(htReq)

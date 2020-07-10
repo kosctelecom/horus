@@ -40,6 +40,9 @@ var (
 	// Port is the web server port
 	Port = 8080
 
+	// HTTPTimeout is the timeout in seconds for posting poll requests
+	HTTPTimeout = 3
+
 	sid = shortid.MustNew(0, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$.", 1373)
 )
 
@@ -276,7 +279,7 @@ func SendRequest(ctx context.Context, req model.SnmpRequest, agent Agent) (stCod
 	}
 	htReq = htReq.WithContext(ctx)
 	htReq.Header.Set("Content-Type", "application/json")
-	client := &http.Client{Timeout: 2 * time.Second}
+	client := &http.Client{Timeout: time.Duration(HTTPTimeout) * time.Second}
 	log.Debug2f("%s - posting request to agent #%d (%s:%d)", req.UID, agent.ID, agent.Host, agent.Port)
 	resp, err := client.Do(htReq)
 	if err != nil {

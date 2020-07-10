@@ -179,7 +179,7 @@ func CheckAgents() error {
 // the current load in body when it is healthy.
 func (a Agent) Check() (bool, float64) {
 	log.Debug2f("checking agent #%d", a.ID)
-	client := &http.Client{Timeout: 2 * time.Second}
+	client := &http.Client{Timeout: time.Duration(HTTPTimeout) * time.Second}
 	resp, err := client.Get(a.checkURL)
 	if err != nil {
 		log.Debug2f("check agent %s: %v", a.name, err)

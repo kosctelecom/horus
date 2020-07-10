@@ -43,7 +43,7 @@ func UnlockDevices() {
 		}
 
 		log.Debug2f("unlock dev: get ongoing from agent #%d (%s:%d)", agent.ID, agent.Host, agent.Port)
-		client := &http.Client{Timeout: 2 * time.Second}
+		client := &http.Client{Timeout: time.Duration(HTTPTimeout) * time.Second}
 		resp, err := client.Get(fmt.Sprintf("http://%s:%d%s", agent.Host, agent.Port, model.OngoingURI))
 		if err != nil {
 			log.Debug2f("agent #%d: get ongoing: %v", agent.ID, err)
