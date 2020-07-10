@@ -76,7 +76,8 @@ func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 		return
 	}
-	if AddSnmpRequest(req) {
+
+	if AddSnmpRequest(&req) {
 		log.Debugf("%s - request successfully queued", req.UID)
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())

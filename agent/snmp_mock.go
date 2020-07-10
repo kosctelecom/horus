@@ -40,7 +40,7 @@ var mockResults = [...]struct {
 }
 
 // mockPoll simulates an snmp poll request.
-func (sq *snmpQueue) mockPoll(ctx context.Context, req SnmpRequest) {
+func (sq *snmpQueue) mockPoll(ctx context.Context, req *SnmpRequest) {
 	req.Debug(1, "start mock polling")
 	ongoingMu.Lock()
 	ongoingReqs[req.UID] = true

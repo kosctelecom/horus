@@ -29,7 +29,7 @@ import (
 // snmpQueue is a fixed size snmp job queue.
 type snmpQueue struct {
 	size     int
-	requests chan SnmpRequest
+	requests chan *SnmpRequest
 	workers  chan struct{}
 }
 
@@ -73,7 +73,7 @@ func Init() error {
 		glog.Infof("initializing %d snmp workers", MaxSNMPRequests)
 		snmpq = snmpQueue{
 			size:     MaxSNMPRequests,
-			requests: make(chan SnmpRequest, MaxSNMPRequests),
+			requests: make(chan *SnmpRequest, MaxSNMPRequests),
 			workers:  make(chan struct{}, MaxSNMPRequests),
 		}
 		pollResults = make(chan PollResult, MaxSNMPRequests)
@@ -98,7 +98,7 @@ func Init() error {
 
 // AddSnmpRequest adds a new snmp request to the queue.
 // Returns true if it was added i.e. a worker slot was acquired.
-func AddSnmpRequest(req SnmpRequest) bool {
+func AddSnmpRequest(req *SnmpRequest) bool {
 	select {
 	case snmpq.workers <- struct{}{}:
 		log.Debug2f("got worker, adding snmp req %s", req.UID)
@@ -148,7 +148,7 @@ func (s *snmpQueue) dispatch(ctx context.Context) {
 
 // poll polls the snmp device. At the end, pushes the result
 // to the results queue and releases the worker slot.
-func (s *snmpQueue) poll(ctx context.Context, req SnmpRequest) {
+func (s *snmpQueue) poll(ctx context.Context, req *SnmpRequest) {
 	defer func() {
 		req.Debug(1, "done polling")
 		<-s.workers
