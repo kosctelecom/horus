@@ -17,28 +17,49 @@
 package agent
 
 import (
-	"horus/log"
 	"runtime"
 	"syscall"
+	"time"
+
+	"github.com/kosctelecom/horus/log"
 )
 
-// sysTotalMemory returns the total system memory on linux.
-func sysTotalMemory() uint64 {
-	in := &syscall.Sysinfo_t{}
-	if err := syscall.Sysinfo(in); err != nil {
-		log.Errorf("sysTotalMemory: %v", err)
-		return 0
+var (
+	totalMem             float64
+	totalMemSamplingFreq = 30 * time.Minute
+
+	usedMem             float64
+	usedMemSamplingFreq = 10 * time.Second
+)
+
+func updateTotalMem() {
+	ticker := time.NewTicker(totalMemSamplingFreq)
+	defer ticker.Stop()
+	for ; true; <-ticker.C {
+		log.Debug2(">> querying sys total mem stats")
+		in := &syscall.Sysinfo_t{}
+		if err := syscall.Sysinfo(in); err != nil {
+			log.Errorf("sysinfo: %v", err)
+		}
+		totalMem = float64(in.Totalram) * float64(in.Unit)
 	}
-	return uint64(in.Totalram) * uint64(in.Unit)
+}
+
+func updateUsedMem() {
+	ticker := time.NewTicker(usedMemSamplingFreq)
+	defer ticker.Stop()
+	for ; true; <-ticker.C {
+		log.Debug2(">> querying heap mem stats")
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		usedMem = float64(m.HeapAlloc)
+	}
 }
 
 // CurrentMemLoad returns the current relative memory usage of the agent.
 func CurrentMemLoad() float64 {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	used, total := float64(m.HeapSys-m.HeapReleased), float64(sysTotalMemory())
-	if total == 0 {
-		return 0
+	if totalMem == 0 {
+		return -1
 	}
-	return used / total
+	return usedMem / totalMem
 }

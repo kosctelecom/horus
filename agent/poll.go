@@ -16,7 +16,6 @@ package agent
 
 import (
 	"context"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -86,6 +85,8 @@ func Init() error {
 	}
 
 	log.Debug2("starting mem usage logger")
+	go updateTotalMem()
+	go updateUsedMem()
 	go updateStats()
 
 	pingQ = pingQueue{
@@ -178,18 +179,16 @@ func updateStats() {
 	tick := time.NewTicker(time.Duration(StatsUpdFreq) * time.Second)
 	defer tick.Stop()
 	for range tick.C {
-		var m runtime.MemStats
 		var snmpSampleCount int
-		runtime.ReadMemStats(&m)
 		if snmpCollector != nil {
 			snmpSampleCount = len(snmpCollector.Samples)
 		}
 		currSampleCount.Set(float64(snmpSampleCount))
 		ongoingPollCount.Set(float64(len(ongoingReqs)))
-		heapMem.Set(float64(m.HeapAlloc))
+		heapMem.Set(usedMem)
 		snmpScrapes.Set(float64(snmpCollector.scrapeCount))
 		snmpScrapeDuration.Set(float64(snmpCollector.scrapeDuration) / float64(time.Second))
-		log.Debugf("ongoing=%d prom_samples=%d scrape_count=%d scrape_dur=%v heap=%dMiB", len(ongoingReqs),
-			snmpSampleCount, snmpCollector.scrapeCount, snmpCollector.scrapeDuration, m.Alloc/1024/1024)
+		log.Debugf("ongoing=%d prom_samples=%d scrape_count=%d scrape_dur=%v heap=%.0fMiB", len(ongoingReqs),
+			snmpSampleCount, snmpCollector.scrapeCount, snmpCollector.scrapeDuration, usedMem/1024/1024)
 	}
 }
