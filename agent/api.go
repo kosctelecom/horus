@@ -30,6 +30,7 @@ var MaxAllowedLoad float64
 
 // HandleSnmpRequest handles snmp polling job requests.
 func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("new poll request from %s", r.RemoteAddr)
 	if MaxSNMPRequests == 0 {
 		log.Debug("snmp polling not enabled, rejecting request")
 		w.WriteHeader(http.StatusTooManyRequests)
@@ -41,7 +42,7 @@ func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
 	if currMemLoad >= MaxAllowedLoad {
 		log.Warningf("current mem load high (%.2f%%), rejecting new requests", 100*currMemLoad)
 		w.WriteHeader(http.StatusTooManyRequests)
-		fmt.Fprintf(w, "%.4f", currMemLoad)
+		fmt.Fprintf(w, "%.4f", CurrentSNMPLoad())
 		return
 	}
 
@@ -59,7 +60,6 @@ func HandleSnmpRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debug2f("got new poll request from %s", r.RemoteAddr)
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Warningf("error reading body: %v", err)
