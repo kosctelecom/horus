@@ -17,8 +17,9 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"horus/log"
 	"regexp"
+
+	"github.com/kosctelecom/horus/log"
 )
 
 // IndexedMeasure is a group of tabular metrics indexed by the first one.

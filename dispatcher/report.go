@@ -16,10 +16,11 @@ package dispatcher
 
 import (
 	"database/sql"
-	"horus/log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/kosctelecom/horus/log"
 )
 
 // HandleReport saves the polling report to db and unlocks the device.

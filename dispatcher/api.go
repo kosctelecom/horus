@@ -19,11 +19,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 )
 
 const (

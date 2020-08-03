@@ -16,14 +16,15 @@ package dispatcher
 
 import (
 	"fmt"
-	"horus/log"
-	"horus/model"
 	"io/ioutil"
 	"net/http"
 	"sort"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 )
 
 // loadHistory is the agent previous loads, used for load avg calculation.

@@ -14,9 +14,7 @@
 
 package model
 
-import (
-	"horus/log"
-)
+import "github.com/kosctelecom/horus/log"
 
 // ScalarMeasure is a scalar measure with its list
 // of scalar metrics like sysInfo, sysUsage...

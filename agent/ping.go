@@ -17,13 +17,14 @@ package agent
 import (
 	"bytes"
 	"context"
-	"horus/log"
-	"horus/model"
 	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 )
 
 // pingQueue is a fixed size ping job queue.

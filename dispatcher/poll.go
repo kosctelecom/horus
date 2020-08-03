@@ -16,13 +16,14 @@ package dispatcher
 
 import (
 	"context"
-	"horus/log"
-	"horus/model"
 	"net/http"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/kosctelecom/horus/log"
+	"github.com/kosctelecom/horus/model"
 )
 
 // SendPollingJobs retrieves all available snmp polling jobs and sends each of them sequentially

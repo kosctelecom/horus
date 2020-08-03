@@ -1,4 +1,4 @@
-module horus
+module github.com/kosctelecom/horus
 
 go 1.13
 

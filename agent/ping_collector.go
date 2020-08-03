@@ -15,8 +15,9 @@
 package agent
 
 import (
-	"horus/log"
 	"strconv"
+
+	"github.com/kosctelecom/horus/log"
 )
 
 // PingCollector is a prometheus collector
