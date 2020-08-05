@@ -1,0 +1,12 @@
+# binaries
+cmd/bin/*
+
+# artifacts from `go tests -c`
+*.test
+
+# local GOPATH
+/.go/
+
+# coverage
+cover.out
+coverage.xml
