@@ -23,9 +23,11 @@ CREATE TABLE devices (
     hostname character varying NOT NULL,
     ip_address character varying,
     is_polling boolean NOT NULL DEFAULT false,
+    last_pinged_at timestamp with time zone,
+    last_polled_at timestamp with time zone,
     ping_frequency integer NOT NULL DEFAULT 0,
     polling_frequency integer NOT NULL DEFAULT 300,
-    profile_id integer NOT NULL REFERENCES profiles(id),
+    profile_id integer NOT NULL REFERENCES profiles(id) ON UPDATE CASCADE ON DELETE SET NULL,
     snmp_alternate_community character varying NOT NULL DEFAULT '',
     snmp_community character varying NOT NULL,
     snmp_connection_count integer NOT NULL DEFAULT 1,
@@ -41,43 +43,35 @@ CREATE TABLE devices (
     snmpv3_privacy_proto character varying NOT NULL DEFAULT '',
     snmpv3_security_level character varying NOT NULL DEFAULT '',
     tags json NOT NULL DEFAULT '{}'::json,
-    last_pinged_at timestamp with time zone,
-    last_polled_at timestamp with time zone,
     UNIQUE (hostname, ip_address)
 );
 
 CREATE TABLE metrics (
-    id serial PRIMARY KEY,
     active boolean NOT NULL DEFAULT true,
-    name character varying NOT NULL,
-    oid character varying NOT NULL,
-    index_pattern character varying NOT NULL DEFAULT '',
     description text NOT NULL,
     export_as_label boolean NOT NULL DEFAULT false,
     exported_name character varying,
-    use_alternate_community boolean NOT NULL DEFAULT false,
+    id serial PRIMARY KEY,
+    index_pattern character varying NOT NULL DEFAULT '',
+    name character varying NOT NULL,
+    oid character varying NOT NULL,
     polling_frequency integer NOT NULL DEFAULT 0,
     post_processors character varying[] DEFAULT '{}' NOT NULL,
-    to_influx boolean NOT NULL DEFAULT false,
-    to_kafka boolean NOT NULL DEFAULT true,
-    to_prometheus boolean NOT NULL DEFAULT true,
     UNIQUE (oid, index_pattern)
 );
 
-COMMENT ON COLUMN metrics.active IS 'only active metrics are taken into account';
-COMMENT ON COLUMN metrics.index_pattern IS 'regex to apply to extract index from tabular oid (only for unnatural index positions)';
-COMMENT ON COLUMN metrics.export_as_label IS 'do we export this metric value as a prometheus label?';
-COMMENT ON COLUMN metrics.is_string_counter IS 'is the metric a string counter (of type Counter64String)?';
-
 CREATE TABLE measures (
     id serial PRIMARY KEY,
-    name character varying NOT NULL,
     description text NOT NULL,
-    is_indexed boolean NOT NULL DEFAULT false,
-    index_metric_id integer REFERENCES metrics(id),
     filter_metric_id integer REFERENCES metrics(id),
     filter_pattern character varying NOT NULL DEFAULT '',
+    index_metric_id integer REFERENCES metrics(id),
     invert_filter_match boolean NOT NULL DEFAULT false,
+    is_indexed boolean NOT NULL DEFAULT false,
+    name character varying NOT NULL,
+    to_influx boolean NOT NULL DEFAULT false,
+    to_kafka boolean NOT NULL DEFAULT true,
+    to_prometheus boolean NOT NULL DEFAULT true,
     use_alternate_community boolean NOT NULL DEFAULT false,
     UNIQUE (name)
 );
