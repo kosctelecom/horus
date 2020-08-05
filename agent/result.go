@@ -278,13 +278,13 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 			}
 		case float64:
 			switch {
-			case strings.HasPrefix(pp, "div-"):
+			case strings.HasPrefix(pp, "div-"), strings.HasPrefix(pp, "div:"):
 				div, err := strconv.ParseFloat(pp[4:], 64)
 				if err != nil || div == 0 {
 					return res, fmt.Errorf("invalid post-processor %s: %v", pp, err)
 				}
 				res.Value = val / div
-			case strings.HasPrefix(pp, "mul-"):
+			case strings.HasPrefix(pp, "mul-"), strings.HasPrefix(pp, "mul:"):
 				div, err := strconv.ParseFloat(pp[4:], 64)
 				if err != nil {
 					return res, fmt.Errorf("invalid post-processor %s: %v", pp, err)
