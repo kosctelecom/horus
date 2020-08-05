@@ -8,17 +8,20 @@ Database structure
 
 ## devices table
 
-- Lists all devices to poll, only `active` ones are taken into account.
+- Lists all devices to poll and ping. Only `active` ones are taken into account.
 - Each device is part of a profile through the `profile_id` field. It defines the list of metrics to poll (see below).
 - The `is_polling` flag is set by the dispatcher to lock the device during the polling, it is unlocked when the dispatcher receives the poll report. A cleaner goroutine unlocks periodically locked devices with no polling.
 - The `last_polled_at` and `last_pinged_at` fields are updated by the dispatcher on each successful job submission.
-- The following table lists the main fields with their description and default values:
+- The following table lists all fields with their description and default values:
 
 | field                      | type   | default | description
 | ---------------------------| ------ | ------- | --------------------------------------------------------------
 | active                     | bool   | false   | flag to activate device polling.
 | hostname                   | string | -       | device hostname (fqdn)
-| ip\_address                | string | -       | device IP address for snmp requests.
+| ip\_address                | string | -       | device IP address for snmp requests. Takes precedence over hostname; if null then hostname is used.
+| is\_polling                | bool   | false   | internal field: flag telling wether there is an ongoing poll
+| last\_pinged\_at           | tstamp | -       | internal field: last ping time
+| last\_polled\_at           | tstamp | -       | internal field: last snmp polling time
 | ping\_frequency            | int    | 0       | ping frequency in seconds for the device. The device is pinged only if the value of this field is > 0.
 | polling\_frequency         | int    | 0       | snmp polling frequency in seconds for the device. The device is polled only if the value of this field is > 0.
 | profile\_id                | int    | -       | the id of the device profile (see profiles table below)
@@ -40,25 +43,43 @@ Database structure
 
 ## metrics table
 
-- This table lists all snmp metrics (OID) to poll from devices.
-- The `name` is the canonical metric name as found on the MIB files.
-- The `oid` is the metric OID with the leading dot
-- The `index_pattern` field is applicable only to indexed metrics and is a regexp that defines how to extract a composite index that is not at the end of the base OID. It is a go compatible regexp with one group for the index position. Example: `.1.3.6.1.2.1.10.48.1.5.1.1.(\d+).2.1.\d`
-- The `export_as_label` flag indicates wether the result should be exported as a Prometheus label, when it's a string for example.
-- The `use_alternate_community` flag indicates wether to use the alternate snmp community for this metric if it is defined, falls back to the main community otherwise.
-- The `polling_frequency` field defines a specific polling frequency for this metric. It must be a multiple of the device polling frequency, allows to poll this metric less frequently.
-- The `is_string_counter` flag indicates wether the metric value is a counter exported as a string (`Counter64String` type).
-- The `to_influx`, `to_kafka` and `to_prometheus` flags indicate where to export the metric results. If set, it is only active if the agent also have the corresponding data sink connection params (see [horus-agent(1)](horus-agent.1.md)).
+This table lists all snmp metrics (OID) to poll from devices. The main fields are:
+
+| field                 | type     | default | description
+| ----------------------| -------- | ------- | ---------------------------------------------------
+| name                  | string   | -       | the canonical metric name as found on the MIB files
+| oid                   | string   | -       | the metric OID with the leading dot
+| description           | text     | -       | description of the metric (as found in the MIB)
+| export\_as\_label     | bool     | false   | flag telling wether this metric must be exported as a label. If set, the value is converted to string first.
+| exported\_name        | string   | null    | name of the corresponding prometheus metric or label. Defaults to `name` if unset.
+| index\_pattern        | string   | null    | applicable only to indexed metrics. It is a regexp that defines how to extract the index from the OID, if it is not at the end. It is a go compatible regexp with one group for the index position. Example: `.1.3.6.1.2.1.10.48.1.5.1.1.(\d+).2.1.\d`
+| polling\_frequency    | int      | 0       | defines a specific polling frequency for this metric. It must be a multiple of the device polling frequency, allows to poll this metric less frequently.
+| post\_processors      | []string | {}      | a list of post processing transformations to apply in order to the retrieved metric. See below for details.
+
+The post processors allow to normalize a retrieved metric that has a string or numeric value. The current list is:
+
+- For string values:
+    - `trim`: trims spaces at the beginning and end. It is the default processor for all string metrics.
+    - `parse-int`: parses the string to a numeric value. Typically for 64bits counters that are returned as `OctetString`.
+    - `parse-hex-le`: parses the hexadecimal string as a numeric value in little-endian order.
+    - `parse-hex-be`: parses the hexadecimal string as a numeric value in big-endian order.
+
+- For numeric values:
+    - `div-<divisor>` or `div:<divisor>`: divides the retrieved value by the divisor, a float number.
+    - `mul-<multiplicator>` or `mul:<multiplicator>`: multiplies the retrieved value by the multiplicator, a float number.
+
 
 ## measures table
 
-- A measure is a group of similar snmp metrics to poll.
-- A measure is composed of either scalar or indexed metrics as defined by the `is_indexed` flag. It is not possible to mix both types of metrics.
-- The `index_metric_id` references the metric to use as index for indexed measures.
+- A measure is a group of similar snmp metrics to poll. It is a list of either scalar or indexed metrics as defined by the `is_indexed` flag.
+- It is not possible to mix scalar and indexed metrics in one measure.
+- The `index_metric_id` references the metric to use as index for indexed measures. It is possible to have indexed metrics without a defined index metric for components that does not have a specific name like fans or PSUs.
 - The `filter_metric_id` references the metric over which to filter the measure.
 - The `filter_pattern` defines the regex pattern used to filter the measure. The measure is kept only if the filter\_metric's results matches this pattern.
 - It is possible to invert the filter match result with the `invert_filter_match` flag.
 - Measures and metrics have a N:N relationship defined in the `measure_metrics` table.
+- The `use_alternate_community` flag tells to use the device's other community to poll all metrics of this measure.
+- It is possible to select the export destination with `to_influx`, `to_kafka` and `to_prometheus` flags.
 
 ## profiles table
 

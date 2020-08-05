@@ -8,7 +8,8 @@ NAME
 SYNOPSIS
 ========
 
-| **horus-query** \[**-c**|**-h**|**-p**|**-v**] \[**-d** _level_] \[**--dsn** _url_] \[**-i** _value_] \[**-r** _json_] \[**-s** _id,..._] \[**-t** _id,..._]
+| **horus-query** \[**-c**|**-h**|**-p**|**-v**] \[**-d** _level_] \[**--dsn** _url_] \[**-i** _value_] \[**--prune**]
+|                 \[**-r** _json_] \[**-s** _id,..._] \[**-t** _id,..._]
 
 DESCRIPTION
 ===========
@@ -41,6 +42,10 @@ Options
 -p, --print-query
 
 :   Prints the json request (as it would be sent to the agent) before executing it.
+
+--prune
+
+:   Prunes result to keep only metrics to be exported to kafka
 
 -r, --request
 

@@ -9,14 +9,13 @@ SYNOPSIS
 ========
 
 | **horus-agent** \[**-h**|**-v**] \[**-d** _level_] \[**--fping-max-procs** _value_] \[**--fping-packet-count** _count_]
-|                 \[**--fping-path** _value_] \[**--influx-db** _value_]
-|                 \[**--influx-host** _value_] \[**--influx-password** _value_]
-|                 \[**--influx-retries** _value_] \[**--influx-rp** _value_]
-|                 \[**--influx-timeout** _value_] \[**--influx-user** _value_] \[**-j** _count_]
-|                 \[**--kafka-host** _value_] \[**--kafka-partition** _value_]
-|                 \[**--kafka-topic** _value_] \[**--log** _dir_] \[**--mock**] \[**-p** _port_]
-|                 \[**--prom-max-age** _sec_] \[**--prom-sweep-frequency** _sec_] \[**-s** _sec_]
-|                 \[**-t** _msec_]
+|                 \[**--influx-db** _value_] \[**--influx-host** _value_]
+|                 \[**--influx-password** _value_] \[**--influx-retries** _value_]
+|                 \[**--influx-rp** _value_] \[**--influx-timeout** _value_]
+|                 \[**--influx-user** _value_] \[**-j** _count_] \[**--kafka-host** _value_]
+|                 \[**--kafka-partition** _value_] \[**--kafka-topic** _value_] \[**--log** _dir_]
+|                 \[**-m** percent] \[**--mock**] \[**-p** _port_] \[**--prom-max-age** _sec_]
+|                 \[**--prom-sweep-frequency** _sec_] \[**-s** _sec_] \[**-t** _msec_]
 
 DESCRIPTION
 ===========
@@ -55,6 +54,10 @@ General options
 :   Specifies the directory where the log files are written. The files are created and rotated by the glog lib (https://github.com/vma/glog).
     If not set, logs are written to stderr.
 
+-m, --max-mem-load=percent
+
+:    Max memory usage allowed before rejecting new jobs (default: 90%)
+
     --mock
 
 :   Runs the agent in mock mod for snmp requests.
@@ -85,10 +88,6 @@ Ping related options
     --fping-packet-count
 
 :   Specifies the number of ping requests sent to each host. Defaults to 15.
-
-    --fping-path
-
-:   Specifies the path of the fping binary. Defaults to `/usr/bin/fping`.
 
 
 InfluxDB related options
@@ -158,7 +157,7 @@ See GitHub Issues: <https://github.com/kosctelecom/horus/issues>
 AUTHOR
 ======
 
-Vallimamod Abdullah <vma@sip.solutions>
+Valli A. Vallimamod <vma@sip.solutions>
 
 SEE ALSO
 ========

@@ -10,7 +10,8 @@ SYNOPSIS
 
 | **horus-dispatcher** \[**-h**|**-v**] \[**-c** _url_] \[**-d** _level_] \[**-g** _seconds_] \[**-i** _address_] \[**-k** _seconds_] \[**--log** _dir_]
 |                      \[**--max-load-delta** _value_] \[**--ping-batch-count** _value_]
-|                      \[**-p** _port_] \[**-q** _seconds_] \[**-r** _days_] \[**--report-flush-freq hours**] \[**-u** _seconds_]
+|                      \[**-p** _port_] \[**-q** _seconds_] \[**-r** _days_]
+|                      \[**--report-flush-freq hours**] \[**-u** _seconds_] \[**-w** sec]
 
 DESCRIPTION
 ===========
@@ -92,6 +93,10 @@ Options
 -v, --version
 
 :   Prints the current version and build date.
+
+ -w, --load-avg-window=sec
+
+:   SNMP load avg calculation window (default: 30)
 
 BUGS
 ====
