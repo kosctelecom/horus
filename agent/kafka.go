@@ -29,8 +29,8 @@ import (
 
 // KafkaClient is a kafka Producer sink for snmp results.
 type KafkaClient struct {
-	// Host is the kafka server address
-	Host string
+	// Hosts is the list of kafka brokers addresses
+	Hosts []string
 
 	// Topic is the kafka topic
 	Topic string
@@ -51,16 +51,19 @@ type KafkaClient struct {
 var kafkaCli *KafkaClient
 
 // NewKafkaClient creates a new kafka client and connects to the broker.
-func NewKafkaClient(host, topic string, partition int) error {
-	if host == "" || topic == "" {
+func NewKafkaClient(hosts []string, topic string, partition int) error {
+	if len(hosts) == 0 || topic == "" {
 		return fmt.Errorf("kafka host and topic must all be defined")
 	}
-	if strings.LastIndex(host, ":") == -1 {
-		host += ":9092"
+
+	for i, h := range hosts {
+		if strings.LastIndex(h, ":") == -1 {
+			hosts[i] += ":9092"
+		}
 	}
 
 	kafkaCli = &KafkaClient{
-		Host:      host,
+		Hosts:     hosts,
 		Topic:     topic,
 		Partition: int32(partition),
 	}
@@ -69,13 +72,13 @@ func NewKafkaClient(host, topic string, partition int) error {
 
 // dial connects to the kafka broker
 func (c *KafkaClient) dial() error {
-	log.Debug2f("connecting to kafka %q", c.Host)
+	log.Debug2f("connecting to kafka %v", c.Hosts)
 	brokerConf := kafka.NewBrokerConf(fmt.Sprintf("snmpagent[%d]", os.Getpid()))
 	brokerConf.ReadTimeout = 0 // to avoid unnecessary timeout & reconnections
 	errs := make(chan error)
 	go func() {
 		var err error
-		c.broker, err = kafka.Dial([]string{c.Host}, brokerConf)
+		c.broker, err = kafka.Dial(c.Hosts, brokerConf)
 		errs <- err
 	}()
 	select {
@@ -93,7 +96,7 @@ func (c *KafkaClient) dial() error {
 		c.Producer = c.broker.Producer(producerConf)
 		c.results = make(chan PollResult)
 		go c.sendData()
-		log.Debugf("connected to kafka %q", c.Host)
+		log.Debugf("connected to kafka %v", c.Hosts)
 	}
 	return nil
 }

@@ -68,7 +68,7 @@ var (
 	influxRetries = getopt.IntLong("influx-retries", 0, 2, "influx write retries in case of error")
 
 	// kafka conf
-	kafkaHost      = getopt.StringLong("kafka-host", 0, "", "kafka broker host (push to kafka disabled if empty)")
+	kafkaHosts     = getopt.ListLong("kafka-hosts", 'k', "kafka broker hosts list (push to kafka disabled if empty)", "host1,host2,...")
 	kafkaTopic     = getopt.StringLong("kafka-topic", 0, "", "kafka snmp results topic")
 	kafkaPartition = getopt.IntLong("kafka-partition", 0, 0, "kafka write partition")
 
@@ -114,7 +114,7 @@ func main() {
 		}
 	}
 
-	if *maxResAge == 0 && *influxHost == "" && *kafkaHost == "" {
+	if *maxResAge == 0 && *influxHost == "" && len(*kafkaHosts) == 0 {
 		getopt.PrintUsage(os.Stderr)
 		glog.Exitf("either prom-max-age or influx-host or kafka-host must be defined")
 	}
@@ -147,8 +147,8 @@ func main() {
 		}
 	}
 
-	if *kafkaHost != "" {
-		err := agent.NewKafkaClient(*kafkaHost, *kafkaTopic, *kafkaPartition)
+	if len(*kafkaHosts) != 0 {
+		err := agent.NewKafkaClient(*kafkaHosts, *kafkaTopic, *kafkaPartition)
 		if err != nil {
 			glog.Exitf("init kafka client: %v", err)
 		}

@@ -11,7 +11,7 @@ SYNOPSIS
 | **horus-dispatcher** \[**-h**|**-v**] \[**-c** _url_] \[**-d** _level_] \[**-g** _seconds_] \[**-i** _address_] \[**-k** _seconds_] \[**--log** _dir_]
 |                      \[**--max-load-delta** _value_] \[**--ping-batch-count** _value_]
 |                      \[**-p** _port_] \[**-q** _seconds_] \[**-r** _days_]
-|                      \[**--report-flush-freq hours**] \[**-u** _seconds_] \[**-w** sec]
+|                      \[**--report-flush-freq hours**] \[**-u** _seconds_] \[**-w** _sec_]
 
 DESCRIPTION
 ===========

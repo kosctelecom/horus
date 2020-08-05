@@ -12,7 +12,7 @@ SYNOPSIS
 |                 \[**--influx-db** _value_] \[**--influx-host** _value_]
 |                 \[**--influx-password** _value_] \[**--influx-retries** _value_]
 |                 \[**--influx-rp** _value_] \[**--influx-timeout** _value_]
-|                 \[**--influx-user** _value_] \[**-j** _count_] \[**--kafka-host** _value_]
+|                 \[**--influx-user** _value_] \[**-j** _count_] \[**-k** _host1,host2,..._]
 |                 \[**--kafka-partition** _value_] \[**--kafka-topic** _value_] \[**--log** _dir_]
 |                 \[**-m** percent] \[**--mock**] \[**-p** _port_] \[**--prom-max-age** _sec_]
 |                 \[**--prom-sweep-frequency** _sec_] \[**-s** _sec_] \[**-t** _msec_]
@@ -125,9 +125,9 @@ InfluxDB related options
 Kafka related options
 ---------------------
 
-    --kafka-host
+-k, --kafka-hosts
 
-:   Specifies the Kafka broker host or IP address. Push to Kafka is disabled if empty (default).
+:   Specifies the Kafka brokers host names or IP addresses list. Push to Kafka is disabled if empty (default).
 
     --kafka-partition
 
