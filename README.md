@@ -14,6 +14,7 @@ Horus' main distinguishing features compared to other snmp collectors are:
 - It is possible to use an alternate community for some metrics on the same device
 - related snmp metrics can be grouped as measures
 - profiles can be defined to group a list of measures specific to a type of device
+- retrieved metrics can be post-processed to change scale or convert hex/string values to numeric ones
 
 Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 1 to 5 minutes,
 with up to 27K metrics per device.  The polling is dispatched over 4 agents collecting each about 1M metrics, using less than 3GB memory and 2 cpu cores.
@@ -28,7 +29,7 @@ with up to 27K metrics per device.  The polling is dispatched over 4 agents coll
 
 ### Building from source
 
-To build Horus from source, you need Go compiler (version 1.13 or later). You can clone the repository and build it with the Makefile:
+To build Horus from source, you need Go compiler (version 1.14 or later). You can clone the repository and build it with the Makefile:
 
 ```
 $ cd $HOME/go/src # or $GOPATH/src
@@ -73,8 +74,8 @@ Then we can create a local agent running on port 8000:
 and a device to poll:
 
 ```
-horus=# INSERT INTO devices (id, profile_id, active, hostname, ip_address, snmp_version, snmp_community, polling_frequency, ping_frequency, to_influx, to_kafka, to_prometheus)
-             VALUES (1, 1, true, 'switch-01.lan', '10.0.0.1', '2c', 'mycommunity', 120, 60, false, true, true);
+horus=# INSERT INTO devices (id, profile_id, active, hostname, ip_address, snmp_version, snmp_community, polling_frequency, ping_frequency)
+             VALUES (1, 1, true, 'switch-01.lan', '10.0.0.1', '2c', 'mycommunity', 60, 30);
 ```
 
 and import some sample metrics:
@@ -117,31 +118,31 @@ scrape_configs:
   # agent metrics (mem usage, ongoing count, etc.)
   - job_name: 'agent'
     scrape_interval: 30s
-    scrape_timeout: 15s
+    scrape_timeout: 10s
     metrics_path: /metrics
     static_configs:
     - targets: ['localhost:8000']
 
   # snmp metrics
   - job_name: 'snmp'
-    scrape_interval: 2m
-    scrape_timeout: 1m
+    scrape_interval: 1m
+    scrape_timeout: 10s
     metrics_path: /snmpmetrics
     static_configs:
     - targets: ['localhost:8000']
     metric_relabel_configs:
-    - source_labels: [id]
+    - source_labels: [hostname]
       target_label: instance
 
   # ping metrics
   - job_name: 'ping'
-    scrape_interval: 1m
-    scrape_timeout: 15s
+    scrape_interval: 30s
+    scrape_timeout: 10s
     metrics_path: /pingmetrics
     static_configs:
     - targets: ['localhost:8000']
     metric_relabel_configs:
-    - source_labels: [id]
+    - source_labels: [hostname]
       target_label: instance
 ```
 
