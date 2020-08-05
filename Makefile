@@ -35,3 +35,5 @@ clean:
 	go clean -i -testcache -modcache ./...
 
 .PHONY: all dispatcher agent query install test cov clean
+
+-include Makefile.local
