@@ -73,31 +73,22 @@ func NewKafkaClient(hosts []string, topic string, partition int) error {
 // dial connects to the kafka broker
 func (c *KafkaClient) dial() error {
 	log.Debug2f("connecting to kafka %v", c.Hosts)
-	brokerConf := kafka.NewBrokerConf(fmt.Sprintf("snmpagent[%d]", os.Getpid()))
+	brokerConf := kafka.NewBrokerConf(fmt.Sprintf("horus-agent[%d]", os.Getpid()))
 	brokerConf.ReadTimeout = 0 // to avoid unnecessary timeout & reconnections
-	errs := make(chan error)
-	go func() {
-		var err error
-		c.broker, err = kafka.Dial(c.Hosts, brokerConf)
-		errs <- err
-	}()
-	select {
-	case <-StopCtx.Done():
-		return fmt.Errorf("kafka client: dial cancelled")
-	case err := <-errs:
-		if err != nil {
-			return fmt.Errorf("kafka dial: %v", err)
-		}
-		c.connected = true
-		producerConf := kafka.NewProducerConf()
-		producerConf.RequiredAcks = proto.RequiredAcksLocal
-		producerConf.Compression = proto.CompressionGzip
-		producerConf.Logger = log.Klogger{}
-		c.Producer = c.broker.Producer(producerConf)
-		c.results = make(chan PollResult)
-		go c.sendData()
-		log.Debugf("connected to kafka %v", c.Hosts)
+	broker, err := kafka.Dial(c.Hosts, brokerConf)
+	if err != nil {
+		return fmt.Errorf("kafka dial: %v", err)
 	}
+	c.broker = broker
+	c.connected = true
+	producerConf := kafka.NewProducerConf()
+	producerConf.RequiredAcks = proto.RequiredAcksLocal
+	producerConf.Compression = proto.CompressionGzip
+	producerConf.Logger = log.Klogger{}
+	c.Producer = c.broker.Producer(producerConf)
+	c.results = make(chan PollResult)
+	go c.sendData()
+	log.Debugf("connected to kafka")
 	return nil
 }
 
@@ -141,7 +132,7 @@ func (c *KafkaClient) sendData() {
 				log.Errorf("%s: kafka write: %v", res.RequestID, err)
 				continue
 			}
-			log.Debugf("%s: kafka write done in %dms", res.RequestID, time.Since(start)/time.Millisecond)
+			log.Debug2f("%s: kafka write done in %dms", res.RequestID, time.Since(start)/time.Millisecond)
 		}
 	}
 }
