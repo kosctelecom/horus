@@ -27,6 +27,11 @@ type PingCollector struct {
 
 // Push converts a ping measure to prometheus samples and pushes them to the sample queue.
 func (c *PingCollector) Push(meas PingMeasure) {
+	if c == nil {
+		log.Debugf("Push called on nil pingcollector")
+		return
+	}
+
 	log.Debug2f(">> posting ping measures for %s at %v", meas.IPAddr, meas.Stamp)
 	pingMin := PromSample{
 		Name:  "ping_min_duration_seconds",
