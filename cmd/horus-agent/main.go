@@ -72,6 +72,11 @@ var (
 	kafkaTopic     = getopt.StringLong("kafka-topic", 0, "", "kafka snmp results topic")
 	kafkaPartition = getopt.IntLong("kafka-partition", 0, 0, "kafka write partition")
 
+	// NATS conf
+	natsHosts = getopt.ListLong("nats-hosts", 'n', "NATS hosts list (push to NATS disabled if empty)", "host1,host2,...")
+	natsTopic = getopt.StringLong("nats-topic", 0, "", "nats snmp results topic")
+	natsName  = getopt.StringLong("nats-name", 0, "", "NATS connection name")
+
 	// fping conf
 	pingPacketCount = getopt.IntLong("fping-packet-count", 0, 15, "number of ping requests sent to each host")
 	maxPingProcs    = getopt.IntLong("fping-max-procs", 0, 5, "max number of simultaneous fping processes")
@@ -114,9 +119,9 @@ func main() {
 		}
 	}
 
-	if *maxResAge == 0 && *influxHost == "" && len(*kafkaHosts) == 0 {
+	if *maxResAge == 0 && *influxHost == "" && len(*kafkaHosts) == 0 && len(*natsHosts) == 0 {
 		getopt.PrintUsage(os.Stderr)
-		glog.Exitf("either prom-max-age or influx-host or kafka-host must be defined")
+		glog.Exitf("either prom-max-age, influx-host,kafka-host, or nats-host must be defined")
 	}
 
 	agent.MockMode = *mock
@@ -133,24 +138,27 @@ func main() {
 	}
 
 	if *maxResAge > 0 {
-		err := agent.InitCollectors(*maxResAge, *sweepFreq)
-		if err != nil {
+		if err := agent.InitCollectors(*maxResAge, *sweepFreq); err != nil {
 			glog.Exitf("init prom collector: %v", err)
 		}
 	}
 
 	if *influxHost != "" {
-		err := agent.NewInfluxClient(*influxHost, *influxUser, *influxPasswd,
-			*influxDB, *influxRP, *influxTimeout, *influxRetries)
-		if err != nil {
+		if err := agent.NewInfluxClient(*influxHost, *influxUser, *influxPasswd,
+			*influxDB, *influxRP, *influxTimeout, *influxRetries); err != nil {
 			glog.Exitf("init influx client: %v", err)
 		}
 	}
 
 	if len(*kafkaHosts) != 0 {
-		err := agent.NewKafkaClient(*kafkaHosts, *kafkaTopic, *kafkaPartition)
-		if err != nil {
+		if err := agent.NewKafkaClient(*kafkaHosts, *kafkaTopic, *kafkaPartition); err != nil {
 			glog.Exitf("init kafka client: %v", err)
+		}
+	}
+
+	if len(*natsHosts) != 0 {
+		if err := agent.NewNatsClient(*natsHosts, *natsTopic, *natsName); err != nil {
+			glog.Exitf("init NATS client: %v", err)
 		}
 	}
 

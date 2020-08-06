@@ -452,6 +452,7 @@ func handlePollResults() {
 		}
 
 		go kafkaCli.Push(res)
+		go natsCli.Push(res)
 		go snmpCollector.Push(res)
 		go influxCli.Push(res)
 		res.sendReport()
