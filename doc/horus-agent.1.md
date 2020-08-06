@@ -14,8 +14,10 @@ SYNOPSIS
 |                 \[**--influx-rp** _value_] \[**--influx-timeout** _value_]
 |                 \[**--influx-user** _value_] \[**-j** _count_] \[**-k** _host1,host2,..._]
 |                 \[**--kafka-partition** _value_] \[**--kafka-topic** _value_] \[**--log** _dir_]
-|                 \[**-m** percent] \[**--mock**] \[**-p** _port_] \[**--prom-max-age** _sec_]
-|                 \[**--prom-sweep-frequency** _sec_] \[**-s** _sec_] \[**-t** _msec_]
+|                 \[**-m** percent] \[**--mock**] \[**-n** _host1,host2,..._]
+|                 \[**--nats-name** _value_] \[**--nats-topic** _value_] \[**-p** _port_]
+|                 \[**--prom-max-age** _sec_] \[**--prom-sweep-frequency** _sec_]
+|                 \[**-s** _sec_] \[**-t** _msec_]
 
 DESCRIPTION
 ===========
@@ -136,6 +138,22 @@ Kafka related options
     --kafka-topic
 
 :   Specifies the Kafka topic to use for the snmp results.
+
+
+NATS related options
+--------------------
+
+-n, --nats-hosts
+
+:   NATS hosts list (push to NATS disabled if empty)
+
+    --nats-name
+
+:   NATS connection name
+
+    --nats-topic
+
+:  NATS topic (subject) for snmp results
 
 
 Prometheus related options

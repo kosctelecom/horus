@@ -71,7 +71,7 @@ See GitHub Issues: <https://github.com/kosctelecom/horus/issues>
 AUTHOR
 ======
 
-Vallimamod Abdullah <vma@sip.solutions>
+Valli A. Vallimamod <vma@sip.solutions>
 
 SEE ALSO
 ========

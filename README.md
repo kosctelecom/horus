@@ -1,15 +1,15 @@
 # Horus
 
-Horus is a distributed tool that collects snmp and ping data from various network equipments and exports them to Kafka, Prometheus or InfluxDB.
+Horus is a distributed tool that collects snmp and ping data from various network equipments and exports them to Kafka, Prometheus, NATS.io or InfluxDB.
 
 Horus' main distinguishing features compared to other snmp collectors are:
 
 - a distributed architecture composed of a dispatcher and multiple distributed agents
-- supports pushing metric results to Kafka, Prometheus and InfluxDB in parallel or selectively
+- supports pushing metric results to Kafka, Prometheus, NATS, and InfluxDB in parallel or selectively
 - devices, metrics and agents are defined on a postgres db and can be updated in real time
 - only the dispatcher is connected to the db
 - can make ping statistics a la smokeping (with fping) in addition to snmp polling
-- the agents receive their job requests from the controller over http and post their results directly to Kafka and the TSDB
+- the agents receive their job requests from the controller over http and post their results directly to the message bus or TSDB
 - composite OID indexes are supported: index position is defined with a regex
 - It is possible to use an alternate community for some metrics on the same device
 - related snmp metrics can be grouped as measures
@@ -43,7 +43,7 @@ $ ./cmd/bin/horus-agent -h
 The project compilation results in 3 binaries located in the cmd/bin directory:
 
 - [horus-dispatcher(1)](./doc/horus-dispatcher.1.md): the dispatcher that retrieves available jobs from db and send them to agents
-- [horus-agent(1)](./doc/horus-agent.1.md): the agent that performs the snmp or ping requests and sends the result to kafka, Prometheus and influxDB
+- [horus-agent(1)](./doc/horus-agent.1.md): the agent that performs the snmp or ping requests and sends the result to select message buses and TSDB
 - [horus-query(1)](./doc/horus-query.1.md): test command that polls a device and prints the json result to stdout
 
 
