@@ -451,9 +451,9 @@ func handlePollResults() {
 			}
 		}
 
-		go kafkaCli.Push(res.Copy())
-		go snmpCollector.Push(res.Copy())
-		go influxCli.Push(res.Copy())
+		go kafkaCli.Push(res)
+		go snmpCollector.Push(res)
+		go influxCli.Push(res)
 		res.sendReport()
 	}
 }

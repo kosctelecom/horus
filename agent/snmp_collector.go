@@ -32,6 +32,7 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 		return
 	}
 
+	pollRes = pollRes.Copy()
 	pollTimeout := PromSample{
 		Name:   "snmp_poll_timeout_count",
 		Desc:   "current snmp poll failed due to timeout",

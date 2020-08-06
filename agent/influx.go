@@ -140,6 +140,7 @@ func (c *InfluxClient) Push(res PollResult) {
 	if c == nil {
 		return
 	}
+	res = res.Copy()
 	bp, err := c.makeBatchPoints(res)
 	if err != nil {
 		log.Errorf("influx make batch point: %v, skipping", err)

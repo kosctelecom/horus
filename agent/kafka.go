@@ -103,6 +103,7 @@ func (c *KafkaClient) Push(res PollResult) {
 	if c == nil {
 		return
 	}
+	res = res.Copy()
 	res.PruneForKafka()
 	log.Debugf("%s: pushing result to kafka queue", res.RequestID)
 	c.results <- res
