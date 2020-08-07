@@ -73,9 +73,10 @@ var (
 	kafkaPartition = getopt.IntLong("kafka-partition", 0, 0, "kafka write partition")
 
 	// NATS conf
-	natsHosts = getopt.ListLong("nats-hosts", 'n', "NATS hosts list (push to NATS disabled if empty)", "host1,host2,...")
-	natsTopic = getopt.StringLong("nats-topic", 0, "", "nats snmp results topic")
-	natsName  = getopt.StringLong("nats-name", 0, "", "NATS connection name")
+	natsHosts          = getopt.ListLong("nats-hosts", 'n', "NATS hosts list (push to NATS disabled if empty)", "host1,host2,...")
+	natsTopic          = getopt.StringLong("nats-topic", 0, "", "NATS snmp results topic (subject)")
+	natsName           = getopt.StringLong("nats-name", 0, "", "NATS connection name")
+	natsReconnectDelay = getopt.IntLong("nats-reconnect-delay", 0, 10, "NATS delay before reconnecting", "seconds")
 
 	// fping conf
 	pingPacketCount = getopt.IntLong("fping-packet-count", 0, 15, "number of ping requests sent to each host")
@@ -157,7 +158,7 @@ func main() {
 	}
 
 	if len(*natsHosts) != 0 {
-		if err := agent.NewNatsClient(*natsHosts, *natsTopic, *natsName); err != nil {
+		if err := agent.NewNatsClient(*natsHosts, *natsTopic, *natsName, *natsReconnectDelay); err != nil {
 			glog.Exitf("init NATS client: %v", err)
 		}
 	}

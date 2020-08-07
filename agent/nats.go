@@ -28,7 +28,7 @@ type NatsClient struct {
 var natsCli *NatsClient
 
 // NewNatsClient creates a new NATS client and connects to server.
-func NewNatsClient(hosts []string, topic, name string) error {
+func NewNatsClient(hosts []string, topic, name string, reconnectDelay int) error {
 	if len(hosts) == 0 || topic == "" {
 		return fmt.Errorf("NATS host and topic must all be defined")
 	}
@@ -41,7 +41,13 @@ func NewNatsClient(hosts []string, topic, name string) error {
 		Name:  name,
 	}
 	log.Debug2f("connecting to NATS %v", hosts)
-	nc, err := nats.Connect(strings.Join(hosts, ","), nats.Name(name))
+	opts := []nats.Option{nats.Name(name),
+		nats.ReconnectWait(time.Second * time.Duration(reconnectDelay)),
+		nats.DisconnectErrHandler(func(nc *nats.Conn, err error) { log.Warningf("NATS disconnected: %v", err) }),
+		nats.ReconnectHandler(func(nc *nats.Conn) { log.Info("NATS reconnected") }),
+		nats.ClosedHandler(func(nc *nats.Conn) { log.Info("NATS connection closed") }),
+	}
+	nc, err := nats.Connect(strings.Join(hosts, ","), opts...)
 	if err != nil {
 		return fmt.Errorf("NATS dial: %v", err)
 	}
@@ -71,7 +77,8 @@ func (c *NatsClient) Push(res PollResult) {
 	if err := c.ec.Publish(c.Topic, res); err != nil {
 		log.Errorf("%s: NATS publish: %v", res.RequestID, err)
 	}
-	if err := c.nc.FlushTimeout(time.Second); err != nil {
+	c.nc.Flush()
+	if err := c.nc.LastError(); err != nil {
 		log.Errorf("NATS queue flush: %v", err)
 		return
 	}
