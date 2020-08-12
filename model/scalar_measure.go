@@ -34,14 +34,17 @@ type ScalarMeasure struct {
 	// UseAlternateCommunity tells wether to use the alternate community for all metrics of this measure.
 	UseAlternateCommunity bool `db:"use_alternate_community"`
 
-	// ToKafka is a flag telling if the results should be exported to Kafka.
+	// ToKafka is a flag telling if the results are exported to Kafka.
 	ToKafka bool `db:"to_kafka"`
 
 	// ToProm tells if the results are kept for Prometheus scraping.
 	ToProm bool `db:"to_prometheus"`
 
-	// ToInflux is a flag telling if the results should be exported to InfluxDB.
+	// ToInflux is a flag telling if the results are exported to InfluxDB.
 	ToInflux bool `db:"to_influx"`
+
+	// ToNats tells if the results are exported to NATS.
+	ToNats bool `db:"to_nats"`
 }
 
 // RemoveInactive filters out all metrics of this scalar measure marked as inactive.

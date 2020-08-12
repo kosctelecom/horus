@@ -96,7 +96,8 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                              m.use_alternate_community,
                                              m.to_influx,
                                              m.to_kafka,
-                                             m.to_prometheus
+                                             m.to_prometheus,
+                                             m.to_nats
                                         FROM devices d,
                                              measures m,
                                              profile_measures pm
@@ -119,7 +120,8 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
                                               m.use_alternate_community,
                                               m.to_influx,
                                               m.to_kafka,
-                                              m.to_prometheus
+                                              m.to_prometheus,
+                                              m.to_nats
                                          FROM devices d,
                                               measures m,
                                               profile_measures pm

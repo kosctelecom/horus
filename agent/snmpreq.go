@@ -208,6 +208,7 @@ func (s *SnmpRequest) Get(ctx context.Context) (results []ScalarResults, err err
 			ToProm:   scalar.ToProm,
 			ToKafka:  scalar.ToKafka,
 			ToInflux: scalar.ToInflux,
+			ToNats:   scalar.ToNats,
 		}
 		results = append(results, sres)
 	}

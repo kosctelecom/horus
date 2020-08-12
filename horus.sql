@@ -72,6 +72,7 @@ CREATE TABLE measures (
     to_influx boolean NOT NULL DEFAULT false,
     to_kafka boolean NOT NULL DEFAULT true,
     to_prometheus boolean NOT NULL DEFAULT true,
+    to_nats boolean NOT NULL DEFAULT true,
     use_alternate_community boolean NOT NULL DEFAULT false,
     UNIQUE (name)
 );

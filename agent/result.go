@@ -83,6 +83,9 @@ type ScalarResults struct {
 
 	// ToProm tells wether this measure is exported to prometheus
 	ToProm bool `json:"to_prom,omitempty"`
+
+	// ToNats tells wether this measure is exported to NATS
+	ToNats bool `json:"to_nats,omitempty"`
 }
 
 // IndexedResults is an indexed measure results.
@@ -102,6 +105,9 @@ type IndexedResults struct {
 
 	// ToProm tells wether this measure is exported to prometheus
 	ToProm bool `json:"to_prom,omitempty"`
+
+	// ToNats tells wether this measure is exported to NATS
+	ToNats bool `json:"to_nats,omitempty"`
 
 	// LabelsOnly tells wether the measure is label-only
 	LabelsOnly bool `json:"labels_only,omitempty"`
@@ -330,6 +336,7 @@ func MakeIndexed(uid string, meas model.IndexedMeasure, tabResults []TabularResu
 		ToKafka:    meas.ToKafka,
 		ToProm:     meas.ToProm,
 		ToInflux:   meas.ToInflux,
+		ToNats:     meas.ToNats,
 		LabelsOnly: meas.LabelsOnly,
 	}
 	if len(tabResults) == 0 {
