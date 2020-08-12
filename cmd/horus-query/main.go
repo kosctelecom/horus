@@ -150,7 +150,11 @@ func main() {
 	res := req.Poll(ctx)
 	if res.PollErr != "" {
 		log.Printf("Poll error: %v", res.PollErr)
-		return
+		if !res.IsPartial {
+			return
+		} else {
+			log.Print("*** PARTIAL RESULT ***")
+		}
 	}
 	if *prune {
 		res.PruneForKafka()
