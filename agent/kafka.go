@@ -16,6 +16,7 @@ package agent
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -53,7 +54,7 @@ var kafkaCli *KafkaClient
 // NewKafkaClient creates a new kafka client and connects to the broker.
 func NewKafkaClient(hosts []string, topic string, partition int) error {
 	if len(hosts) == 0 || topic == "" {
-		return fmt.Errorf("kafka host and topic must all be defined")
+		return errors.New("kafka host and topic must all be defined")
 	}
 
 	for i, h := range hosts {

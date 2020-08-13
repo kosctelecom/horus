@@ -113,16 +113,16 @@ func main() {
 
 	if *maxPingProcs > 0 {
 		if _, err := exec.LookPath("fping"); err != nil {
-			glog.Exitf("fping binary not found in PATH. Please install fping and/or set $PATH accordingly.")
+			glog.Exit("fping binary not found in PATH. Please install fping and/or set $PATH accordingly.")
 		}
 		if *pingPacketCount == 0 {
-			glog.Exitf("fping-packet-count cannot be zero")
+			glog.Exit("fping-packet-count cannot be zero")
 		}
 	}
 
 	if *maxResAge == 0 && *influxHost == "" && len(*kafkaHosts) == 0 && len(*natsHosts) == 0 {
 		getopt.PrintUsage(os.Stderr)
-		glog.Exitf("either prom-max-age, influx-host,kafka-host, or nats-host must be defined")
+		glog.Exit("either prom-max-age, influx-host,kafka-host, or nats-host must be defined")
 	}
 
 	agent.MockMode = *mock
