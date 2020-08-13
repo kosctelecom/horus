@@ -89,7 +89,7 @@ func (c *KafkaClient) dial() error {
 	c.Producer = c.broker.Producer(producerConf)
 	c.results = make(chan PollResult)
 	go c.sendData()
-	log.Debugf("connected to kafka")
+	log.Debug("connected to kafka")
 	return nil
 }
 
@@ -105,7 +105,28 @@ func (c *KafkaClient) Push(res PollResult) {
 		return
 	}
 	res = res.Copy()
-	res.PruneForKafka()
+
+	// filter non exported measures
+	rs := res.Scalar[:0]
+	for _, scalar := range res.Scalar {
+		if scalar.ToKafka {
+			rs = append(rs, scalar)
+		}
+	}
+	res.Scalar = rs
+	ri := res.Indexed[:0]
+	for _, indexed := range res.Indexed {
+		if indexed.ToKafka {
+			ri = append(ri, indexed)
+		}
+	}
+	res.Indexed = ri
+
+	if len(res.Scalar) == 0 && len(res.Indexed) == 0 {
+		log.Debug2f("%s: no metric to push to kafka, skipping", res.RequestID)
+		return
+	}
+
 	log.Debugf("%s: pushing result to kafka queue", res.RequestID)
 	c.results <- res
 	log.Debug2f("%s: pushed result to kafka queue", res.RequestID)

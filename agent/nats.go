@@ -74,7 +74,29 @@ func (c *NatsClient) Push(res PollResult) {
 	}
 	res = res.Copy()
 	start := time.Now()
-	if err := c.ec.Publish(c.Topic, res); err != nil {
+
+	// filter non exported measures
+	rs := res.Scalar[:0]
+	for _, scalar := range res.Scalar {
+		if scalar.ToNats {
+			rs = append(rs, scalar)
+		}
+	}
+	res.Scalar = rs
+	ri := res.Indexed[:0]
+	for _, indexed := range res.Indexed {
+		if indexed.ToNats {
+			ri = append(ri, indexed)
+		}
+	}
+	res.Indexed = ri
+
+	if len(res.Scalar) == 0 && len(res.Indexed) == 0 {
+		log.Debug2f("%s: no metric to push to nats, skipping", res.RequestID)
+		return
+	}
+
+	if err := c.ec.Publish(c.Subject, res); err != nil {
 		log.Errorf("%s: NATS publish: %v", res.RequestID, err)
 	}
 	c.nc.Flush()

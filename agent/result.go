@@ -194,25 +194,6 @@ func (p PollResult) Copy() PollResult {
 	return cpy
 }
 
-// PruneForKafka prunes PollResult to keep only metrics to be exported to kafka.
-func (p *PollResult) PruneForKafka() {
-	ps := p.Scalar[:0]
-	for _, s := range p.Scalar {
-		if s.ToKafka {
-			ps = append(ps, s)
-		}
-	}
-	p.Scalar = ps
-
-	pi := p.Indexed[:0]
-	for _, indexed := range p.Indexed {
-		if indexed.ToKafka {
-			pi = append(pi, indexed)
-		}
-	}
-	p.Indexed = pi
-}
-
 // MakeResult builds a Result from a gosnmp PDU. The value is casted to its
 // corresponding Go type when necessary. In particular, Counter64 values
 // are converted to float as influx does not support them out of the box.
