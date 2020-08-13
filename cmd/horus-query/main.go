@@ -52,7 +52,6 @@ var (
 	printQuery  = getopt.BoolLong("print-query", 'p', "print the json query before executing it")
 	scalarMeas  = getopt.ListLong("scalar", 's', "id of scalar measures to query: all if empty, none if 0", "id,...")
 	indexedMeas = getopt.ListLong("indexed", 't', "id of indexed measures to query: all if empty, none if 0", "id,...")
-	prune       = getopt.BoolLong("prune", 0, "prune result to keep only metrics to be exported to kafka")
 )
 
 func main() {
@@ -155,9 +154,6 @@ func main() {
 		} else {
 			log.Print("*** PARTIAL RESULT ***")
 		}
-	}
-	if *prune {
-		res.PruneForKafka()
 	}
 	for i := range res.Indexed {
 		res.Indexed[i].DedupDesc()
