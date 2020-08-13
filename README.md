@@ -87,7 +87,7 @@ $ sudo -u postgres psql -d horus < metrics-sample.sql
 This script defines:
 - a profile for a generic switch
 - a scalar measure for device info (name, uptime, etc.)
-- 3 indexed measures for each interface status, inbound and outbound counters
+- an indexed measure for each interface status, inbound and outbound counters
 - the corresponding snmp metrics and relations
 
 
@@ -96,7 +96,7 @@ This script defines:
 With the previous database config, we can start an agent and the dispatcher (preferably on different shells):
 
 ```
-$ ./cmd/bin/horus-agent -d1 --port 8000 --prom-max-age 900 --kafka-host kafka.kosc.local --kafka-partition 0 --kafka-topic horus
+$ ./cmd/bin/horus-agent -d1 --port 8000 --prom-max-age 900 --kafka-hosts kafka.kosc.local --kafka-partition 0 --kafka-topic horus
 $ ./cmd/bin/horus-dispatcher -c postgres://horus:secret@localhost/horus -d1
 ```
 

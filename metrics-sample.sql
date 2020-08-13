@@ -16,9 +16,9 @@ INSERT INTO metrics (id, active, name, oid, description, export_as_label, post_p
 (14, true, 'ifOutErrors', '.1.3.6.1.2.1.2.2.1.20', 'The number of outbound packets that could not be transmitted because of errors.', false, '{}', 'if_out_error_pkts');
 
 -- we define some measures to group metrics
-INSERT INTO measures (id, name, description, is_indexed, index_metric_id) VALUES
-(1, 'sysInfo', 'basic system info', false, NULL),
-(2, 'ifMetrics', 'metrics for all network interfaces', true, 4),
+INSERT INTO measures (id, name, description, is_indexed, index_metric_id, to_kafka, to_prometheus, to_influx, to_nats) VALUES
+(1, 'sysInfo', 'basic system info', false, NULL, false, true, false, true),
+(2, 'ifMetrics', 'metrics for all network interfaces', false, 4, true, true, false, true);
 
 -- we define a generic switch profile
 INSERT INTO profiles (id, category, vendor, model) VALUES
@@ -27,7 +27,7 @@ INSERT INTO profiles (id, category, vendor, model) VALUES
 -- we associate the measures to the profiles
 INSERT INTO profile_measures (profile_id, measure_id) VALUES
 (1, 1),
-(1, 2),
+(1, 2);
 
 -- we associate the metrics to the measures
 INSERT INTO measure_metrics (measure_id, metric_id) VALUES
