@@ -14,7 +14,7 @@ Horus' main distinguishing features compared to other snmp collectors are:
 - It is possible to use an alternate community for some metrics on the same device
 - related snmp metrics can be grouped as measures
 - profiles can be defined to group a list of measures specific to a type of device
-- retrieved metrics can be post-processed to change scale or convert hex/string values to numeric ones
+- retrieved metrics can be post-processed to change scale or convert hex/string values to numeric ones (see complete list in [doc/database.md](doc/datase.md))
 
 Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 1 to 5 minutes,
 with up to 27K metrics per device.  The polling is dispatched over 4 agents collecting each about 1M metrics, using less than 3GB memory and 2 cpu cores.

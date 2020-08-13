@@ -63,6 +63,7 @@ The post processors allow to normalize a retrieved metric that has a string or n
     - `parse-int`: parses the string to a numeric value. Typically for 64bits counters that are returned as `OctetString`.
     - `parse-hex-le`: parses the hexadecimal string as a numeric value in little-endian order.
     - `parse-hex-be`: parses the hexadecimal string as a numeric value in big-endian order.
+    - `extract-int` or `extract-float`: extracts a numeric value from a string. For example: "Rx level: -12.5 dBm" returns -12.5 as a float.
 
 - For numeric values:
     - `div-<divisor>` or `div:<divisor>`: divides the retrieved value by the divisor, a float number.

@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -151,6 +152,8 @@ type PollResult struct {
 	pollErr     error
 }
 
+var numberPat = regexp.MustCompile(`[-+]?\d*\.?\d+`)
+
 // MakePollResult builds a PollResult from an SnmpRequest.
 func (r SnmpRequest) MakePollResult() PollResult {
 	tags := make(map[string]string)
@@ -262,6 +265,16 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 				res.Value = float64(v)
 			case "trim":
 				res.Value = strings.TrimSpace(string(val))
+			case "extract-int", "extract-float":
+				num := numberPat.FindString(string(val))
+				if num == "" {
+					return res, fmt.Errorf("%s: value `%s` does not contain numeric data", res.Name, val)
+				}
+				v, err := strconv.ParseFloat(num, 64)
+				if err != nil {
+					return res, fmt.Errorf("%s: invalid extracted float value `%s`: %v", res.Name, num, err)
+				}
+				res.Value = v
 			}
 		case float64:
 			switch {
