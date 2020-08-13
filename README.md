@@ -14,7 +14,7 @@ Horus' main distinguishing features compared to other snmp collectors are:
 - It is possible to use an alternate community for some metrics on the same device
 - related snmp metrics can be grouped as measures
 - profiles can be defined to group a list of measures specific to a type of device
-- retrieved metrics can be post-processed to change scale or convert hex/string values to numeric ones (see complete list in [doc/database.md](doc/datase.md))
+- retrieved metrics can be post-processed to change scale or convert hex/string values to numeric ones (see complete list in [doc/database.md](./doc/database.md))
 
 Horus is currently used at [Kosc Telecom](https://www.kosc-telecom.fr/en/home/) to poll 2K+ various devices (switches, routers, DSLAM, OLT) every 1 to 5 minutes,
 with up to 27K metrics per device.  The polling is dispatched over 4 agents collecting each about 1M metrics, using less than 3GB memory and 2 cpu cores.
@@ -68,7 +68,7 @@ See [doc/database.md](./doc/database.md) for a detailed description of each tabl
 Then we can create a local agent running on port 8000:
 
 ```
- horus=# INSERT INTO agents (id, ip_address, port, active) VALUES (1, '127.0.0.1', 8000, true);
+horus=# INSERT INTO agents (id, ip_address, port, active) VALUES (1, '127.0.0.1', 8000, true);
 ```
 
 and a device to poll:
@@ -111,7 +111,7 @@ There are 3 scrape endpoints available to Prometheus:
 - `/snmpmetrics` for snmp metrics
 - `/pingmetrics` for ping metrics
 
-Here is an example scrape config from `prometheus.yml`:
+Here is an example scrape config from `prometheus.yml` (replace `localhost:8000` with the agent endpoint's IP/port):
 
 ```
 scrape_configs:
