@@ -15,8 +15,8 @@ type NatsClient struct {
 	// Hosts is the list of NATS urls
 	Hosts []string
 
-	// Topic is the NATS topic (subject) to use
-	Topic string
+	// Subject is the NATS subject to use for the metrics
+	Subject string
 
 	// Name is the NATS connection name
 	Name string
@@ -28,17 +28,17 @@ type NatsClient struct {
 var natsCli *NatsClient
 
 // NewNatsClient creates a new NATS client and connects to server.
-func NewNatsClient(hosts []string, topic, name string, reconnectDelay int) error {
-	if len(hosts) == 0 || topic == "" {
+func NewNatsClient(hosts []string, subject, name string, reconnectDelay int) error {
+	if len(hosts) == 0 || subject == "" {
 		return fmt.Errorf("NATS host and topic must all be defined")
 	}
 	if name == "" {
 		name = fmt.Sprintf("horus-agent[%d]", os.Getpid())
 	}
 	natsCli = &NatsClient{
-		Hosts: hosts,
-		Topic: topic,
-		Name:  name,
+		Hosts:   hosts,
+		Subject: subject,
+		Name:    name,
 	}
 	log.Debug2f("connecting to NATS %v", hosts)
 	opts := []nats.Option{nats.Name(name),

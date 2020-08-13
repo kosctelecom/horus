@@ -15,9 +15,9 @@ SYNOPSIS
 |                 \[**--influx-user** _value_] \[**-j** _count_] \[**-k** _host1,host2,..._]
 |                 \[**--kafka-partition** _value_] \[**--kafka-topic** _value_] \[**--log** _dir_]
 |                 \[**-m** percent] \[**--mock**] \[**-n** _host1,host2,..._]
-|                 \[**--nats-name** _value_] \[**--nats-topic** _value_] \[**-p** _port_]
-|                 \[**--prom-max-age** _sec_] \[**--prom-sweep-frequency** _sec_]
-|                 \[**-s** _sec_] \[**-t** _msec_]
+|                 \[**--nats-name** _value_]  \[**--nats-reconnect-delay** _seconds_]
+|                 \[**--nats-subject** _value_] \[**-p** _port_] \[**--prom-max-age** _sec_]
+|                 \[**--prom-sweep-frequency** _sec_] \[**-s** _sec_] \[**-t** _msec_]
 
 DESCRIPTION
 ===========
@@ -25,7 +25,7 @@ DESCRIPTION
 The agent receives job requests from the dispatcher over http. If it has remaining capacity, it accepts and queues the job. The job is an json document containing all
 information about the device to poll, the metrics to retrieve and the backends where to send the results.
 
-At the end of a polling job, the agent posts the results to Kafka or InfluxBD and keeps them in memory for Prometheus scraping. It also sends back a report to the dispatcher
+At the end of a polling job, the agent posts the results to Kafka, NATS or InfluxBD and keeps them in memory for Prometheus scraping. It also sends back a report to the dispatcher
 with the polling duration and error if any. Ping results (min, max, avg, loss) are kept in memory for Prometheus scraping only and no report is sent back to the agent.
 
 The result posted to Kafka is a big json document containing the aggregated poll results for each device. You can use **horus-query(1)** to get the same data on stdout.
@@ -151,9 +151,14 @@ NATS related options
 
 :   NATS connection name
 
-    --nats-topic
+    --nats-subject
 
-:  NATS topic (subject) for snmp results
+:  NATS subject for snmp results
+
+    --nats-reconnect-delay
+
+:  Delay in seconds before reconnecting to the NATS server on lost connection
+
 
 
 Prometheus related options

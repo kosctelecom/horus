@@ -74,7 +74,7 @@ var (
 
 	// NATS conf
 	natsHosts          = getopt.ListLong("nats-hosts", 'n', "NATS hosts list (push to NATS disabled if empty)", "host1,host2,...")
-	natsTopic          = getopt.StringLong("nats-topic", 0, "", "NATS snmp results topic (subject)")
+	natsSubject        = getopt.StringLong("nats-subject", 0, "horus.metrics", "NATS subject for snmp results")
 	natsName           = getopt.StringLong("nats-name", 0, "", "NATS connection name")
 	natsReconnectDelay = getopt.IntLong("nats-reconnect-delay", 0, 10, "NATS delay before reconnecting", "seconds")
 
@@ -158,7 +158,7 @@ func main() {
 	}
 
 	if len(*natsHosts) != 0 {
-		if err := agent.NewNatsClient(*natsHosts, *natsTopic, *natsName, *natsReconnectDelay); err != nil {
+		if err := agent.NewNatsClient(*natsHosts, *natsSubject, *natsName, *natsReconnectDelay); err != nil {
 			glog.Exitf("init NATS client: %v", err)
 		}
 	}
