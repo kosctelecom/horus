@@ -138,11 +138,7 @@ func main() {
 		glog.Exitf("init agent: %v", err)
 	}
 
-	if *maxResAge > 0 {
-		if err := agent.InitCollectors(*maxResAge, *sweepFreq); err != nil {
-			glog.Exitf("init prom collector: %v", err)
-		}
-	}
+	agent.InitCollectors(*maxResAge, *sweepFreq)
 
 	if *influxHost != "" {
 		if err := agent.NewInfluxClient(*influxHost, *influxUser, *influxPasswd,
