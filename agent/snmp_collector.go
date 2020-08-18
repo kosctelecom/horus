@@ -27,17 +27,11 @@ type SnmpCollector struct {
 
 // Push convert a poll result to prometheus samples and push them to the sample queue.
 func (c *SnmpCollector) Push(pollRes PollResult) {
-	if c == nil {
-		log.Debugf("Push called on nil snmpcollector")
-		return
-	}
-
-	pollRes = pollRes.Copy()
 	pollTimeout := PromSample{
 		Name:   "snmp_poll_timeout_count",
 		Desc:   "current snmp poll failed due to timeout",
 		Stamp:  pollRes.stamp,
-		Labels: make(map[string]string),
+		Labels: map[string]string{},
 		Value:  float64(0),
 	}
 	if ErrIsTimeout(pollRes.pollErr) {
@@ -47,36 +41,45 @@ func (c *SnmpCollector) Push(pollRes PollResult) {
 		Name:   "snmp_poll_refused_count",
 		Desc:   "current snmp poll failed due to connection refused",
 		Stamp:  pollRes.stamp,
-		Labels: make(map[string]string),
+		Labels: map[string]string{},
 		Value:  float64(0),
 	}
 	if ErrIsRefused(pollRes.pollErr) {
 		pollRefused.Value = 1
 	}
-	dur := PromSample{
-		Name:   "snmp_poll_duration_ms",
+	pollDur := PromSample{
+		Name:   "snmp_poll_duration_seconds",
 		Desc:   "snmp polling duration",
 		Stamp:  pollRes.stamp,
-		Labels: make(map[string]string),
-		Value:  float64(pollRes.Duration),
+		Labels: map[string]string{},
+		Value:  float64(pollRes.Duration / 1000),
 	}
-	mcount := PromSample{
+	metricsCount := PromSample{
 		Name:   "snmp_poll_metric_count",
 		Desc:   "number of snmp metrics in poll result",
 		Stamp:  pollRes.stamp,
-		Labels: make(map[string]string),
+		Labels: map[string]string{},
 		Value:  float64(pollRes.metricCount),
 	}
 	for k, v := range pollRes.Tags {
 		pollTimeout.Labels[k] = v
 		pollRefused.Labels[k] = v
-		dur.Labels[k] = v
-		mcount.Labels[k] = v
+		pollDur.Labels[k] = v
+		metricsCount.Labels[k] = v
 	}
-	c.promSamples <- &pollTimeout
-	c.promSamples <- &pollRefused
-	c.promSamples <- &dur
-	c.promSamples <- &mcount
+	if pollStatCollector != nil {
+		pollStatCollector.promSamples <- &pollTimeout
+		pollStatCollector.promSamples <- &pollRefused
+		pollStatCollector.promSamples <- &pollDur
+		pollStatCollector.promSamples <- &metricsCount
+	} else {
+		log.Debugf("poll stats collector is nil")
+	}
+
+	if c == nil {
+		log.Debugf("Push called on nil snmpcollector")
+		return
+	}
 
 	for _, scalar := range pollRes.Scalar {
 		if !scalar.ToProm {

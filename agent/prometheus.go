@@ -15,7 +15,6 @@
 package agent
 
 import (
-	"fmt"
 	"hash/fnv"
 	"net/http"
 	"sort"
@@ -94,8 +93,9 @@ var (
 )
 
 var (
-	snmpCollector *SnmpCollector
-	pingCollector *PingCollector
+	snmpCollector     *SnmpCollector
+	pingCollector     *PingCollector
+	pollStatCollector *PromCollector
 )
 
 // InitCollectors initializes the snmp and ping collectors with retention time and cleanup frequency.
@@ -103,7 +103,7 @@ var (
 // - /metrics for internal poll related metrics
 // - /snmpmetrics for snmp polling results
 // - /pingmetrics for ping results
-func InitCollectors(maxResAge, sweepFreq int) error {
+func InitCollectors(maxResAge, sweepFreq int) {
 	workersCount.Set(float64(MaxSNMPRequests))
 	sysMem.Set(totalMem)
 	prometheus.MustRegister(currSampleCount)
@@ -111,28 +111,24 @@ func InitCollectors(maxResAge, sweepFreq int) error {
 	prometheus.MustRegister(workersCount)
 	prometheus.MustRegister(heapMem)
 	prometheus.MustRegister(sysMem)
-	http.Handle("/metrics", promhttp.Handler())
-
-	snmpColl, err := NewCollector(maxResAge, sweepFreq, "/snmpmetrics")
-	if err != nil {
-		return fmt.Errorf("snmp collector: %v", err)
-	}
-	snmpCollector = &SnmpCollector{PromCollector: snmpColl}
 	prometheus.MustRegister(snmpScrapes)
 	prometheus.MustRegister(snmpScrapeDuration)
+	http.Handle("/metrics", promhttp.Handler())
 
-	pingColl, err := NewCollector(maxResAge, sweepFreq, "/pingmetrics")
-	if err != nil {
-		return fmt.Errorf("ping collector: %v", err)
+	if sc := NewCollector(maxResAge, sweepFreq, "/snmpmetrics"); sc != nil {
+		snmpCollector = &SnmpCollector{PromCollector: sc}
 	}
-	pingCollector = &PingCollector{PromCollector: pingColl}
-	return nil
+	if pc := NewCollector(maxResAge, sweepFreq, "/pingmetrics"); pc != nil {
+		pingCollector = &PingCollector{PromCollector: pc}
+	}
+
+	pollStatCollector = NewCollector(coalesceInt(maxResAge, 60), coalesceInt(sweepFreq, 30), "")
 }
 
 // NewCollector creates a new prometheus collector
-func NewCollector(maxResAge, sweepFreq int, endpoint string) (*PromCollector, error) {
+func NewCollector(maxResAge, sweepFreq int, endpoint string) *PromCollector {
 	if maxResAge <= 0 || sweepFreq <= 0 {
-		return nil, fmt.Errorf("max_result_age or sweep_frequency must be set")
+		return nil
 	}
 
 	collector := &PromCollector{
@@ -141,14 +137,19 @@ func NewCollector(maxResAge, sweepFreq int, endpoint string) (*PromCollector, er
 		SweepFreq:    time.Duration(sweepFreq) * time.Second,
 		promSamples:  make(chan *PromSample),
 	}
-	http.HandleFunc(endpoint, func(w http.ResponseWriter, r *http.Request) {
-		registry := prometheus.NewRegistry()
-		registry.MustRegister(collector)
-		h := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
-		h.ServeHTTP(w, r)
-	})
+	if endpoint == "" {
+		// adds to default register
+		prometheus.MustRegister(collector)
+	} else {
+		http.HandleFunc(endpoint, func(w http.ResponseWriter, r *http.Request) {
+			registry := prometheus.NewRegistry()
+			registry.MustRegister(collector)
+			h := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
+			h.ServeHTTP(w, r)
+		})
+	}
 	go collector.processSamples()
-	return collector, nil
+	return collector
 }
 
 // processSamples processes each new sample popped from the channel
@@ -182,12 +183,12 @@ func (c *PromCollector) processSamples() {
 	}
 }
 
-// Describe implements Prometheus.Collector
+// Describe implements prometheus.Collector
 func (c *PromCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- prometheus.NewDesc("dummy", "dummy", nil, nil)
 }
 
-// Collect implements Prometheus.Collector
+// Collect implements prometheus.Collector
 func (c *PromCollector) Collect(ch chan<- prometheus.Metric) {
 	samples := make([]*PromSample, 0, len(c.Samples))
 	start := time.Now()
@@ -229,4 +230,14 @@ func computeKey(sample PromSample) uint64 {
 	h := fnv.New64a()
 	h.Write([]byte(sid))
 	return h.Sum64()
+}
+
+// coalesceInt returns its first non-zero argument, or zero.
+func coalesceInt(nums ...int) int {
+	for _, num := range nums {
+		if num > 0 {
+			return num
+		}
+	}
+	return 0
 }
