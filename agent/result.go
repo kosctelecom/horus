@@ -18,6 +18,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -290,6 +291,16 @@ func MakeResult(pdu gosnmp.SnmpPDU, metric model.Metric) (Result, error) {
 					return res, fmt.Errorf("invalid post-processor %s: %v", pp, err)
 				}
 				res.Value = val * div
+			case pp == "ln":
+				if val < 0 {
+					return res, fmt.Errorf("invalid post-processor %s: negative value %f", pp, val)
+				}
+				res.Value = math.Log(val)
+			case pp == "log10":
+				if val < 0 {
+					return res, fmt.Errorf("invalid post-processor %s: negative  value %f", pp, val)
+				}
+				res.Value = math.Log10(val)
 			}
 		default:
 			log.Warningf("post processor: unhandled type %T (%[1]v for pdu type %v)", res.Value, pdu.Type)

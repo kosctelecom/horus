@@ -68,6 +68,7 @@ The post processors allow to normalize a retrieved metric that has a string or n
 - For numeric values:
     - `div-<divisor>` or `div:<divisor>`: divides the retrieved value by the divisor, a float number.
     - `mul-<multiplicator>` or `mul:<multiplicator>`: multiplies the retrieved value by the multiplicator, a float number.
+    - `ln` and `log10`: calculates the natural and base-10 logarithm of the input value.
 
 
 ## measures table
