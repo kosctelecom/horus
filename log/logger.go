@@ -14,7 +14,11 @@
 
 package log
 
-import "github.com/vma/glog"
+import (
+	"fmt"
+
+	"github.com/vma/glog"
+)
 
 // Logger extends glog.Logger and implements the gosnmp.Logger interface.
 type Logger struct {
@@ -108,4 +112,8 @@ func Error(args ...interface{}) {
 // Errorf prints the formatted input at error level.
 func Errorf(format string, args ...interface{}) {
 	glog.ErrorfDepth(1, format, args...)
+}
+
+func Exitf(format string, args ...interface{}) {
+	glog.ExitDepth(1, fmt.Sprintf(format, args...))
 }
