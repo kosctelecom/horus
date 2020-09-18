@@ -99,10 +99,18 @@ func main() {
 	}()
 
 	dispatcher.LocalIP, dispatcher.Port = *localIP, *port
-	if err := dispatcher.InitDB(*dsn); err != nil {
-		glog.Exitf("init db: %v", err)
+	if err := dispatcher.ConnectDB(*dsn); err != nil {
+		glog.Exitf("connect db: %v", err)
 	}
 	defer dispatcher.ReleaseDB()
+
+	if err := dispatcher.AcquireLock(ctx); err != nil {
+		glog.Exitf("acquire lock: %v", err)
+	}
+
+	if err := dispatcher.PrepareQueries(); err != nil {
+		glog.Exitf("prepare queries: %v", err)
+	}
 
 	dispatcher.LoadAvgWindow = time.Duration(*snmpLoadAvgWin) * time.Second
 

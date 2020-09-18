@@ -26,6 +26,8 @@ Ping requests are dispatched in the same way except there is no report and the m
 
 The in-memory agent list is kept up to date from db and each agent is checked regurarly to get its status and load. Dead agents are discarded until they are back again.
 
+A pg adivsory lock is requested at startup and held by the first launched process to ensure that only one instance is active. Any other started instance becomes only active after the first one stops.
+
 Options
 =======
 

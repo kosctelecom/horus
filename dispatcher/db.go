@@ -15,15 +15,20 @@
 package dispatcher
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kosctelecom/horus/log"
 )
 
+const pgAppLockID = 137438953097
+
 var (
 	db                       *sqlx.DB
+	appLockConn              *sql.Conn
 	lockDevStmt              *sql.Stmt
 	unlockDevStmt            *sql.Stmt
 	unlockAllDevStmt         *sql.Stmt
@@ -38,8 +43,8 @@ var (
 	checkAgentStmt           *sql.Stmt
 )
 
-// InitDB initializes db connection and prepares the db statements
-func InitDB(dsn string) error {
+// ConnectDB connects to postgres db
+func ConnectDB(dsn string) error {
 	var err error
 
 	log.Debug2f("opening db connection to %q", dsn)
@@ -47,6 +52,38 @@ func InitDB(dsn string) error {
 	if err != nil {
 		return fmt.Errorf("connect db: %v", err)
 	}
+	return err
+}
+
+func AcquireLock(ctx context.Context) error {
+	var err error
+
+	appLockConn, err = db.Conn(ctx)
+	if err != nil {
+		return fmt.Errorf("db conn: %v", err)
+	}
+	log.Infof("querying advisory lock from pg...")
+	_, err = appLockConn.ExecContext(ctx, `SELECT pg_advisory_lock($1)`, pgAppLockID)
+	if err != nil {
+		return fmt.Errorf("select pg_advisory_lock: %v", err)
+	}
+	log.Infof("lock granted, running as master!")
+	go func(ctx context.Context) {
+		log.Debug2f("starting db lock conn pinger")
+		ticker := time.NewTicker(15 * time.Second)
+		for range ticker.C {
+			if _, err := appLockConn.ExecContext(ctx, `SELECT 1`); err != nil {
+				log.Exitf("db lock conn ping: %v", err)
+			}
+		}
+	}(ctx)
+	return nil
+}
+
+// PrepareQueries prepares the db queries
+func PrepareQueries() error {
+	var err error
+
 	lockDevStmt, err = db.Prepare(`UPDATE devices
                                       SET is_polling = true
                                     WHERE id = $1`)

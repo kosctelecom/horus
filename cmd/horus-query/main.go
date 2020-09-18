@@ -99,8 +99,11 @@ func main() {
 	}
 
 	if *devID != 0 {
-		if err = dispatcher.InitDB(*dsn); err != nil {
-			log.Fatalf("ERR: init db: %v", err)
+		if err = dispatcher.ConnectDB(*dsn); err != nil {
+			log.Fatalf("ERR: connect db: %v", err)
+		}
+		if err := dispatcher.PrepareQueries(); err != nil {
+			log.Fatalf("prepare queries: %v", err)
 		}
 		var req model.SnmpRequest
 		req, err = dispatcher.RequestFromDB(*devID)
