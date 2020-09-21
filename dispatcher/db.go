@@ -24,8 +24,6 @@ import (
 	"github.com/kosctelecom/horus/log"
 )
 
-const pgAppLockID = 137438953097
-
 var (
 	db                       *sqlx.DB
 	appLockConn              *sql.Conn
@@ -55,7 +53,7 @@ func ConnectDB(dsn string) error {
 	return err
 }
 
-func AcquireLock(ctx context.Context) error {
+func AcquireLock(ctx context.Context, lockID int) error {
 	var err error
 
 	appLockConn, err = db.Conn(ctx)
@@ -63,14 +61,14 @@ func AcquireLock(ctx context.Context) error {
 		return fmt.Errorf("db conn: %v", err)
 	}
 	log.Infof("querying advisory lock from pg...")
-	_, err = appLockConn.ExecContext(ctx, `SELECT pg_advisory_lock($1)`, pgAppLockID)
+	_, err = appLockConn.ExecContext(ctx, `SELECT pg_advisory_lock($1)`, lockID)
 	if err != nil {
 		return fmt.Errorf("select pg_advisory_lock: %v", err)
 	}
 	log.Infof("lock granted, running as master!")
 	go func(ctx context.Context) {
 		log.Debug2f("starting db lock conn pinger")
-		ticker := time.NewTicker(15 * time.Second)
+		ticker := time.NewTicker(10 * time.Second)
 		for range ticker.C {
 			if _, err := appLockConn.ExecContext(ctx, `SELECT 1`); err != nil {
 				log.Exitf("db lock conn ping: %v", err)

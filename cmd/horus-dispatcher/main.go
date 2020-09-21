@@ -59,6 +59,7 @@ var (
 	dbFlusherFreq   = getopt.IntLong("report-flush-freq", 0, 3, "db reports table flush frequency (all entries with report_received_at=null older than this period are deleted)", "hours")
 	logDir          = getopt.StringLong("log", 0, "", "directory for log files. If empty, all log goes to stderr", "dir")
 	snmpLoadAvgWin  = getopt.IntLong("load-avg-window", 'w', 30, "SNMP load avg calculation window", "sec")
+	lockID          = getopt.IntLong("lock-id", 'l', 0, "pg advisory lock id to ensure single running process (0 to disable)")
 )
 
 func main() {
@@ -104,8 +105,10 @@ func main() {
 	}
 	defer dispatcher.ReleaseDB()
 
-	if err := dispatcher.AcquireLock(ctx); err != nil {
-		glog.Exitf("acquire lock: %v", err)
+	if *lockID > 0 {
+		if err := dispatcher.AcquireLock(ctx, *lockID); err != nil {
+			glog.Exitf("acquire lock: %v", err)
+		}
 	}
 
 	if err := dispatcher.PrepareQueries(); err != nil {
