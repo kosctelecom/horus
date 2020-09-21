@@ -8,8 +8,8 @@ NAME
 SYNOPSIS
 ========
 
-| **horus-dispatcher** \[**-h**|**-v**] \[**-c** _url_] \[**-d** _level_] \[**-g** _seconds_] \[**-i** _address_] \[**-k** _seconds_] \[**--log** _dir_]
-|                      \[**--max-load-delta** _value_] \[**--ping-batch-count** _value_]
+| **horus-dispatcher** \[**-h**|**-v**] \[**-c** _url_] \[**-d** _level_] \[**-g** _seconds_] \[**-i** _address_] \[**-k** _seconds_] \[**-l** _value_]
+|                      \[**--log** _dir_] \[**--max-load-delta** _value_] \[**--ping-batch-count** _value_]
 |                      \[**-p** _port_] \[**-q** _seconds_] \[**-r** _days_]
 |                      \[**--report-flush-freq hours**] \[**-u** _seconds_] \[**-w** _sec_]
 
@@ -55,6 +55,11 @@ Options
 -k, --agent-keepalive-freq
 
 :   Specifies the agent keep-alive requests frequency in seconds. Defaults to 30s.
+
+-l, --lock-id=value
+
+:   pg advisory lock id to ensure single running process. First started process acquires the locks and becomes master. This behaviour is disabled
+    by default or when the lock ID is set to 0.
 
     --log
 
