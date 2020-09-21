@@ -107,6 +107,9 @@ func main() {
 
 	if *lockID > 0 {
 		if err := dispatcher.AcquireLock(ctx, *lockID); err != nil {
+			if strings.Contains(err.Error(), "cancel") {
+				return
+			}
 			glog.Exitf("acquire lock: %v", err)
 		}
 	}
