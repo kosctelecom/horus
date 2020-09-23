@@ -191,7 +191,22 @@ func RequestFromDB(devID int) (model.SnmpRequest, error) {
 		}
 		indexed.LabelsOnly = (labelCount == len(indexed.Metrics))
 
-		if len(indexed.Metrics) > 0 {
+		hasIndex := true
+		if indexed.IndexMetricID.Valid {
+			hasIndex = false
+			metricList := make([]int, len(indexed.Metrics))
+			for i, m := range indexed.Metrics {
+				metricList[i] = m.ID
+				if m.ID == int(indexed.IndexMetricID.Int64) {
+					hasIndex = true
+					break
+				}
+			}
+			if len(indexed.Metrics) > 0 && !hasIndex {
+				log.Warningf("metric list (%+v) of indexed measure %s does not contain index metric #%d, skipping", metricList, indexed.Name, indexed.IndexMetricID.Int64)
+			}
+		}
+		if len(indexed.Metrics) > 0 && hasIndex {
 			req.IndexedMeasures = append(req.IndexedMeasures, indexed)
 		}
 	}
