@@ -84,9 +84,9 @@ Options
 
 :   Specifies the check frequency in seconds for new available snmp polling jobs in database. Defaults to 30s; when set to 0, snmp queries are disabled.
 
--r, --poll-error-retention-period
+-r, --error-flush-freq=hours
 
-:   Specifies the number of days during which to keep poll errors in reports table (successful reports are not kept). Defaults to 3 days; Flushing disabled when set to 0.
+:   Specifies the number of hours during which to keep poll errors in reports table (successful reports are not kept). Defaults to 4 hours; Flushing is disabled when set to 0.
 
     --report-flush-freq=hours
 
